@@ -1,13 +1,5 @@
-oclif-hello-world
+Swanky CLI
 =================
-
-oclif example Hello World CLI
-
-[![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
-[![Version](https://img.shields.io/npm/v/oclif-hello-world.svg)](https://npmjs.org/package/oclif-hello-world)
-[![CircleCI](https://circleci.com/gh/oclif/hello-world/tree/main.svg?style=shield)](https://circleci.com/gh/oclif/hello-world/tree/main)
-[![Downloads/week](https://img.shields.io/npm/dw/oclif-hello-world.svg)](https://npmjs.org/package/oclif-hello-world)
-[![License](https://img.shields.io/npm/l/oclif-hello-world.svg)](https://github.com/oclif/hello-world/blob/main/package.json)
 
 <!-- toc -->
 * [Usage](#usage)
@@ -29,9 +21,8 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`swanky hello PERSON`](#swanky-hello-person)
-* [`swanky hello world`](#swanky-hello-world)
 * [`swanky help [COMMAND]`](#swanky-help-command)
+* [`swanky init ink NAME`](#swanky-init-ink-name)
 * [`swanky plugins`](#swanky-plugins)
 * [`swanky plugins:install PLUGIN...`](#swanky-pluginsinstall-plugin)
 * [`swanky plugins:inspect PLUGIN...`](#swanky-pluginsinspect-plugin)
@@ -41,46 +32,6 @@ USAGE
 * [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin-1)
 * [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin-2)
 * [`swanky plugins update`](#swanky-plugins-update)
-
-## `swanky hello PERSON`
-
-Say hello
-
-```
-USAGE
-  $ swanky hello [PERSON] -f <value>
-
-ARGUMENTS
-  PERSON  Person to say hello to
-
-FLAGS
-  -f, --from=<value>  (required) Whom is saying hello
-
-DESCRIPTION
-  Say hello
-
-EXAMPLES
-  $ oex hello friend --from oclif
-  hello friend from oclif! (./src/commands/hello/index.ts)
-```
-
-_See code: [dist/commands/hello/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.0.0/dist/commands/hello/index.ts)_
-
-## `swanky hello world`
-
-Say hello world
-
-```
-USAGE
-  $ swanky hello world
-
-DESCRIPTION
-  Say hello world
-
-EXAMPLES
-  $ oex hello world
-  hello world! (./src/commands/hello/world.ts)
-```
 
 ## `swanky help [COMMAND]`
 
@@ -101,6 +52,21 @@ DESCRIPTION
 ```
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.1.10/src/commands/help.ts)_
+
+## `swanky init ink NAME`
+
+Generate a new Ink based smart contract
+
+```
+USAGE
+  $ swanky init ink [NAME]
+
+ARGUMENTS
+  NAME  directory name of new project
+
+DESCRIPTION
+  Generate a new Ink based smart contract
+```
 
 ## `swanky plugins`
 
