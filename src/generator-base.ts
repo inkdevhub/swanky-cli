@@ -12,4 +12,8 @@ export abstract class GeneratorBase extends Command {
 
     env.run(`init:${type}`, generatorOptions);
   }
+
+  async catch(_error: any) {
+    console.log("error.message");
+  }
 }

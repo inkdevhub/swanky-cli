@@ -36,17 +36,20 @@ export default class Ink extends Generator {
     const dependencyChecks = {
       rust: "rustc --version",
       cargo: "cargo -V",
-      contract: "cargo contract -V",
+      "cargo contract": "cargo contract -V",
     };
 
     Object.entries(dependencyChecks).forEach(([dependency, command]) => {
       try {
-        this.log(`Checking ${dependency}...`);
         execSync(command, { stdio: "ignore" });
+        this.log.ok(`Checking ${dependency}`);
       } catch {
-        throw new Error(
-          `${dependency} is not installed. Please refer to the guide: `
+        // TODO: put astar docs link here
+        this.log.error(
+          `"${dependency}" is not installed. Please follow the guide:
+          https://docs.substrate.io/tutorials/v3/ink-workshop/pt1/#update-your-rust-environment`
         );
+        process.exit(1);
       }
     });
   }
