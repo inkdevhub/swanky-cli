@@ -55,7 +55,7 @@ export default class Ink extends Generator {
     this.log("Cloning template repository...");
 
     execSync(
-      `git clone https://github.com/AstarNetwork/swanky-template.git "${resolve(
+      `git clone https://github.com/AstarNetwork/swanky-template-ink.git "${resolve(
         this.name
       )}"`
     );
