@@ -1,3 +1,6 @@
 {
-  "extends": ["oclif", "oclif-typescript", "plugin:prettier/recommended"]
+  "extends": ["oclif", "oclif-typescript", "plugin:prettier/recommended"],
+  "rules": {
+    "unicorn/no-array-for-each": "off"
+  }
 }
