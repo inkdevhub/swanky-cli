@@ -2,7 +2,6 @@ import { execSync } from "node:child_process";
 import { resolve } from "node:path";
 import { rmSync } from "node:fs";
 import * as Generator from "yeoman-generator";
-
 const debug = require("debug")("generator-ink");
 
 let hasYarn = false;
@@ -65,6 +64,7 @@ export default class Ink extends Generator {
         { name: "Dual contract", value: "dual-contract" },
       ],
     });
+
     execSync(
       `git clone -b ${contractTemplate} --single-branch https://github.com/AstarNetwork/swanky-template-ink.git "${resolve(
         this.name
@@ -72,9 +72,9 @@ export default class Ink extends Generator {
       { stdio: "ignore" }
     );
     this.log.ok("Cloning template repository...");
-    // execSync(`git checkout ${contractTemplate}`, { stdio: "ignore" });
-    // this.log.ok("Checking out template branch...");
 
     rmSync(`${resolve(this.name, ".git")}`, { recursive: true });
   }
+
+  async writing(): Promise<void> {}
 }
