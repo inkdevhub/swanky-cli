@@ -55,13 +55,26 @@ export default class Ink extends Generator {
   }
 
   async prompting(): Promise<void> {
-    this.log("Cloning template repository...");
-
+    const { contractTemplate } = await this.prompt({
+      name: "contractTemplate",
+      type: "list",
+      message: "Which template should we use?",
+      choices: [
+        { name: "Blank", value: "master" },
+        { name: "Flipper", value: "flipper" },
+        { name: "Dual contract", value: "dual-contract" },
+      ],
+    });
     execSync(
-      `git clone https://github.com/AstarNetwork/swanky-template-ink.git "${resolve(
+      `git clone -b ${contractTemplate} --single-branch https://github.com/AstarNetwork/swanky-template-ink.git "${resolve(
         this.name
-      )}"`
+      )}"`,
+      { stdio: "ignore" }
     );
+    this.log.ok("Cloning template repository...");
+    // execSync(`git checkout ${contractTemplate}`, { stdio: "ignore" });
+    // this.log.ok("Checking out template branch...");
+
     rmSync(`${resolve(this.name, ".git")}`, { recursive: true });
   }
 }
