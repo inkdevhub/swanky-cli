@@ -49,10 +49,6 @@
     "bin": "swanky",
     "dirname": "swanky",
     "commands": "./dist/commands",
-    "plugins": [
-      "@oclif/plugin-help",
-      "@oclif/plugin-plugins"
-    ],
     "topicSeparator": " ",
     "topics": {
       "init": {
