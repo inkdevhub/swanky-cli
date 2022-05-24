@@ -1,11 +1,13 @@
-Swanky CLI
-=================
+# Swanky CLI
 
 <!-- toc -->
+* [Swanky CLI](#swanky-cli)
 * [Usage](#usage)
 * [Commands](#commands)
 <!-- tocstop -->
+
 # Usage
+
 <!-- usage -->
 ```sh-session
 $ npm install -g swanky-cli
@@ -19,7 +21,9 @@ USAGE
 ...
 ```
 <!-- usagestop -->
+
 # Commands
+
 <!-- commands -->
 * [`swanky init ink NAME`](#swanky-init-ink-name)
 
@@ -38,3 +42,5 @@ DESCRIPTION
   Generate a new Ink based smart contract
 ```
 <!-- commandsstop -->
+
+## Test title

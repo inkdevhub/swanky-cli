@@ -1,7 +1,11 @@
 import { execSync } from "node:child_process";
-import { resolve } from "node:path";
-import { rmSync } from "node:fs";
+import * as path from "node:path";
+import { rmSync, createWriteStream, existsSync, mkdirSync } from "node:fs";
+
 import * as Generator from "yeoman-generator";
+import * as download from "download";
+import * as ProgressBar from "progress";
+
 const debug = require("debug")("generator-ink");
 
 let hasYarn = false;
@@ -66,15 +70,58 @@ export default class Ink extends Generator {
     });
 
     execSync(
-      `git clone -b ${contractTemplate} --single-branch https://github.com/AstarNetwork/swanky-template-ink.git "${resolve(
+      `git clone -b ${contractTemplate} --single-branch https://github.com/AstarNetwork/swanky-template-ink.git "${path.resolve(
         this.name
       )}"`,
       { stdio: "ignore" }
     );
     this.log.ok("Cloning template repository...");
 
-    rmSync(`${resolve(this.name, ".git")}`, { recursive: true });
+    rmSync(`${path.resolve(this.name, ".git")}`, { recursive: true });
   }
 
-  async writing(): Promise<void> {}
+  async writing(): Promise<void> {
+    const binDir = path.resolve(this.name, "bin");
+    if (!existsSync(binDir)) {
+      mkdirSync(binDir);
+    }
+
+    const url =
+      "https://github.com/AstarNetwork/swanky-node/releases/download/v0.1.0/swanky-node-macOS-latest-x86_64.zip";
+    await this._downloadNode(url, binDir);
+  }
+
+  async _downloadNode(nodeUrl: string, targetDir: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const writer = createWriteStream(path.resolve(targetDir, "node.zip"));
+
+      const response = download(nodeUrl, { extract: true });
+      response.on("response", (res) => {
+        const contentLength = Number.parseInt(
+          res.headers["content-length"] as unknown as string,
+          10
+        );
+        const bar = new ProgressBar(
+          "Downloading node: [:bar] :rate/bps :percent :etas",
+          {
+            complete: "=",
+            incomplete: " ",
+            width: 20,
+            total: contentLength,
+          }
+        );
+        response.on("data", (chunk) => {
+          bar.tick(chunk.length);
+        });
+        response.on("end", () => {
+          this.log.ok("Node downloaded");
+          resolve();
+        });
+        response.on("error", (error) => {
+          reject(error);
+        });
+      });
+      response.pipe(writer);
+    });
+  }
 }
