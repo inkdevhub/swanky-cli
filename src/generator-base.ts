@@ -14,6 +14,6 @@ export abstract class GeneratorBase extends Command {
   }
 
   async catch(_error: any) {
-    console.log("error.message");
+    console.log("error.message", _error);
   }
 }

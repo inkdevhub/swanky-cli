@@ -26,7 +26,7 @@ USAGE
 
 <!-- commands -->
 * [`swanky compile`](#swanky-compile)
-* [`swanky init ink NAME`](#swanky-init-ink-name)
+* [`swanky init NAME`](#swanky-init-name)
 
 ## `swanky compile`
 
@@ -42,20 +42,26 @@ DESCRIPTION
 
 _See code: [dist/commands/compile/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.0.0/dist/commands/compile/index.ts)_
 
-## `swanky init ink NAME`
+## `swanky init NAME`
 
 Generate a new Ink based smart contract
 
 ```
 USAGE
-  $ swanky init ink [NAME]
+  $ swanky init [NAME] [-l ink|ask]
 
 ARGUMENTS
   NAME  directory name of new project
 
+FLAGS
+  -l, --language=<option>  [default: ink]
+                           <options: ink|ask>
+
 DESCRIPTION
   Generate a new Ink based smart contract
 ```
+
+_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.0.0/dist/commands/init/index.ts)_
 <!-- commandsstop -->
 
 ## Test title
