@@ -1,25 +1,26 @@
 import { execSync } from "node:child_process";
 import * as path from "node:path";
 import { rmSync, createWriteStream, existsSync, mkdirSync } from "node:fs";
-
+import { platform } from "node:os";
 import * as Generator from "yeoman-generator";
+import * as decompress from "decompress";
 import * as download from "download";
 import * as ProgressBar from "progress";
-
-const debug = require("debug")("generator-ink");
-
+import { nodes } from "../nodes";
 let hasYarn = false;
 try {
   execSync("yarn -v", { stdio: "ignore" });
   hasYarn = true;
 } catch {
-  debug("No yarn detected..");
+  console.log("No yarn detected..");
 }
 
 export default class Ink extends Generator {
   options: {
     defaults?: boolean;
     yarn: boolean;
+    platform: ReturnType<typeof platform>;
+    nodeUrl: string | undefined;
   };
 
   name: string;
@@ -30,6 +31,8 @@ export default class Ink extends Generator {
     this.options = {
       defaults: opts.defaults,
       yarn: hasYarn,
+      platform: platform(),
+      nodeUrl: undefined,
     };
   }
 
@@ -55,6 +58,16 @@ export default class Ink extends Generator {
         process.exit(1);
       }
     });
+
+    this.options.nodeUrl = nodes.swanky[this.options.platform];
+
+    console.log(this.options, nodes);
+    if (!this.options.nodeUrl) {
+      this.log.error(
+        `${this.options.platform} platform is not currently supported.`
+      );
+      process.exit(1);
+    }
   }
 
   async prompting(): Promise<void> {
@@ -86,9 +99,9 @@ export default class Ink extends Generator {
       mkdirSync(binDir);
     }
 
-    const url =
-      "https://github.com/AstarNetwork/swanky-node/releases/download/v0.1.0/swanky-node-macOS-latest-x86_64.zip";
-    await this._downloadNode(url, binDir);
+    const url = this.options.nodeUrl;
+    await this._downloadNode(url as string, binDir);
+    await this._decompressNode(binDir, "node.zip");
   }
 
   async _downloadNode(nodeUrl: string, targetDir: string): Promise<void> {
@@ -122,6 +135,20 @@ export default class Ink extends Generator {
         });
       });
       response.pipe(writer);
+    });
+  }
+
+  async _decompressNode(pathToFile: string, fileName: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        const filePath = path.resolve(pathToFile, fileName);
+        const decompressed = decompress(filePath, pathToFile);
+        console.log(decompressed);
+        execSync(`rm -f ${filePath}`);
+        resolve();
+      } catch {
+        reject(new Error("Unable to extract node"));
+      }
     });
   }
 }

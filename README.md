@@ -25,7 +25,22 @@ USAGE
 # Commands
 
 <!-- commands -->
+* [`swanky compile`](#swanky-compile)
 * [`swanky init ink NAME`](#swanky-init-ink-name)
+
+## `swanky compile`
+
+Compile the smart contract(s) in your contracts directory
+
+```
+USAGE
+  $ swanky compile
+
+DESCRIPTION
+  Compile the smart contract(s) in your contracts directory
+```
+
+_See code: [dist/commands/compile/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.0.0/dist/commands/compile/index.ts)_
 
 ## `swanky init ink NAME`
 

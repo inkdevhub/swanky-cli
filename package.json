@@ -21,6 +21,7 @@
     "@oclif/plugin-help": "^5",
     "@oclif/plugin-plugins": "^2.0.1",
     "debug": "^4.3.4",
+    "decompress": "^4.2.1",
     "download": "^8.0.0",
     "progress": "^2.0.3",
     "yeoman-environment": "^3.9.1",
