@@ -32,6 +32,7 @@
     "@oclif/test": "^2",
     "@types/chai": "^4",
     "@types/download": "^8.0.1",
+    "@types/inquirer": "^8.2.1",
     "@types/listr": "^0.14.4",
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.9.4",

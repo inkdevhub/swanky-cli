@@ -4,8 +4,6 @@ import * as path from "node:path";
 import { rmSync, createWriteStream, existsSync, mkdirSync } from "node:fs";
 import * as inquirer from "inquirer";
 import * as Listr from "listr";
-// @ts-ignore
-import * as listrUpdateRenderer from "listr-update-renderer";
 import * as decompress from "decompress";
 import * as download from "download";
 import * as ProgressBar from "progress";
@@ -61,37 +59,30 @@ export class Generate extends Command {
   async catch(_error: Record<string, any>): Promise<any> {}
 }
 
-const checkDependencies = new Listr(
-  [
-    {
-      title: "Check dependencies",
-      task: () => {
-        const tasks = Object.entries({
-          rust: "rustc --version",
-          cargo: "cargo -V",
-          "cargo contract": "cargo contract -V",
-        }).map(([dependency, command]) => ({
-          title: `Checking ${dependency}`,
-          task: () => {
-            try {
-              execSync(command, { stdio: "ignore" });
-            } catch {
-              throw new Error(
-                `"${dependency}" is not installed. Please follow the guide: https://docs.substrate.io/tutorials/v3/ink-workshop/pt1/#update-your-rust-environment`
-              );
-            }
-          },
-        }));
-        return new Listr(tasks);
-      },
-    },
-  ],
+const checkDependencies = new Listr([
   {
-    renderer: listrUpdateRenderer,
-    // @ts-ignore
-    collapse: false,
-  }
-);
+    title: "Check dependencies",
+    task: () => {
+      const tasks = Object.entries({
+        rust: "rustc --version",
+        cargo: "cargo -V",
+        "cargo contract": "cargo contract -V",
+      }).map(([dependency, command]) => ({
+        title: `Checking ${dependency}`,
+        task: () => {
+          try {
+            execSync(command, { stdio: "ignore" });
+          } catch {
+            throw new Error(
+              `"${dependency}" is not installed. Please follow the guide: https://docs.substrate.io/tutorials/v3/ink-workshop/pt1/#update-your-rust-environment`
+            );
+          }
+        },
+      }));
+      return new Listr(tasks);
+    },
+  },
+]);
 
 const cloneTemplateRepo = new Listr([
   {
