@@ -23,18 +23,19 @@
     "debug": "^4.3.4",
     "decompress": "^4.2.1",
     "download": "^8.0.0",
-    "progress": "^2.0.3",
-    "yeoman-environment": "^3.9.1",
-    "yeoman-generator": "^5.6.1"
+    "inquirer": "^8.2.4",
+    "listr": "^0.14.3",
+    "listr-update-renderer": "^0.5.0",
+    "progress": "^2.0.3"
   },
   "devDependencies": {
     "@oclif/test": "^2",
     "@types/chai": "^4",
     "@types/download": "^8.0.1",
+    "@types/listr": "^0.14.4",
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.9.4",
     "@types/progress": "^2.0.5",
-    "@types/yeoman-environment": "^2.10.7",
     "chai": "^4",
     "eslint": "^7.32.0",
     "eslint-config-oclif": "^4",
