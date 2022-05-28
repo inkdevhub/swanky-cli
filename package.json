@@ -24,8 +24,7 @@
     "decompress": "^4.2.1",
     "download": "^8.0.0",
     "inquirer": "^8.2.4",
-    "listr2": "^4.0.5",
-    "progress": "^2.0.3"
+    "listr2": "^4.0.5"
   },
   "devDependencies": {
     "@oclif/test": "^2",
