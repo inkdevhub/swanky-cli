@@ -24,8 +24,7 @@
     "decompress": "^4.2.1",
     "download": "^8.0.0",
     "inquirer": "^8.2.4",
-    "listr": "^0.14.3",
-    "listr-update-renderer": "^0.5.0",
+    "listr2": "^4.0.5",
     "progress": "^2.0.3"
   },
   "devDependencies": {
@@ -33,7 +32,6 @@
     "@types/chai": "^4",
     "@types/download": "^8.0.1",
     "@types/inquirer": "^8.2.1",
-    "@types/listr": "^0.14.4",
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.9.4",
     "@types/progress": "^2.0.5",
