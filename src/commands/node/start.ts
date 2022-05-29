@@ -9,7 +9,6 @@ export class StartNode extends Command {
   static args = [];
 
   async run(): Promise<void> {
-    // const { args, flags } = await this.parse(StartNode);
     let config = { nodePath: "" };
     try {
       const file = readFileSync("swanky.config.json", { encoding: "utf-8" });
@@ -18,7 +17,7 @@ export class StartNode extends Command {
       throw new Error("No 'swanky.config.json' detected in current folder!");
     }
 
-    execSync(config.nodePath, {
+    execSync(`${config.nodePath} --dev`, {
       stdio: "inherit",
     });
   }
