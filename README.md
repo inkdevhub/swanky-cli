@@ -14,7 +14,7 @@ $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
 running command...
 $ swanky (--version)
-@astar-network/swanky-cli/0.0.1-beta.0 darwin-x64 node-v18.2.0
+@astar-network/swanky-cli/0.0.1-beta.1 darwin-x64 node-v18.2.0
 $ swanky --help [COMMAND]
 USAGE
   $ swanky COMMAND
@@ -40,7 +40,7 @@ DESCRIPTION
   Compile the smart contract(s) in your contracts directory
 ```
 
-_See code: [dist/commands/compile/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.0.1-beta.0/dist/commands/compile/index.ts)_
+_See code: [dist/commands/compile/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.0.1-beta.1/dist/commands/compile/index.ts)_
 
 ## `swanky init NAME`
 
@@ -61,7 +61,7 @@ DESCRIPTION
   Generate a new smart contract environment
 ```
 
-_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.0.1-beta.0/dist/commands/init/index.ts)_
+_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.0.1-beta.1/dist/commands/init/index.ts)_
 <!-- commandsstop -->
 
 ## Test title
