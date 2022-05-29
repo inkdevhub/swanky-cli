@@ -67,116 +67,139 @@ export class Generate extends Command {
           },
         },
         {
-          title: "Pick template",
-          task: async (ctx, task): Promise<void> => {
-            const template = await task.prompt([
+          title: "Cloning template",
+          task: (ctx, task) =>
+            task.newListr([
               {
-                name: "contractTemplate",
-                message: "Which template should we use?",
-                type: "Select",
-                choices: [
-                  { message: "Blank", name: "master" },
-                  { message: "Flipper", name: "flipper" },
-                  { message: "Dual contract", name: "dual-contract" },
-                ],
+                title: "Pick template",
+                task: async (ctx, task): Promise<void> => {
+                  const template = await task.prompt([
+                    {
+                      name: "contractTemplate",
+                      message: "Which template should we use?",
+                      type: "Select",
+                      choices: [
+                        { message: "Blank", name: "master" },
+                        { message: "Flipper", name: "flipper" },
+                        { message: "Dual contract", name: "dual-contract" },
+                      ],
+                    },
+                  ]);
+                  ctx.contractTemplate = template;
+                },
               },
-            ]);
-            ctx.contractTemplate = template;
-          },
-        },
-        {
-          title: "Cloning template repo",
-          task: (ctx): void => {
-            execSync(
-              `git clone -b ${
-                ctx.contractTemplate
-              } --single-branch https://github.com/AstarNetwork/swanky-template-ink.git "${path.resolve(
-                ctx.name
-              )}"`,
-              { stdio: "ignore" }
-            );
-            rmSync(`${path.resolve(ctx.name, ".git")}`, {
-              recursive: true,
-            });
-            execSync(`rm -f ${ctx.name}/**/.gitkeep`, { stdio: "ignore" });
-            execSync(`git init`, { cwd: ctx.name });
-          },
-        },
-        {
-          title: "Pick node type",
-          task: async (ctx, task): Promise<void> => {
-            const nodeType = await task.prompt([
               {
-                name: "nodeType",
-                message: "What node type you want to develop on?",
-                type: "Select",
-                choices: [{ message: "Swanky node", name: "swanky" }],
-              },
-            ]);
-            const targetDir = path.resolve(ctx.name, "bin");
-            if (!existsSync(targetDir)) {
-              mkdirSync(targetDir);
-            }
-
-            ctx.nodeType = nodeType;
-            ctx.nodeUrl = nodes[nodeType][ctx.platform];
-            ctx.nodeTargetDir = targetDir;
-            ctx.nodeFileName = `${nodeType}-node`;
-          },
-        },
-        {
-          title: "Downloading node",
-          task: async (ctx, task): Promise<void> =>
-            new Promise<void>((resolve, reject) => {
-              const writer = createWriteStream(
-                path.resolve(ctx.nodeTargetDir as string, "node.zip")
-              );
-
-              const response = download(ctx.nodeUrl as string);
-
-              response.on("response", (res) => {
-                const contentLength = Number.parseInt(
-                  res.headers["content-length"] as unknown as string,
-                  10
-                );
-                let progress = 0;
-                response.on("data", (chunk) => {
-                  progress += chunk.length;
-                  task.output = `Downloaded ${(
-                    (progress / contentLength) *
-                    100
-                  ).toFixed(0)}%`;
-                });
-                response.on("end", () => {
-                  resolve();
-                });
-                response.on("error", (error) => {
-                  reject(
-                    new Error(`Error downloading node: , ${error.message}`)
+                title: "Cloning template repo",
+                task: (ctx): void => {
+                  execSync(
+                    `git clone -b ${
+                      ctx.contractTemplate
+                    } --single-branch https://github.com/AstarNetwork/swanky-template-ink.git "${path.resolve(
+                      ctx.name
+                    )}"`,
+                    { stdio: "ignore" }
                   );
-                });
-              });
-              response.pipe(writer);
-            }),
+                },
+              },
+              {
+                title: "Clean up",
+                task: (ctx): void => {
+                  rmSync(`${path.resolve(ctx.name, ".git")}`, {
+                    recursive: true,
+                  });
+                  execSync(`rm -f ${ctx.name}/**/.gitkeep`, {
+                    stdio: "ignore",
+                  });
+                  execSync(`git init`, { cwd: ctx.name });
+                },
+              },
+            ]),
         },
         {
-          title: "Decompressing",
-          task: async (ctx): Promise<void> => {
-            try {
-              const archiveFilePath = path.resolve(
-                ctx.nodeTargetDir as string,
-                "node.zip"
-              );
+          title: "Download node",
+          task: (ctx, task) =>
+            task.newListr([
+              {
+                title: "Pick node type",
+                task: async (ctx, task): Promise<void> => {
+                  const nodeType = await task.prompt([
+                    {
+                      name: "nodeType",
+                      message: "What node type you want to develop on?",
+                      type: "Select",
+                      choices: [{ message: "Swanky node", name: "swanky" }],
+                    },
+                  ]);
+                  const targetDir = path.resolve(ctx.name, "bin");
+                  if (!existsSync(targetDir)) {
+                    mkdirSync(targetDir);
+                  }
 
-              const decompressed = await decompress(
-                archiveFilePath,
-                ctx.nodeTargetDir as string
-              );
-              ctx.nodeFileName = decompressed[0].path;
-              execSync(`rm -f ${archiveFilePath}`);
-              execSync(`chmod +x ${ctx.nodeTargetDir}/${ctx.nodeFileName}`);
-            } catch {}
-          },
+                  ctx.nodeType = nodeType;
+                  ctx.nodeUrl = nodes[nodeType][ctx.platform];
+                  ctx.nodeTargetDir = targetDir;
+                  ctx.nodeFileName = `${nodeType}-node`;
+                },
+              },
+              {
+                title: "Downloading node",
+                task: async (ctx, task): Promise<void> =>
+                  new Promise<void>((resolve, reject) => {
+                    const writer = createWriteStream(
+                      path.resolve(ctx.nodeTargetDir as string, "node.zip")
+                    );
+
+                    const response = download(ctx.nodeUrl as string);
+
+                    response.on("response", (res) => {
+                      const contentLength = Number.parseInt(
+                        res.headers["content-length"] as unknown as string,
+                        10
+                      );
+                      let progress = 0;
+                      response.on("data", (chunk) => {
+                        progress += chunk.length;
+                        task.output = `Downloaded ${(
+                          (progress / contentLength) *
+                          100
+                        ).toFixed(0)}%`;
+                      });
+                      response.on("end", () => {
+                        resolve();
+                      });
+                      response.on("error", (error) => {
+                        reject(
+                          new Error(
+                            `Error downloading node: , ${error.message}`
+                          )
+                        );
+                      });
+                    });
+                    response.pipe(writer);
+                  }),
+              },
+              {
+                title: "Decompressing node",
+                task: async (ctx): Promise<void> => {
+                  try {
+                    const archiveFilePath = path.resolve(
+                      ctx.nodeTargetDir as string,
+                      "node.zip"
+                    );
+
+                    const decompressed = await decompress(
+                      archiveFilePath,
+                      ctx.nodeTargetDir as string
+                    );
+                    ctx.nodeFileName = decompressed[0].path;
+                    execSync(`rm -f ${archiveFilePath}`);
+                    execSync(
+                      `chmod +x ${ctx.nodeTargetDir}/${ctx.nodeFileName}`
+                    );
+                  } catch {}
+                },
+              },
+            ]),
         },
       ],
       {
