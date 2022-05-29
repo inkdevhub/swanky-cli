@@ -1,7 +1,13 @@
 import { execSync } from "node:child_process";
 import { Command, Flags } from "@oclif/core";
 import * as path from "node:path";
-import { rmSync, createWriteStream, existsSync, mkdirSync } from "node:fs";
+import {
+  rmSync,
+  createWriteStream,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+} from "node:fs";
 import { Listr } from "listr2";
 import * as decompress from "decompress";
 import * as download from "download";
@@ -222,6 +228,33 @@ export class Generate extends Command {
               path.resolve(`${ctx.name}`, "swanky.config.json"),
               JSON.stringify(ctx, null, 2)
             );
+          },
+        },
+        {
+          title: "Npm install",
+          task: (ctx, task) => {
+            const pjsonPath = path.resolve(ctx.name, "package.json");
+            const packageJson = JSON.parse(
+              readFileSync(pjsonPath, {
+                encoding: "utf-8",
+              })
+            );
+            packageJson.dependencies = {
+              [this.config.pjson.name]: this.config.pjson.version,
+            };
+            writeFileSync(pjsonPath, JSON.stringify(packageJson, null, 2), {
+              encoding: "utf-8",
+            });
+            let installCommand = "";
+            try {
+              execSync("yarn --version");
+              installCommand = "yarn install";
+              task.output = "Yarn detected..";
+            } catch {
+              task.output = "No Yarn detected, using NPM..";
+            }
+
+            execSync(installCommand, { cwd: ctx.name });
           },
         },
       ],
