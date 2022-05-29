@@ -23,14 +23,13 @@
     "debug": "^4.3.4",
     "decompress": "^4.2.1",
     "download": "^8.0.0",
-    "inquirer": "^8.2.4",
+    "enquirer": "^2.3.6",
     "listr2": "^4.0.5"
   },
   "devDependencies": {
     "@oclif/test": "^2",
     "@types/chai": "^4",
     "@types/download": "^8.0.1",
-    "@types/inquirer": "^8.2.1",
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.9.4",
     "@types/progress": "^2.0.5",
