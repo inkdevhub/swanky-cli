@@ -250,7 +250,7 @@ export class Generate extends Command {
             writeFileSync(pjsonPath, JSON.stringify(packageJson, null, 2), {
               encoding: "utf-8",
             });
-            let installCommand = "";
+            let installCommand = "npm install";
             try {
               execSync("yarn --version");
               installCommand = "yarn install";
