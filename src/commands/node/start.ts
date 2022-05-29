@@ -1,4 +1,4 @@
-import { Command, CliUx } from "@oclif/core";
+import { Command } from "@oclif/core";
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 export class StartNode extends Command {
@@ -21,6 +21,5 @@ export class StartNode extends Command {
     execSync(config.nodePath, {
       stdio: "inherit",
     });
-    CliUx.ux.action.stop();
   }
 }
