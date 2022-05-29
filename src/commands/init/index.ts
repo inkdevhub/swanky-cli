@@ -7,6 +7,7 @@ import {
   existsSync,
   mkdirSync,
   readFileSync,
+  readdirSync,
 } from "node:fs";
 import { Listr } from "listr2";
 import * as decompress from "decompress";
@@ -23,6 +24,7 @@ interface Ctx {
   nodeTargetDir?: string;
   nodeFileName?: string;
   nodePath?: string;
+  contracts?: string[];
 }
 export class Generate extends Command {
   static description = "Generate a new smart contract environment";
@@ -224,6 +226,9 @@ export class Generate extends Command {
             );
             delete ctx.nodeFileName;
             delete ctx.nodeTargetDir;
+
+            ctx.contracts = readdirSync(path.resolve(ctx.name, "contracts"));
+
             writeFileSync(
               path.resolve(`${ctx.name}`, "swanky.config.json"),
               JSON.stringify(ctx, null, 2)
