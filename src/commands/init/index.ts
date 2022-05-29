@@ -6,6 +6,7 @@ import { Listr } from "listr2";
 import * as decompress from "decompress";
 import * as download from "download";
 import { nodes } from "../../nodes";
+import { writeFileSync } from "node:fs";
 
 interface Ctx {
   platform: string;
@@ -15,6 +16,7 @@ interface Ctx {
   nodeUrl?: string;
   nodeTargetDir?: string;
   nodeFileName?: string;
+  nodePath?: string;
 }
 export class Generate extends Command {
   static description = "Generate a new smart contract environment";
@@ -116,7 +118,7 @@ export class Generate extends Command {
             ]),
         },
         {
-          title: "Download node",
+          title: "Downloading node",
           task: (ctx, task) =>
             task.newListr([
               {
@@ -127,7 +129,13 @@ export class Generate extends Command {
                       name: "nodeType",
                       message: "What node type you want to develop on?",
                       type: "Select",
-                      choices: [{ message: "Swanky node", name: "swanky" }],
+                      choices: [
+                        { message: "Swanky node", name: "swanky" },
+                        {
+                          message: "Parity contracts node",
+                          name: "parity-contracts",
+                        },
+                      ],
                     },
                   ]);
                   const targetDir = path.resolve(ctx.name, "bin");
@@ -142,7 +150,7 @@ export class Generate extends Command {
                 },
               },
               {
-                title: "Downloading node",
+                title: "Downloading",
                 task: async (ctx, task): Promise<void> =>
                   new Promise<void>((resolve, reject) => {
                     const writer = createWriteStream(
@@ -179,7 +187,7 @@ export class Generate extends Command {
                   }),
               },
               {
-                title: "Decompressing node",
+                title: "Decompressing",
                 task: async (ctx): Promise<void> => {
                   try {
                     const archiveFilePath = path.resolve(
@@ -200,6 +208,21 @@ export class Generate extends Command {
                 },
               },
             ]),
+        },
+        {
+          title: "Storing config",
+          task: (ctx) => {
+            ctx.nodePath = path.resolve(
+              ctx.nodeTargetDir as string,
+              ctx.nodeFileName as string
+            );
+            delete ctx.nodeFileName;
+            delete ctx.nodeTargetDir;
+            writeFileSync(
+              path.resolve(`${ctx.name}`, "swanky.config.json"),
+              JSON.stringify(ctx, null, 2)
+            );
+          },
         },
       ],
       {

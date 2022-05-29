@@ -5,4 +5,10 @@ export const nodes = {
     linux:
       "https://github.com/AstarNetwork/swanky-node/releases/download/v0.3.0/swanky-node-ubuntu-latest-x86_64.zip",
   },
+  "parity-contracts": {
+    darwin:
+      "https://github.com/paritytech/substrate-contracts-node/releases/download/v0.16.0/substrate-contracts-node-mac-universal.tar.gz",
+    linux:
+      "https://github.com/paritytech/substrate-contracts-node/releases/download/v0.16.0/substrate-contracts-node-linux.tar.gz",
+  },
 };
