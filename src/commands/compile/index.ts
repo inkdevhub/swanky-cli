@@ -9,10 +9,10 @@ export class Compile extends Command {
     "Compile the smart contract(s) in your contracts directory";
 
   static flags = {
-    verbose: Flags.boolean({
+    silent: Flags.boolean({
       default: false,
-      char: "v",
-      description: "Display all compilation output",
+      char: "s",
+      description: "Don't display compilation output",
     }),
   };
 
@@ -34,7 +34,7 @@ export class Compile extends Command {
 
           execSync("cargo +nightly contract build", {
             cwd: path.resolve("contracts", contractList[0]),
-            stdio: flags.verbose ? "inherit" : "ignore",
+            stdio: flags.silent ? "ignore" : "inherit",
           });
         },
       },
