@@ -1,15 +1,25 @@
-import { Command } from "@oclif/core";
+import { Command, Flags } from "@oclif/core";
 import { execSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import path = require("node:path");
-export class StartNode extends Command {
+export class DeployContract extends Command {
   static description = "Deploy contract to a running node";
 
-  static flags = {};
+  static flags = {
+    gas: Flags.string({
+      required: true,
+      char: "g",
+    }),
+    arg: Flags.string({
+      required: true,
+      char: "a",
+    }),
+  };
 
   static args = [];
 
   async run(): Promise<void> {
+    const { flags } = await this.parse(DeployContract);
     let config: { contracts: string[] | Record<string, string> } = {
       contracts: [""],
     };
@@ -21,7 +31,7 @@ export class StartNode extends Command {
     }
 
     const output = execSync(
-      `cargo contract instantiate --constructor new --args false --suri //Alice`,
+      `cargo contract instantiate --constructor new --args ${flags.arg} --suri //Alice --gas ${flags.gas}`,
       {
         stdio: "pipe",
         cwd: path.resolve(
