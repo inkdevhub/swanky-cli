@@ -36,10 +36,10 @@ Compile the smart contract(s) in your contracts directory
 
 ```
 USAGE
-  $ swanky compile [-v]
+  $ swanky compile [-s]
 
 FLAGS
-  -v, --verbose  Display all compilation output
+  -s, --silent  Don't display compilation output
 
 DESCRIPTION
   Compile the smart contract(s) in your contracts directory
@@ -53,7 +53,11 @@ Deploy contract to a running node
 
 ```
 USAGE
-  $ swanky deploy
+  $ swanky deploy -g <value> -a <value>
+
+FLAGS
+  -a, --arg=<value>  (required)
+  -g, --gas=<value>  (required)
 
 DESCRIPTION
   Deploy contract to a running node
@@ -67,14 +71,10 @@ Generate a new smart contract environment
 
 ```
 USAGE
-  $ swanky init [NAME] [-l ink|ask]
+  $ swanky init [NAME]
 
 ARGUMENTS
   NAME  directory name of new project
-
-FLAGS
-  -l, --language=<option>  [default: ink]
-                           <options: ink|ask>
 
 DESCRIPTION
   Generate a new smart contract environment
