@@ -65,5 +65,8 @@ export class DeployContract extends Command {
       path.resolve("swanky.config.json"),
       JSON.stringify(config, null, 2)
     );
+    this.log(`Deploy successful!`);
+    this.log(`Code hash: ${codeHash}`);
+    this.log(`Contract address: ${contractAddress}`);
   }
 }
