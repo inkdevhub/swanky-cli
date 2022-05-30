@@ -10,7 +10,7 @@ export class DeployContract extends Command {
       required: true,
       char: "g",
     }),
-    arg: Flags.string({
+    args: Flags.string({
       required: true,
       char: "a",
     }),
@@ -31,7 +31,7 @@ export class DeployContract extends Command {
     }
 
     const output = execSync(
-      `cargo contract instantiate --constructor new --args ${flags.arg} --suri //Alice --gas ${flags.gas}`,
+      `cargo contract instantiate --constructor new --args ${flags.args} --suri //Alice --gas ${flags.gas}`,
       {
         stdio: "pipe",
         cwd: path.resolve(

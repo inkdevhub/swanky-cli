@@ -156,8 +156,8 @@ export class Generate extends Command {
                       choices: [
                         { message: "Swanky node", name: "swanky" },
                         {
-                          message: "Parity contracts node",
-                          name: "parity-contracts",
+                          message: "Substrate contracts node",
+                          name: "substrate-contracts-node",
                         },
                       ],
                     },
