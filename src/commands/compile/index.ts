@@ -1,5 +1,5 @@
 import { Command, Flags } from "@oclif/core";
-import { execSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import { Listr } from "listr2";
 import path = require("node:path");
 import { access } from "node:fs/promises";
@@ -29,14 +29,28 @@ export class Compile extends Command {
     const tasks = new Listr([
       {
         title: "Compiling contract",
-        task: () => {
-          const contractList = readdirSync(path.resolve("contracts"));
+        task: (ctx, task): Promise<void> =>
+          new Promise((resolve, reject) => {
+            const contractList = readdirSync(path.resolve("contracts"));
 
-          execSync("cargo +nightly contract build", {
-            cwd: path.resolve("contracts", contractList[0]),
-            stdio: flags.silent ? "ignore" : "inherit",
-          });
-        },
+            const build = spawn("cargo", ["+nightly", "contract", "build"], {
+              cwd: path.resolve("contracts", contractList[0]),
+              // stdio: flags.silent ? "ignore" : "inherit",
+            });
+
+            build.stdout.pipe(task.stdout());
+            if (!flags.silent) {
+              build.stderr.pipe(task.stdout());
+            }
+
+            build.on("error", (error) => {
+              reject(error);
+            });
+
+            build.on("exit", () => {
+              resolve();
+            });
+          }),
       },
     ]);
 
