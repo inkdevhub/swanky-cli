@@ -14,7 +14,7 @@ $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
 running command...
 $ swanky (--version)
-@astar-network/swanky-cli/0.0.2 darwin-x64 node-v18.2.0
+@astar-network/swanky-cli/0.0.3 darwin-x64 node-v18.2.0
 $ swanky --help [COMMAND]
 USAGE
   $ swanky COMMAND
@@ -27,6 +27,7 @@ USAGE
 <!-- commands -->
 * [`swanky compile`](#swanky-compile)
 * [`swanky deploy`](#swanky-deploy)
+* [`swanky help [COMMAND]`](#swanky-help-command)
 * [`swanky init NAME`](#swanky-init-name)
 * [`swanky node start`](#swanky-node-start)
 
@@ -45,7 +46,7 @@ DESCRIPTION
   Compile the smart contract(s) in your contracts directory
 ```
 
-_See code: [dist/commands/compile/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.0.2/dist/commands/compile/index.ts)_
+_See code: [dist/commands/compile/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.0.3/dist/commands/compile/index.ts)_
 
 ## `swanky deploy`
 
@@ -56,14 +57,34 @@ USAGE
   $ swanky deploy -g <value> -a <value>
 
 FLAGS
-  -a, --arg=<value>  (required)
-  -g, --gas=<value>  (required)
+  -a, --args=<value>  (required)
+  -g, --gas=<value>   (required)
 
 DESCRIPTION
   Deploy contract to a running node
 ```
 
-_See code: [dist/commands/deploy/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.0.2/dist/commands/deploy/index.ts)_
+_See code: [dist/commands/deploy/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.0.3/dist/commands/deploy/index.ts)_
+
+## `swanky help [COMMAND]`
+
+Display help for swanky.
+
+```
+USAGE
+  $ swanky help [COMMAND] [-n]
+
+ARGUMENTS
+  COMMAND  Command to show help for.
+
+FLAGS
+  -n, --nested-commands  Include all nested commands in the output.
+
+DESCRIPTION
+  Display help for swanky.
+```
+
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.1.12/src/commands/help.ts)_
 
 ## `swanky init NAME`
 
@@ -80,7 +101,7 @@ DESCRIPTION
   Generate a new smart contract environment
 ```
 
-_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.0.2/dist/commands/init/index.ts)_
+_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.0.3/dist/commands/init/index.ts)_
 
 ## `swanky node start`
 
