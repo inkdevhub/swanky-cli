@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import { Command, Flags } from "@oclif/core";
+import { Command } from "@oclif/core";
 import * as path from "node:path";
 import {
   rmSync,
@@ -17,6 +17,7 @@ import { writeFileSync } from "node:fs";
 
 interface Ctx {
   platform: string;
+  language: string;
   contractTemplate?: string;
   name: string;
   nodeType?: string;
@@ -29,13 +30,7 @@ interface Ctx {
 export class Generate extends Command {
   static description = "Generate a new smart contract environment";
 
-  static flags = {
-    language: Flags.string({
-      char: "l",
-      default: "ink",
-      options: ["ink", "ask"],
-    }),
-  };
+  static flags = {};
 
   static args = [
     {
@@ -46,11 +41,7 @@ export class Generate extends Command {
   ];
 
   async run(): Promise<void> {
-    const { args, flags } = await this.parse(Generate);
-
-    if (flags.language !== "ink") {
-      this.error(`Sorry, ${flags.language} is not supported yet`, { exit: 0 });
-    }
+    const { args } = await this.parse(Generate);
 
     const tasks = new Listr<Ctx>(
       [
@@ -81,6 +72,30 @@ export class Generate extends Command {
           task: (ctx, task) =>
             task.newListr([
               {
+                title: "Pick language",
+                task: async (ctx, task): Promise<void> => {
+                  const language = await task.prompt([
+                    {
+                      name: "language",
+                      message: "Which framework would you like to develop on?",
+                      type: "Select",
+                      choices: [
+                        { message: "Ink!", name: "ink" },
+                        { message: "Ask!", name: "ask" },
+                      ],
+                    },
+                  ]);
+
+                  if (language !== "ink") {
+                    this.error(`Sorry, ${language} is not supported yet`, {
+                      exit: 0,
+                    });
+                  }
+
+                  ctx.language = language;
+                },
+              },
+              {
                 title: "Pick template",
                 task: async (ctx, task): Promise<void> => {
                   const template = await task.prompt([
@@ -91,6 +106,7 @@ export class Generate extends Command {
                       choices: [
                         { message: "Blank", name: "master" },
                         { message: "Flipper", name: "flipper" },
+                        { message: "PSP22", name: "psp22" },
                         { message: "Dual contract", name: "dual-contract" },
                       ],
                     },
@@ -269,7 +285,11 @@ export class Generate extends Command {
     );
 
     try {
-      await tasks.run({ platform: this.config.platform, name: args.name });
+      await tasks.run({
+        platform: this.config.platform,
+        name: args.name,
+        language: "ink",
+      });
     } catch {}
   }
 
