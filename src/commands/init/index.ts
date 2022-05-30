@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execSync, exec } from "node:child_process";
 import { Command } from "@oclif/core";
 import * as path from "node:path";
 import {
@@ -252,31 +252,39 @@ export class Generate extends Command {
           },
         },
         {
-          title: "Npm install",
-          task: (ctx, task) => {
-            const pjsonPath = path.resolve(ctx.name, "package.json");
-            const packageJson = JSON.parse(
-              readFileSync(pjsonPath, {
+          title: "Installing",
+          task: async (ctx, task): Promise<void> =>
+            new Promise<void>((resolve, reject) => {
+              const pjsonPath = path.resolve(ctx.name, "package.json");
+              const packageJson = JSON.parse(
+                readFileSync(pjsonPath, {
+                  encoding: "utf-8",
+                })
+              );
+              packageJson.dependencies = {
+                [this.config.pjson.name]: this.config.pjson.version,
+              };
+              writeFileSync(pjsonPath, JSON.stringify(packageJson, null, 2), {
                 encoding: "utf-8",
-              })
-            );
-            packageJson.dependencies = {
-              [this.config.pjson.name]: this.config.pjson.version,
-            };
-            writeFileSync(pjsonPath, JSON.stringify(packageJson, null, 2), {
-              encoding: "utf-8",
-            });
-            let installCommand = "npm install";
-            try {
-              execSync("yarn --version");
-              installCommand = "yarn install";
-              task.output = "Yarn detected..";
-            } catch {
-              task.output = "No Yarn detected, using NPM..";
-            }
+              });
+              let installCommand = "npm install";
+              try {
+                execSync("yarn --version");
+                installCommand = "yarn install";
+                task.output = "Yarn detected..";
+              } catch {
+                task.output = "No Yarn detected, using NPM..";
+              }
 
-            execSync(installCommand, { cwd: ctx.name });
-          },
+              task.output = `Running ${installCommand}..`;
+              exec(installCommand, { cwd: ctx.name }, (error) => {
+                if (error) {
+                  reject(error);
+                }
+
+                resolve();
+              });
+            }),
         },
       ],
       {
