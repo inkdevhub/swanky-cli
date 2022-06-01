@@ -25,11 +25,30 @@ USAGE
 # Commands
 
 <!-- commands -->
+* [`swanky call`](#swanky-call)
 * [`swanky compile`](#swanky-compile)
 * [`swanky deploy`](#swanky-deploy)
 * [`swanky help [COMMAND]`](#swanky-help-command)
 * [`swanky init NAME`](#swanky-init-name)
 * [`swanky node start`](#swanky-node-start)
+
+## `swanky call`
+
+Deploy contract to a running node
+
+```
+USAGE
+  $ swanky call -m <value> [-a <value>]
+
+FLAGS
+  -a, --args=<value>
+  -m, --message=<value>  (required)
+
+DESCRIPTION
+  Deploy contract to a running node
+```
+
+_See code: [dist/commands/call/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.0.4/dist/commands/call/index.ts)_
 
 ## `swanky compile`
 
