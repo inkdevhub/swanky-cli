@@ -1,6 +1,6 @@
 import { execSync, exec } from "node:child_process";
 import { Command } from "@oclif/core";
-import * as path from "node:path";
+import path from "node:path";
 import {
   rmSync,
   createWriteStream,
@@ -10,8 +10,8 @@ import {
   readdirSync,
 } from "node:fs";
 import { Listr } from "listr2";
-import * as decompress from "decompress";
-import * as download from "download";
+import decompress from "decompress";
+import download from "download";
 import { nodes } from "../../nodes";
 import { writeFileSync } from "node:fs";
 

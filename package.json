@@ -58,9 +58,6 @@
         "description": "Init a new WASM contract project"
       }
     },
-    "hooks": {
-      "init": "./src/version-hook.ts"
-    },
     "plugins": [
       "@oclif/plugin-help"
     ]
