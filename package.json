@@ -20,6 +20,7 @@
     "@oclif/core": "^1",
     "@oclif/plugin-help": "^5",
     "@oclif/plugin-plugins": "^2.0.1",
+    "@oclif/plugin-version": "^1.0.4",
     "debug": "^4.3.4",
     "decompress": "^4.2.1",
     "download": "^8.0.0",
@@ -53,13 +54,21 @@
     "dirname": "swanky",
     "commands": "./dist/commands",
     "topicSeparator": " ",
+    "additionalHelpFlags": [
+      "-h"
+    ],
+    "additionalVersionFlags": [
+      "-v",
+      "-V"
+    ],
     "topics": {
       "init": {
         "description": "Init a new WASM contract project"
       }
     },
     "plugins": [
-      "@oclif/plugin-help"
+      "@oclif/plugin-help",
+      "@oclif/plugin-version"
     ]
   },
   "scripts": {
