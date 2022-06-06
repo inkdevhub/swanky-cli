@@ -1,5 +1,5 @@
 import { execSync, exec } from "node:child_process";
-import { Command } from "@oclif/core";
+import { Command, Flags } from "@oclif/core";
 import path from "node:path";
 import {
   rmSync,
@@ -17,7 +17,7 @@ import { writeFileSync } from "node:fs";
 
 interface Ctx {
   platform: string;
-  language: string;
+  language?: string;
   contractTemplate?: string;
   name: string;
   nodeType?: string;
@@ -27,10 +27,22 @@ interface Ctx {
   nodePath?: string;
   contracts?: string[];
 }
+
+const contractTypes = [
+  { message: "Blank", name: "master" },
+  { message: "Flipper", name: "flipper" },
+  { message: "PSP22", name: "psp22" },
+];
 export class Generate extends Command {
   static description = "Generate a new smart contract environment";
 
-  static flags = {};
+  static flags = {
+    language: Flags.string({ options: ["ink", "ask"] }),
+    template: Flags.string({
+      options: contractTypes.map((type) => type.message.toLowerCase()),
+    }),
+    node: Flags.string({ options: ["swanky", "substrate-contracts-node"] }),
+  };
 
   static args = [
     {
@@ -41,7 +53,13 @@ export class Generate extends Command {
   ];
 
   async run(): Promise<void> {
-    const { args } = await this.parse(Generate);
+    const { args, flags } = await this.parse(Generate);
+
+    if (flags.language !== "ink") {
+      this.error(`Sorry, ${flags.language} is not supported yet`, {
+        exit: 0,
+      });
+    }
 
     const tasks = new Listr<Ctx>(
       [
@@ -94,6 +112,7 @@ export class Generate extends Command {
 
                   ctx.language = language;
                 },
+                skip: Boolean(ctx.language),
               },
               {
                 title: "Pick template",
@@ -113,6 +132,7 @@ export class Generate extends Command {
                   ]);
                   ctx.contractTemplate = template;
                 },
+                skip: Boolean(ctx.contractTemplate),
               },
               {
                 title: "Cloning template repo",
@@ -162,21 +182,24 @@ export class Generate extends Command {
                       ],
                     },
                   ]);
-                  const targetDir = path.resolve(ctx.name, "bin");
-                  if (!existsSync(targetDir)) {
-                    mkdirSync(targetDir);
-                  }
 
                   ctx.nodeType = nodeType;
-                  ctx.nodeUrl = nodes[nodeType][ctx.platform];
-                  ctx.nodeTargetDir = targetDir;
-                  ctx.nodeFileName = `${nodeType}-node`;
                 },
+                skip: Boolean(ctx.nodeType),
               },
               {
                 title: "Downloading",
                 task: async (ctx, task): Promise<void> =>
                   new Promise<void>((resolve, reject) => {
+                    const targetDir = path.resolve(ctx.name, "bin");
+                    if (!existsSync(targetDir)) {
+                      mkdirSync(targetDir);
+                    }
+
+                    ctx.nodeUrl = nodes[ctx.nodeType as string][ctx.platform];
+                    ctx.nodeTargetDir = targetDir;
+                    ctx.nodeFileName = `${ctx.nodeType}-node`;
+
                     const writer = createWriteStream(
                       path.resolve(ctx.nodeTargetDir as string, "node.zip")
                     );
@@ -296,7 +319,9 @@ export class Generate extends Command {
       await tasks.run({
         platform: this.config.platform,
         name: args.name,
-        language: "ink",
+        language: flags.language,
+        contractTemplate: flags.template,
+        nodeType: flags.node,
       });
     } catch {}
   }
