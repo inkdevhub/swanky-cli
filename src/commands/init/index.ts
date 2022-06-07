@@ -1,6 +1,6 @@
 import { execSync, exec } from "node:child_process";
 import { Command, Flags } from "@oclif/core";
-import path from "node:path";
+import path = require("node:path");
 import {
   rmSync,
   createWriteStream,
@@ -10,8 +10,8 @@ import {
   readdirSync,
 } from "node:fs";
 import { Listr } from "listr2";
-import decompress from "decompress";
-import download from "download";
+import decompress = require("decompress");
+import download = require("download");
 import { nodes } from "../../nodes";
 import { writeFileSync } from "node:fs";
 
@@ -55,7 +55,7 @@ export class Generate extends Command {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(Generate);
 
-    if (flags.language !== "ink") {
+    if (flags.language && flags.language !== "ink") {
       this.error(`Sorry, ${flags.language} is not supported yet`, {
         exit: 0,
       });
@@ -315,18 +315,12 @@ export class Generate extends Command {
       }
     );
 
-    try {
-      await tasks.run({
-        platform: this.config.platform,
-        name: args.name,
-        language: flags.language,
-        contractTemplate: flags.template,
-        nodeType: flags.node,
-      });
-    } catch {}
-  }
-
-  async catch(_error: Record<string, any>): Promise<any> {
-    console.error(_error);
+    tasks.run({
+      platform: this.config.platform,
+      name: args.name,
+      language: flags.language,
+      contractTemplate: flags.template,
+      nodeType: flags.node,
+    });
   }
 }

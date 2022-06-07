@@ -25,6 +25,8 @@
     "decompress": "^4.2.1",
     "download": "^8.0.0",
     "enquirer": "^2.3.6",
+    "execa": "5.1.1",
+    "fs-extra": "^10.1.0",
     "listr2": "^4.0.5"
   },
   "devDependencies": {
@@ -72,7 +74,7 @@
     ]
   },
   "scripts": {
-    "build": "shx rm -rf dist && tsc -b",
+    "build": "shx rm -rf dist && rm tsconfig.tsbuildinfo && tsc -b",
     "lint": "eslint . --ext .ts --config .eslintrc",
     "postpack": "shx rm -f oclif.manifest.json",
     "posttest": "yarn lint",
