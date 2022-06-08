@@ -7,6 +7,7 @@ import {
 import fs = require("fs-extra");
 import path = require("node:path");
 import toml = require("toml");
+import semver = require("semver");
 import { SwankyConfig } from "../init";
 
 interface Ctx {
@@ -21,6 +22,10 @@ interface Ctx {
     contracts: { [key: string]: { [key: string]: string } };
   };
   swankyConfig?: SwankyConfig;
+  mismatchedVersions?: {
+    [key: string]: string;
+  };
+  looseDefinitionDetected: boolean;
 }
 
 export default class Check extends Command {
@@ -95,29 +100,57 @@ export default class Check extends Command {
               .filter((dependency) => dependency[0].includes("ink_"))
               .map(([depName, depInfo]) => {
                 const dependency = <Dependency>depInfo;
-                return [depName, dependency.tag];
+                return [depName, dependency.version || dependency.tag];
               });
             ctx.versions.contracts[contract] =
               Object.fromEntries(inkDependencies);
           }
         },
       },
-      // {
-      //   title: "Check cargo-contract",
-      //   task: async (ctx) => {
-      //     ctx.versions.tools.cargoContract = await commandStdoutOrNull(
-      //       "cargo contract -V"
-      //     );
-      //   },
-      // },
+      {
+        title: "Verify ink version",
+        task: async (ctx) => {
+          const supportedInk = ctx.swankyConfig?.node.supportedInk;
+
+          const mismatched = {};
+          Object.entries(ctx.versions.contracts).forEach(
+            ([contract, inkPackages]) => {
+              Object.entries(inkPackages).forEach(([inkPackage, version]) => {
+                if (semver.gt(version, supportedInk as string)) {
+                  mismatched[
+                    `${contract}-${inkPackage}`
+                  ] = `Version of ${inkPackage} (${version}) in ${contract} is higher than supported ink version (${supportedInk})`;
+                }
+
+                if (!(version.charAt(0) === "=" || version.charAt(0) === "v")) {
+                  ctx.looseDefinitionDetected = true;
+                }
+              });
+            }
+          );
+
+          ctx.mismatchedVersions = mismatched;
+        },
+      },
     ]);
     const context = await tasks.run({
       versions: { tools: {}, contracts: {} },
+      looseDefinitionDetected: false,
     });
-    console.log(context);
+    console.log(context.versions);
+    Object.values(context.mismatchedVersions as any).forEach((mismatch) =>
+      console.error(`[ERROR] ${mismatch}`)
+    );
+    if (context.looseDefinitionDetected) {
+      console.log(`\n[WARNING]Some of the ink dependencies do not have a fixed version.
+      This can lead to accidentally installing version higher than supported by the node.
+      Please use "=" to install a fixed version (Example: "=3.0.1")
+      `);
+    }
   }
 }
 
 interface Dependency {
-  tag: string;
+  version?: string;
+  tag?: string;
 }

@@ -2,7 +2,7 @@ export const nodes = {
   swanky: {
     version: "0.4.0",
     polkadotPalletVersions: "polkadot-v0.9.19",
-    recommendedDeps: { ink: { max: "v3.0.1" } },
+    supportedInk: "v3.0.1",
     darwin:
       "https://github.com/AstarNetwork/swanky-node/releases/download/v0.3.0/swanky-node-macOS-latest-x86_64.zip",
     linux:

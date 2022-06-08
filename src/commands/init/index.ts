@@ -21,12 +21,15 @@ export interface SwankyConfig {
   language?: string;
   contractTemplate?: string;
   name: string;
-  nodeType?: string;
-  nodeUrl?: string;
   nodeTargetDir?: string;
   nodeFileName?: string;
-  nodePath?: string;
   contracts?: string[];
+  node: {
+    type?: string;
+    localPath?: string;
+    url?: string;
+    supportedInk?: string;
+  };
 }
 
 const contractTypes = [
@@ -184,9 +187,9 @@ export class Generate extends Command {
                     },
                   ]);
 
-                  ctx.nodeType = nodeType;
+                  ctx.node.type = nodeType;
                 },
-                skip: Boolean(ctx.nodeType),
+                skip: Boolean(ctx.node.type),
               },
               {
                 title: "Downloading",
@@ -197,15 +200,17 @@ export class Generate extends Command {
                       mkdirSync(targetDir);
                     }
 
-                    ctx.nodeUrl = nodes[ctx.nodeType as string][ctx.platform];
+                    const selectedNode = nodes[ctx.node.type as string];
+                    ctx.node.url = selectedNode[ctx.platform];
+                    ctx.node.supportedInk = selectedNode.supportedInk;
                     ctx.nodeTargetDir = targetDir;
-                    ctx.nodeFileName = `${ctx.nodeType}-node`;
+                    ctx.nodeFileName = `${ctx.node.type}-node`;
 
                     const writer = createWriteStream(
                       path.resolve(ctx.nodeTargetDir as string, "node.zip")
                     );
 
-                    const response = download(ctx.nodeUrl as string);
+                    const response = download(ctx.node.url as string);
 
                     response.on("response", (res) => {
                       const contentLength = Number.parseInt(
@@ -260,7 +265,7 @@ export class Generate extends Command {
         {
           title: "Storing config",
           task: (ctx) => {
-            ctx.nodePath = path.resolve(
+            ctx.node.localPath = path.resolve(
               ctx.nodeTargetDir as string,
               ctx.nodeFileName as string
             );
@@ -321,7 +326,9 @@ export class Generate extends Command {
       name: args.name,
       language: flags.language,
       contractTemplate: flags.template,
-      nodeType: flags.node,
+      node: {
+        type: flags.node,
+      },
     });
   }
 }
