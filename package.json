@@ -27,6 +27,7 @@
     "download": "^8.0.0",
     "enquirer": "^2.3.6",
     "fs-extra": "^10.1.0",
+    "listr2": "^4.0.5",
     "rimraf": "^3.0.2",
     "shelljs": "^0.8.5"
   },
