@@ -14,8 +14,9 @@ import decompress = require("decompress");
 import download = require("download");
 import { nodes } from "../../nodes";
 import { writeFileSync } from "node:fs";
+import execa = require("execa");
 
-interface Ctx {
+export interface SwankyConfig {
   platform: string;
   language?: string;
   contractTemplate?: string;
@@ -61,7 +62,7 @@ export class Generate extends Command {
       });
     }
 
-    const tasks = new Listr<Ctx>(
+    const tasks = new Listr<SwankyConfig>(
       [
         {
           title: "Checking dependencies",
@@ -74,7 +75,7 @@ export class Generate extends Command {
               title: `Checking ${dependency}`,
               task: () => {
                 try {
-                  execSync(command, { stdio: "ignore" });
+                  execa.command(command, { stdio: "ignore" });
                 } catch {
                   throw new Error(
                     `"${dependency}" is not installed. Please follow the guide: https://docs.substrate.io/tutorials/v3/ink-workshop/pt1/#update-your-rust-environment`
