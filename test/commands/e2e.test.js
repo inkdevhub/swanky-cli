@@ -11,23 +11,26 @@ const dirName = "test-project";
 
 describe("e2e test", () => {
   const dirPath = path.join(process.cwd(), dirName);
+  before(() => {
+    // Make sure cargo command exists, otherwise, test exit here.
+    if (!commandExists("cargo")) {
+      throw new Error("cargo command not exist. quit test.");
+    }
+
+    if (!commandExists("grep")) {
+      throw new Error("grep command not exist. quit test.");
+    }
+
+    // Make sure cargo contract subcommand exist, otherwise quit test.
+    // Quit if Exit code 1.
+    sh.exec("cargo --list | grep contract");
+  })
   after(() => {
-    console.log("here");
     rimraf(dirPath, () => {});
   })
 
   test
     .stdout()
-    .do(() => {
-      // Make sure cargo command exists, otherwise, test exit here.
-      if (!commandExists("cargo")) {
-        throw new Error("cargo command not exist. quit test.");
-      }
-
-      // Make sure cargo contract subcommand exist, otherwise quit test.
-      // Quit if Exit code 1.
-      sh.exec("cargo --list | grep contract");
-    })
     .command([
       "init",
       dirName,
@@ -62,5 +65,15 @@ describe("e2e test", () => {
         )
       );
       expect(contractTemplateExists).to.be.true;
+    });
+
+  // following command need to be executed in the project root
+  test
+    .stdout({ print: true })
+    .stub()
+    // .command(["node", "start"])
+    .it("node start", async (ctx) => {
+      console.log(ctx.stdout);
+      console.log("here!");
     });
 });
