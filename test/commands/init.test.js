@@ -1,17 +1,26 @@
 const { expect, test } = require("@oclif/test");
+const fs = require("fs-extra");
+const path = require("node:path");
 
 describe("init", () => {
   test
     .stdout()
-    .command(["init"])
-    .it("runs hello", (ctx) => {
-      expect(ctx.stdout).to.contain("hello world");
-    });
-
-  test
-    .stdout()
-    .command(["init", "--name", "jeff"])
-    .it("runs hello --name jeff", (ctx) => {
-      expect(ctx.stdout).to.contain("hello jeff");
+    .command([
+      "init",
+      "dirName",
+      "--language",
+      "ink",
+      "--template",
+      "psp22",
+      "--node",
+      "swanky",
+    ])
+    .stdout({ print: true })
+    .it("runs init", async (ctx) => {
+      console.log("AAAA", process.cwd());
+      const isNodeThere = await fs.pathExists(
+        path.resolve(process.cwd(), "dirName", "bin", "swanky-node")
+      );
+      expect(isNodeThere).to.be.true;
     });
 });
