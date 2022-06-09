@@ -3,7 +3,7 @@ import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path = require("node:path");
 export class CallContract extends Command {
-  static description = "Deploy contract to a running node";
+  static description = "Call a method on a smart contract";
 
   static flags = {
     args: Flags.string({

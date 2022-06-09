@@ -1,14 +1,16 @@
 # Swanky CLI
 
 <!-- toc -->
-* [Swanky CLI](#swanky-cli)
-* [Usage](#usage)
-* [Commands](#commands)
+
+- [Swanky CLI](#swanky-cli)
+- [Usage](#usage)
+- [Commands](#commands)
 <!-- tocstop -->
 
 # Usage
 
 <!-- usage -->
+
 ```sh-session
 $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
@@ -20,19 +22,21 @@ USAGE
   $ swanky COMMAND
 ...
 ```
+
 <!-- usagestop -->
 
 # Commands
 
 <!-- commands -->
-* [`swanky call`](#swanky-call)
-* [`swanky check`](#swanky-check)
-* [`swanky compile`](#swanky-compile)
-* [`swanky deploy`](#swanky-deploy)
-* [`swanky help [COMMAND]`](#swanky-help-command)
-* [`swanky init NAME`](#swanky-init-name)
-* [`swanky node start`](#swanky-node-start)
-* [`swanky version`](#swanky-version)
+
+- [`swanky call`](#swanky-call)
+- [`swanky check`](#swanky-check)
+- [`swanky compile`](#swanky-compile)
+- [`swanky deploy`](#swanky-deploy)
+- [`swanky help [COMMAND]`](#swanky-help-command)
+- [`swanky init NAME`](#swanky-init-name)
+- [`swanky node start`](#swanky-node-start)
+- [`swanky version`](#swanky-version)
 
 ## `swanky call`
 
@@ -40,10 +44,11 @@ Deploy contract to a running node
 
 ```
 USAGE
-  $ swanky call -m <value> [-a <value>]
+  $ swanky call -m <value> [-a <value>] [-d]
 
 FLAGS
   -a, --args=<value>
+  -d, --dry
   -m, --message=<value>  (required)
 
 DESCRIPTION
@@ -164,6 +169,5 @@ USAGE
 ```
 
 _See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.0.4/src/commands/version.ts)_
-<!-- commandsstop -->
 
-## Test title
+<!-- commandsstop -->
