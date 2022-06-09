@@ -87,9 +87,7 @@ describe("e2e test", () => {
     ])
     .timeout(60_000)
     .it("init", async (ctx) => {
-      expect(ctx.stdout).to.contain(
-        "Swanky project successfully initialized!"
-      );
+      expect(ctx.stdout).to.contain("Swanky project successfully initialized!");
 
       const dirExists = await fs.pathExists(
         path.resolve(process.cwd(), dirName)
@@ -136,14 +134,11 @@ describe("e2e test", () => {
     test
       .stdout()
       .stub(childProcess, "execSync", () => {
-        let str = contractInstantiateStubStr;
-        var buffer = Buffer.from(str);
+        var buffer = Buffer.from(contractInstantiateStubStr);
         return buffer;
       })
       .command(["deploy", "--gas", "1000000000", "--args", "true"])
       .it("deploy", async (ctx) => {
-        console.log(ctx.stdout);
-
         expect(ctx.stdout).to.contain("Deploy successful!");
         expect(ctx.stdout).to.contain(
           "Code hash: 0x5b768209ac0f0e18748436d1e7dc2693aa9dc5ceff988d504b7a8ff25470234a"
