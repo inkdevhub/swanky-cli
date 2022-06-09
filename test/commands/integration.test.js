@@ -53,7 +53,7 @@ const contractInstantiateStubStr = `
 ======
 `
 
-describe("e2e test", () => {
+describe("integration test", () => {
   const dirPath = path.join(process.cwd(), dirName);
   before(() => {
     // Make sure cargo command exists, otherwise, test exit here.
