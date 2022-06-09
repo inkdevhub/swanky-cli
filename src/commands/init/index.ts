@@ -324,6 +324,8 @@ export class Generate extends Command {
         nodeType: flags.node,
       });
     } catch {}
+
+    this.log("Swanky project successfully initialized!");
   }
 
   async catch(_error: Record<string, any>): Promise<any> {

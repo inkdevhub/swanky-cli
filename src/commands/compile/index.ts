@@ -55,5 +55,6 @@ export class Compile extends Command {
     ]);
 
     tasks.run();
+    this.log("Compile successful!");
   }
 }
