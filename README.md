@@ -1,42 +1,38 @@
 # Swanky CLI
 
 <!-- toc -->
-
-- [Swanky CLI](#swanky-cli)
-- [Usage](#usage)
-- [Commands](#commands)
+* [Swanky CLI](#swanky-cli)
+* [Usage](#usage)
+* [Commands](#commands)
 <!-- tocstop -->
 
 # Usage
 
 <!-- usage -->
-
 ```sh-session
 $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
 running command...
 $ swanky (--version|-V|-v)
-@astar-network/swanky-cli/0.1.2 darwin-x64 node-v18.2.0
+@astar-network/swanky-cli/0.1.3 darwin-x64 node-v18.2.0
 $ swanky --help [COMMAND]
 USAGE
   $ swanky COMMAND
 ...
 ```
-
 <!-- usagestop -->
 
 # Commands
 
 <!-- commands -->
-
-- [`swanky call`](#swanky-call)
-- [`swanky check`](#swanky-check)
-- [`swanky compile`](#swanky-compile)
-- [`swanky deploy`](#swanky-deploy)
-- [`swanky help [COMMAND]`](#swanky-help-command)
-- [`swanky init NAME`](#swanky-init-name)
-- [`swanky node start`](#swanky-node-start)
-- [`swanky version`](#swanky-version)
+* [`swanky call`](#swanky-call)
+* [`swanky check`](#swanky-check)
+* [`swanky compile`](#swanky-compile)
+* [`swanky deploy`](#swanky-deploy)
+* [`swanky help [COMMAND]`](#swanky-help-command)
+* [`swanky init NAME`](#swanky-init-name)
+* [`swanky node start`](#swanky-node-start)
+* [`swanky version`](#swanky-version)
 
 ## `swanky call`
 
@@ -55,7 +51,7 @@ DESCRIPTION
   Deploy contract to a running node
 ```
 
-_See code: [dist/commands/call/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.2/dist/commands/call/index.ts)_
+_See code: [dist/commands/call/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.3/dist/commands/call/index.ts)_
 
 ## `swanky check`
 
@@ -69,7 +65,7 @@ DESCRIPTION
   Check installed package versions and compatibility
 ```
 
-_See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.2/dist/commands/check/index.ts)_
+_See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.3/dist/commands/check/index.ts)_
 
 ## `swanky compile`
 
@@ -86,7 +82,7 @@ DESCRIPTION
   Compile the smart contract(s) in your contracts directory
 ```
 
-_See code: [dist/commands/compile/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.2/dist/commands/compile/index.ts)_
+_See code: [dist/commands/compile/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.3/dist/commands/compile/index.ts)_
 
 ## `swanky deploy`
 
@@ -104,7 +100,7 @@ DESCRIPTION
   Deploy contract to a running node
 ```
 
-_See code: [dist/commands/deploy/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.2/dist/commands/deploy/index.ts)_
+_See code: [dist/commands/deploy/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.3/dist/commands/deploy/index.ts)_
 
 ## `swanky help [COMMAND]`
 
@@ -147,7 +143,7 @@ DESCRIPTION
   Generate a new smart contract environment
 ```
 
-_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.2/dist/commands/init/index.ts)_
+_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.3/dist/commands/init/index.ts)_
 
 ## `swanky node start`
 
@@ -169,5 +165,4 @@ USAGE
 ```
 
 _See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.0.4/src/commands/version.ts)_
-
 <!-- commandsstop -->
