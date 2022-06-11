@@ -36,7 +36,7 @@ USAGE
 
 ## `swanky call`
 
-Deploy contract to a running node
+Call a method on a smart contract
 
 ```
 USAGE
@@ -48,7 +48,7 @@ FLAGS
   -m, --message=<value>  (required)
 
 DESCRIPTION
-  Deploy contract to a running node
+  Call a method on a smart contract
 ```
 
 _See code: [dist/commands/call/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.3/dist/commands/call/index.ts)_
