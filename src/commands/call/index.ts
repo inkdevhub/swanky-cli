@@ -3,7 +3,7 @@ import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path = require("node:path");
 export class CallContract extends Command {
-  static description = "Deploy contract to a running node";
+  static description = "Call a method on a smart contract";
 
   static flags = {
     args: Flags.string({
@@ -13,6 +13,9 @@ export class CallContract extends Command {
     message: Flags.string({
       required: true,
       char: "m",
+    }),
+    dry: Flags.boolean({
+      char: "d",
     }),
   };
 
@@ -31,7 +34,11 @@ export class CallContract extends Command {
     }
 
     execSync(
-      `cargo contract call --contract ${config.contracts[0].address} --message ${flags.message} --suri //Alice --gas 100000000000 --dry-run`,
+      `cargo contract call --contract ${
+        config.contracts[0].address
+      } --message ${flags.message} --suri //Alice --gas 100000000000 ${
+        flags.dry ? "--dry-run" : ""
+      }`,
       {
         stdio: "inherit",
         cwd: path.resolve(

@@ -9,8 +9,8 @@
     "target": "es2020",
     "resolveJsonModule": true,
     "suppressImplicitAnyIndexErrors": true,
-    "esModuleInterop": true,
-    "composite": true
+    "composite": true,
+    "allowSyntheticDefaultImports": true
   },
   "include": ["src/**/*"]
 }
