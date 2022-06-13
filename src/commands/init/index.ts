@@ -1,6 +1,6 @@
 import { execSync, exec } from "node:child_process";
 import { Command, Flags } from "@oclif/core";
-import path from "node:path";
+import path = require("node:path");
 import {
   rmSync,
   createWriteStream,
@@ -10,22 +10,26 @@ import {
   readdirSync,
 } from "node:fs";
 import { Listr } from "listr2";
-import decompress from "decompress";
-import download from "download";
+import decompress = require("decompress");
+import download = require("download");
 import { nodes } from "../../nodes";
 import { writeFileSync } from "node:fs";
+import execa = require("execa");
 
-interface Ctx {
+export interface SwankyConfig {
   platform: string;
   language?: string;
   contractTemplate?: string;
   name: string;
-  nodeType?: string;
-  nodeUrl?: string;
   nodeTargetDir?: string;
   nodeFileName?: string;
-  nodePath?: string;
   contracts?: string[];
+  node: {
+    type?: string;
+    localPath?: string;
+    url?: string;
+    supportedInk?: string;
+  };
 }
 
 const contractTypes = [
@@ -55,13 +59,13 @@ export class Generate extends Command {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(Generate);
 
-    if (flags.language !== "ink") {
+    if (flags.language && flags.language !== "ink") {
       this.error(`Sorry, ${flags.language} is not supported yet`, {
         exit: 0,
       });
     }
 
-    const tasks = new Listr<Ctx>(
+    const tasks = new Listr<SwankyConfig>(
       [
         {
           title: "Checking dependencies",
@@ -74,7 +78,7 @@ export class Generate extends Command {
               title: `Checking ${dependency}`,
               task: () => {
                 try {
-                  execSync(command, { stdio: "ignore" });
+                  execa.command(command, { stdio: "ignore" });
                 } catch {
                   throw new Error(
                     `"${dependency}" is not installed. Please follow the guide: https://docs.substrate.io/tutorials/v3/ink-workshop/pt1/#update-your-rust-environment`
@@ -183,9 +187,9 @@ export class Generate extends Command {
                     },
                   ]);
 
-                  ctx.nodeType = nodeType;
+                  ctx.node.type = nodeType;
                 },
-                skip: Boolean(ctx.nodeType),
+                skip: Boolean(ctx.node.type),
               },
               {
                 title: "Downloading",
@@ -196,15 +200,17 @@ export class Generate extends Command {
                       mkdirSync(targetDir);
                     }
 
-                    ctx.nodeUrl = nodes[ctx.nodeType as string][ctx.platform];
+                    const selectedNode = nodes[ctx.node.type as string];
+                    ctx.node.url = selectedNode[ctx.platform];
+                    ctx.node.supportedInk = selectedNode.supportedInk;
                     ctx.nodeTargetDir = targetDir;
-                    ctx.nodeFileName = `${ctx.nodeType}-node`;
+                    ctx.nodeFileName = `${ctx.node.type}-node`;
 
                     const writer = createWriteStream(
                       path.resolve(ctx.nodeTargetDir as string, "node.zip")
                     );
 
-                    const response = download(ctx.nodeUrl as string);
+                    const response = download(ctx.node.url as string);
 
                     response.on("response", (res) => {
                       const contentLength = Number.parseInt(
@@ -259,7 +265,7 @@ export class Generate extends Command {
         {
           title: "Storing config",
           task: (ctx) => {
-            ctx.nodePath = path.resolve(
+            ctx.node.localPath = path.resolve(
               ctx.nodeTargetDir as string,
               ctx.nodeFileName as string
             );
@@ -315,20 +321,14 @@ export class Generate extends Command {
       }
     );
 
-    try {
-      await tasks.run({
-        platform: this.config.platform,
-        name: args.name,
-        language: flags.language,
-        contractTemplate: flags.template,
-        nodeType: flags.node,
-      });
-    } catch {}
-
-    this.log("Swanky project successfully initialized!");
-  }
-
-  async catch(_error: Record<string, any>): Promise<any> {
-    console.error(_error);
+    tasks.run({
+      platform: this.config.platform,
+      name: args.name,
+      language: flags.language,
+      contractTemplate: flags.template,
+      node: {
+        type: flags.node,
+      },
+    });
   }
 }

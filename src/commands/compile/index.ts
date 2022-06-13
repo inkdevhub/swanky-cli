@@ -2,8 +2,8 @@ import { Command, Flags } from "@oclif/core";
 import { spawn } from "node:child_process";
 import { Listr } from "listr2";
 import path = require("node:path");
-import { access } from "node:fs/promises";
-import { constants, readdirSync } from "node:fs";
+import { readdirSync } from "node:fs";
+import { ensureSwankyProject } from "../../lib/command-utils";
 export class Compile extends Command {
   static description =
     "Compile the smart contract(s) in your contracts directory";
@@ -20,11 +20,8 @@ export class Compile extends Command {
 
   async run(): Promise<void> {
     const { flags } = await this.parse(Compile);
-    try {
-      await access("swanky.config.json", constants.R_OK);
-    } catch {
-      throw new Error("No 'swanky.config.json' detected in current folder!");
-    }
+
+    await ensureSwankyProject();
 
     const tasks = new Listr([
       {
