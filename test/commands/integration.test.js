@@ -2,13 +2,12 @@ const { expect, test } = require("@oclif/test");
 const fs = require("fs-extra");
 const path = require("node:path");
 const childProcess = require("node:child_process");
-const sh = require("shelljs");
 const rimraf = require("rimraf");
+const execa = require("execa");
 const commandExists = require("command-exists").sync;
 
-sh.set("-ev");
-
 const dirName = "test-project";
+
 const contractInstantiateStubStr = `
 ======
         Event Balances ➜ Withdraw
@@ -51,27 +50,33 @@ const contractInstantiateStubStr = `
      Contract 5Da73Cjaz1LJJq7h7Z15LerwpJTcv14b44XJZkzC6ZokxK2s
 
 ======
-`
+`;
 
 describe("integration test", () => {
   const dirPath = path.join(process.cwd(), dirName);
-  before(() => {
+  // eslint-disable-next-line no-undef
+  before(async () => {
     // Make sure cargo command exists, otherwise, test exit here.
     if (!commandExists("cargo")) {
-      throw new Error("cargo command not exist. quit test.");
+      throw new Error("cargo command not exist");
     }
 
     if (!commandExists("grep")) {
-      throw new Error("grep command not exist. quit test.");
+      throw new Error("grep command not exist");
     }
 
     // Make sure cargo contract subcommand exist, otherwise quit test.
-    // Quit if Exit code 1.
-    sh.exec("cargo --list | grep contract");
-  })
+    try {
+      execa.commandSync("cargo --list | grep contract", { shell: true });
+    } catch {
+      throw new Error("cargo contract not exist");
+    }
+  });
+  // eslint-disable-next-line no-undef
   after(() => {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     rimraf(dirPath, () => {});
-  })
+  });
 
   test
     .stdout()
@@ -87,7 +92,7 @@ describe("integration test", () => {
     ])
     .timeout(60_000)
     .it("init", async (ctx) => {
-      expect(ctx.stdout).to.contain("Swanky project successfully initialized!");
+      expect(ctx.stdout).to.contain("Successfully Initialized");
 
       const dirExists = await fs.pathExists(
         path.resolve(process.cwd(), dirName)
@@ -112,12 +117,14 @@ describe("integration test", () => {
     });
 
   describe("inside project directory", () => {
+    // eslint-disable-next-line no-undef
     before(() => {
       process.chdir(dirPath);
     });
 
     test
       .stdout()
+      // .stub(ChildProcess, "spawn", fakeSpawn)
       .command(["compile"])
       .it("compile", async (ctx) => {
         expect(ctx.stdout).to.contain("Compile successful!");
