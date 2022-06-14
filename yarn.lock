@@ -3759,6 +3759,13 @@ mocha@^9:
     yargs-parser "20.2.4"
     yargs-unparser "2.0.0"
 
+mock-spawn@^0.2.6:
+  version "0.2.6"
+  resolved "https://registry.yarnpkg.com/mock-spawn/-/mock-spawn-0.2.6.tgz#b39c15a1c067504310144151f2c1de344d03937f"
+  integrity sha512-cMSfGmQlTiCF54a7taY1cUVXuuEKqDR8vLrfN7pI4LCskxwRedupMQB7o5d5Hg5L6rctvtyZJwUxMl3czTd4tg==
+  dependencies:
+    through "2.3.x"
+
 mock-stdin@^1.0.0:
   version "1.0.0"
   resolved "https://registry.npmjs.org/mock-stdin/-/mock-stdin-1.0.0.tgz"
@@ -5174,7 +5181,7 @@ textextensions@^5.12.0, textextensions@^5.13.0:
   resolved "https://registry.npmjs.org/textextensions/-/textextensions-5.15.0.tgz"
   integrity sha512-MeqZRHLuaGamUXGuVn2ivtU3LA3mLCCIO5kUGoohTCoGmCBg/+8yPhWVX9WSl9telvVd8erftjFk9Fwb2dD6rw==
 
-through@^2.3.6, through@^2.3.8:
+through@2.3.x, through@^2.3.6, through@^2.3.8:
   version "2.3.8"
   resolved "https://registry.npmjs.org/through/-/through-2.3.8.tgz"
   integrity sha1-DdTJ/6q8NXlgsbckEV1+Doai4fU=

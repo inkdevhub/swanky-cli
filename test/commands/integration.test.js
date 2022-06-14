@@ -5,8 +5,12 @@ const childProcess = require("node:child_process");
 const rimraf = require("rimraf");
 const execa = require("execa");
 const commandExists = require("command-exists").sync;
+const mockSpawn = require("mock-spawn");
 
 const dirName = "test-project";
+
+var fakeSpawn = mockSpawn();
+fakeSpawn.setDefault(fakeSpawn.simple(0, "fake child process"));
 
 const contractInstantiateStubStr = `
 ======
@@ -124,7 +128,7 @@ describe("integration test", () => {
 
     test
       .stdout()
-      // .stub(ChildProcess, "spawn", fakeSpawn)
+      .stub(childProcess, "spawn", fakeSpawn)
       .command(["compile"])
       .it("compile", async (ctx) => {
         expect(ctx.stdout).to.contain("Compile successful!");
