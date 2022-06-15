@@ -2,10 +2,20 @@ import { Command, Flags } from "@oclif/core";
 import { execSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import path = require("node:path");
+import { ApiPromise, WsProvider } from "@polkadot/api";
+import { CodePromise } from "@polkadot/api-contract";
+import { Keyring } from "@polkadot/keyring";
+import { readJSONSync } from "fs-extra";
+import { cryptoWaitReady } from "@polkadot/util-crypto";
 export class DeployContract extends Command {
   static description = "Deploy contract to a running node";
 
   static flags = {
+    account: Flags.string({
+      required: true,
+      options: ["Alice", "Bob", "Charlie", "Dave", "Eve", "Ferdie"],
+    }),
+    contract: Flags.string({ char: "c", required: true }),
     gas: Flags.string({
       required: true,
       char: "g",
@@ -13,6 +23,7 @@ export class DeployContract extends Command {
     args: Flags.string({
       required: true,
       char: "a",
+      multiple: true,
     }),
   };
 
@@ -30,43 +41,46 @@ export class DeployContract extends Command {
       throw new Error("No 'swanky.config.json' detected in current folder!");
     }
 
-    const output = execSync(
-      `cargo contract instantiate --constructor new --args ${flags.args} --suri //Alice --gas ${flags.gas}`,
-      {
-        stdio: "pipe",
-        cwd: path.resolve(
-          "contracts",
-          typeof config.contracts[0] === "string"
-            ? config.contracts[0]
-            : config.contracts[0].name
-        ),
-      }
-    ).toString("utf-8");
+    await cryptoWaitReady();
 
-    const codeHash = output
-      .split("\n")
-      .find((line) => line.trim().startsWith("Code hash "))
-      ?.split("Code hash ")
-      .pop();
+    const keyring = new Keyring({ type: "sr25519" });
+    const pair = keyring.createFromUri(`//${flags.account}`);
 
-    const contractAddress = output
-      .split("\n")
-      .find((line) => line.trim().startsWith("Contract "))
-      ?.split("Contract ")
-      .pop();
+    const wsProvider = new WsProvider();
+    const api = await ApiPromise.create({ provider: wsProvider });
 
-    config.contracts[0] = {
-      name: config.contracts[0].name || config.contracts[0],
-      hash: codeHash,
-      address: contractAddress,
-    };
-
-    writeFileSync(
-      path.resolve("swanky.config.json"),
-      JSON.stringify(config, null, 2)
+    const buildPath = path.resolve(
+      "contracts",
+      flags.contract,
+      "target",
+      "ink"
     );
-    this.log(`Deploy successful!`);
-    this.log(`Code hash: ${codeHash}`);
-    this.log(`Contract address: ${contractAddress}`);
+    const abi = readJSONSync(path.resolve(buildPath, "metadata.json"));
+    const wasm = readFileSync(
+      path.resolve(buildPath, `${flags.contract}.wasm`)
+    );
+
+    const code = await new CodePromise(api, abi, wasm);
+    await code.tx
+      .new({ gasLimit: flags.gas }, ...flags.args)
+      .signAndSend(pair, {}, ({ events }) => {
+        const success = events.find(
+          (event) => event.event.method === "Instantiated"
+        );
+        if (success) {
+          const contractAddress = success.event.data.toArray()[1];
+          config.contracts[flags.contract] = {
+            name: flags.contract,
+            address: contractAddress,
+          };
+          writeFileSync(
+            path.resolve("swanky.config.json"),
+            JSON.stringify(config, null, 2)
+          );
+          this.log(`Deploy successful!`);
+          this.log(`Contract address: ${contractAddress}`);
+          wsProvider.disconnect();
+        }
+      });
   }
 }

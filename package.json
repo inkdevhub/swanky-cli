@@ -21,6 +21,8 @@
     "@oclif/plugin-help": "^5",
     "@oclif/plugin-plugins": "^2.0.1",
     "@oclif/plugin-version": "^1.0.4",
+    "@polkadot/api": "^8.7.1",
+    "@polkadot/api-contract": "^8.7.1",
     "debug": "^4.3.4",
     "decompress": "^4.2.1",
     "download": "^8.0.0",
