@@ -1,9 +1,8 @@
 import { Command, Flags } from "@oclif/core";
-import { execSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import path = require("node:path");
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import { CodePromise } from "@polkadot/api-contract";
+import { CodePromise, Abi } from "@polkadot/api-contract";
 import { Keyring } from "@polkadot/keyring";
 import { readJSONSync } from "fs-extra";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
@@ -55,7 +54,7 @@ export class DeployContract extends Command {
       "target",
       "ink"
     );
-    const abi = readJSONSync(path.resolve(buildPath, "metadata.json"));
+    const abi = readJSONSync(path.resolve(buildPath, "metadata.json")) as Abi;
     const wasm = readFileSync(
       path.resolve(buildPath, `${flags.contract}.wasm`)
     );
