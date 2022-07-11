@@ -1,6 +1,6 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { SignerOptions } from "@polkadot/api/types";
-import { ITuple } from "@polkadot/types/types";
+import { Codec, ITuple } from "@polkadot/types/types";
 import { TypeRegistry } from "@polkadot/types";
 import { DispatchError, BlockHash } from "@polkadot/types/interfaces";
 import { ChainAccount } from "./account";
@@ -12,7 +12,7 @@ const AUTO_CONNECT_MS = 10_000; // [ms]
 export class ChainApi {
   private _provider: WsProvider;
   private _api: ApiPromise;
-  private _chainProperty: ChainProperty;
+  private _chainProperty?: ChainProperty;
   private _registry: TypeRegistry;
 
   constructor(endpoint: string) {
@@ -37,7 +37,7 @@ export class ChainApi {
   }
 
   public get chainProperty(): ChainProperty {
-    return this._chainProperty;
+    return this._chainProperty as ChainProperty;
   }
 
   public get typeRegistry(): TypeRegistry {
@@ -74,7 +74,6 @@ export class ChainApi {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   public async getBlockHash(blockNumber: number): Promise<BlockHash> {
     return this._api?.rpc.chain.getBlockHash(blockNumber);
   }
@@ -91,7 +90,11 @@ export class ChainApi {
     );
   }
 
-  public buildStorageQuery(extrinsic: string, method: string, ...args: any[]) {
+  public buildStorageQuery(
+    extrinsic: string,
+    method: string,
+    ...args: any[]
+  ): Promise<Codec> {
     const ext = this._api?.query[extrinsic][method](...args);
     if (ext) return ext;
     throw new Error(
@@ -136,7 +139,7 @@ export class ChainApi {
           (record): boolean =>
             Boolean(record.event) && record.event.section !== "democracy"
         )
-        .map(({ event: { data, method, section } }) => {
+        .forEach(({ event: { data, method, section } }) => {
           if (section === "system" && method === "ExtrinsicFailed") {
             const [dispatchError] = data as unknown as ITuple<[DispatchError]>;
             let message = dispatchError.type.toString();
