@@ -211,3 +211,5 @@ dist
 /tmp
 node_modules
 oclif.manifest.json
+
+test_project/**/*
