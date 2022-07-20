@@ -6,6 +6,8 @@ import { CodePromise, Abi } from "@polkadot/api-contract";
 import { Keyring } from "@polkadot/keyring";
 import { readJSONSync } from "fs-extra";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
+import { ChainApi } from "../../lib/substrate-api";
+import { KeyringPair } from "@polkadot/keyring/types";
 export class DeployContract extends Command {
   static description = "Deploy contract to a running node";
 
@@ -40,13 +42,8 @@ export class DeployContract extends Command {
       throw new Error("No 'swanky.config.json' detected in current folder!");
     }
 
-    await cryptoWaitReady();
-
     const keyring = new Keyring({ type: "sr25519" });
     const pair = keyring.createFromUri(`//${flags.account}`);
-
-    const wsProvider = new WsProvider();
-    const api = await ApiPromise.create({ provider: wsProvider });
 
     const buildPath = path.resolve(
       "contracts",
@@ -59,27 +56,48 @@ export class DeployContract extends Command {
       path.resolve(buildPath, `${flags.contract}.wasm`)
     );
 
-    const code = await new CodePromise(api, abi, wasm);
-    await code.tx
-      .new({ gasLimit: flags.gas }, ...flags.args)
-      .signAndSend(pair, {}, ({ events }) => {
-        const success = events.find(
-          (event) => event.event.method === "Instantiated"
-        );
-        if (success) {
-          const contractAddress = success.event.data.toArray()[1];
-          config.contracts[flags.contract] = {
-            name: flags.contract,
-            address: contractAddress,
-          };
-          writeFileSync(
-            path.resolve("swanky.config.json"),
-            JSON.stringify(config, null, 2)
+    const api = new DeployApi("ws://127.0.0.1:9944");
+    await api.start();
+
+    const contractAddress = await api.deploy(abi, wasm, pair);
+
+    config.contracts[flags.contract] = {
+      name: flags.contract,
+      address: contractAddress,
+    };
+    writeFileSync(
+      path.resolve("swanky.config.json"),
+      JSON.stringify(config, null, 2)
+    );
+    this.log(`Deploy successful!`);
+    this.log(`Contract address: ${contractAddress}`);
+  }
+}
+
+class DeployApi extends ChainApi {
+  constructor(endpoint: string) {
+    super(endpoint);
+  }
+
+  public async deploy(abi: Abi, wasm: Buffer, signerPair: KeyringPair) {
+    await cryptoWaitReady();
+    const code = new CodePromise(this._api, abi, wasm);
+    const gasLimit = 100000n * 1000000n;
+    const storageDepositLimit = null;
+    const tx = code.tx.new({ gasLimit, storageDepositLimit }, 1000);
+    return new Promise((resolve, reject) => {
+      this.signAndSend(signerPair, tx, {}, ({ status, events }) => {
+        if (status.isInBlock || status.isFinalized) {
+          const instantiateEvent = events.find(
+            ({ event }) => event.method === "Instantiated"
           );
-          this.log(`Deploy successful!`);
-          this.log(`Contract address: ${contractAddress}`);
-          wsProvider.disconnect();
+          const addresses = instantiateEvent?.event.data.toHuman() as any;
+          if (!addresses || !addresses.contract)
+            reject(new Error("Unable to get the contract address"));
+          resolve(addresses.contract);
+          this._provider.disconnect();
         }
       });
+    });
   }
 }

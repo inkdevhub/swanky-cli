@@ -1,19 +1,21 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { SignerOptions } from "@polkadot/api/types";
-import { Codec, ITuple } from "@polkadot/types/types";
+import { Codec, ISubmittableResult, ITuple } from "@polkadot/types/types";
 import { TypeRegistry } from "@polkadot/types";
 import { DispatchError, BlockHash } from "@polkadot/types/interfaces";
 import { ChainAccount } from "./account";
 import BN from "bn.js";
 import { ExtrinsicPayload, ChainProperty } from "../types";
-
+import { Abi, CodePromise } from "@polkadot/api-contract";
+import { KeyringPair } from "@polkadot/keyring/types";
 const AUTO_CONNECT_MS = 10_000; // [ms]
 
 export class ChainApi {
-  private _provider: WsProvider;
-  private _api: ApiPromise;
   private _chainProperty?: ChainProperty;
   private _registry: TypeRegistry;
+
+  protected _provider: WsProvider;
+  protected _api: ApiPromise;
 
   constructor(endpoint: string) {
     this._provider = new WsProvider(endpoint, AUTO_CONNECT_MS);
@@ -127,12 +129,13 @@ export class ChainApi {
   }
 
   public async signAndSend(
-    signer: ChainAccount,
+    signer: KeyringPair,
     tx: ExtrinsicPayload,
-    options?: Partial<SignerOptions>
+    options?: Partial<SignerOptions>,
+    handler?: (result: ISubmittableResult) => void
   ): Promise<() => void> {
     // ensure that we automatically increment the nonce per transaction
-    return tx.signAndSend(signer.pair, { nonce: -1, ...options }, (result) => {
+    return tx.signAndSend(signer, { nonce: -1, ...options }, (result) => {
       // handle transaction errors
       result.events
         .filter(
@@ -170,6 +173,8 @@ export class ChainApi {
             console.error(`error: ${section}.${method} ${message}`);
           }
         });
+
+      if (handler) handler(result);
     });
   }
 }
