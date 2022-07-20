@@ -17,10 +17,11 @@ export class ChainApi {
   protected _provider: WsProvider;
   protected _api: ApiPromise;
 
-  constructor(endpoint: string) {
+  constructor(endpoint: string, silent = true) {
     this._provider = new WsProvider(endpoint, AUTO_CONNECT_MS);
 
-    console.log("connecting to " + endpoint);
+    if (!silent) console.log("connecting to " + endpoint);
+
     this._api = new ApiPromise({
       provider: this._provider,
     });
