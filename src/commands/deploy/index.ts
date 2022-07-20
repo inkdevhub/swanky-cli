@@ -83,7 +83,9 @@ export class DeployContract extends Command {
           const contractAddress = await ctx.api.deploy(
             ctx.abi,
             ctx.wasm,
-            ctx.pair
+            ctx.pair,
+            flags.gas,
+            flags.args
           );
           ctx.contractAddress = contractAddress;
         },
@@ -127,11 +129,16 @@ class DeployApi extends ChainApi {
 
   public async getGasCost() {}
 
-  public async deploy(abi: Abi, wasm: Buffer, signerPair: KeyringPair) {
+  public async deploy(
+    abi: Abi,
+    wasm: Buffer,
+    signerPair: KeyringPair,
+    gasLimit: number,
+    args: any[]
+  ) {
     const code = new CodePromise(this._api, abi, wasm);
-    const gasLimit = 100000n * 1000000n;
     const storageDepositLimit = null;
-    const tx = code.tx.new({ gasLimit, storageDepositLimit }, 1000);
+    const tx = code.tx.new({ gasLimit, storageDepositLimit }, ...args);
     return new Promise((resolve, reject) => {
       this.signAndSend(signerPair, tx, {}, ({ status, events }) => {
         if (status.isInBlock || status.isFinalized) {
