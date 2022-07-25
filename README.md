@@ -14,7 +14,7 @@ $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
 running command...
 $ swanky (--version|-V|-v)
-@astar-network/swanky-cli/0.1.3 darwin-x64 node-v18.2.0
+@astar-network/swanky-cli/0.1.4 darwin-x64 node-v18.2.0
 $ swanky --help [COMMAND]
 USAGE
   $ swanky COMMAND
@@ -51,7 +51,7 @@ DESCRIPTION
   Call a method on a smart contract
 ```
 
-_See code: [dist/commands/call/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.3/dist/commands/call/index.ts)_
+_See code: [dist/commands/call/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.4/dist/commands/call/index.ts)_
 
 ## `swanky check`
 
@@ -65,7 +65,7 @@ DESCRIPTION
   Check installed package versions and compatibility
 ```
 
-_See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.3/dist/commands/check/index.ts)_
+_See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.4/dist/commands/check/index.ts)_
 
 ## `swanky compile`
 
@@ -82,7 +82,7 @@ DESCRIPTION
   Compile the smart contract(s) in your contracts directory
 ```
 
-_See code: [dist/commands/compile/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.3/dist/commands/compile/index.ts)_
+_See code: [dist/commands/compile/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.4/dist/commands/compile/index.ts)_
 
 ## `swanky deploy`
 
@@ -100,7 +100,7 @@ DESCRIPTION
   Deploy contract to a running node
 ```
 
-_See code: [dist/commands/deploy/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.3/dist/commands/deploy/index.ts)_
+_See code: [dist/commands/deploy/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.4/dist/commands/deploy/index.ts)_
 
 ## `swanky help [COMMAND]`
 
@@ -143,7 +143,7 @@ DESCRIPTION
   Generate a new smart contract environment
 ```
 
-_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.3/dist/commands/init/index.ts)_
+_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.4/dist/commands/init/index.ts)_
 
 ## `swanky node start`
 
@@ -161,8 +161,19 @@ DESCRIPTION
 
 ```
 USAGE
-  $ swanky version
+  $ swanky version [--json] [--verbose]
+
+FLAGS
+  --verbose  Show additional information about the CLI.
+
+GLOBAL FLAGS
+  --json  Format output as json.
+
+FLAG DESCRIPTIONS
+  --verbose  Show additional information about the CLI.
+
+    Additionally shows the architecture, node version, operating system, and versions of plugins that the CLI is using.
 ```
 
-_See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.0.4/src/commands/version.ts)_
+_See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.1.1/src/commands/version.ts)_
 <!-- commandsstop -->
