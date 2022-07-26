@@ -13,7 +13,7 @@ jobs:
 
     - name: Install cargo contract
       run: |
-        apt-get install binaryen
+        sudo apt-get install binaryen
         cargo install cargo-dylint dylint-link
         cargo install --force --locked cargo-contract
 
