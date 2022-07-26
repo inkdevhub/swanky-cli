@@ -1,9 +1,7 @@
 name: Release
 on:
-  push:
-    tags:
-    - v[0-9]+.[0-9]+.[0-9]+*
-  workflow_dispatch:
+  release:
+    types: [created]
 env:
   NODE_VER: 16.x
 jobs:
