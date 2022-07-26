@@ -25,11 +25,8 @@ jobs:
       with:
         node-version: ${{ env.NODE_VER }}
 
-    - name: Install dependencies
-      run: yarn
-
     - name: yarn test
-      run: yarn test
+      run: yarn && yarn test
 
   lint-check:
     if: github.event.pull_request.draft == false
@@ -44,7 +41,7 @@ jobs:
         node-version: ${{ env.NODE_VER }}
 
     - name: yarn lint
-      run: yarn lint
+      run: yarn && yarn lint
 
   build-check:
     if: github.event.pull_request.draft == false
@@ -59,4 +56,4 @@ jobs:
         node-version: ${{ env.NODE_VER }}
 
     - name: yarn build
-      run: yarn build
+      run: yarn && yarn build
