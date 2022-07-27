@@ -8,7 +8,7 @@ import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { ChainApi } from "../../lib/substrate-api";
 import { KeyringPair } from "@polkadot/keyring/types";
 import { Listr } from "listr2";
-import { ensureSwankyProject } from "../../lib/command-utils";
+import { ensureSwankyProject, getSwankyConfig } from "../../lib/command-utils";
 export class DeployContract extends Command {
   static description = "Deploy contract to a running node";
 
@@ -32,14 +32,16 @@ export class DeployContract extends Command {
   static args = [];
 
   async run(): Promise<void> {
-    ensureSwankyProject();
+    await ensureSwankyProject();
     const { flags } = await this.parse(DeployContract);
 
     const tasks = new Listr([
       {
         title: "Initialising",
-        task: async () => {
+        task: async (ctx) => {
           await cryptoWaitReady();
+          const config = await getSwankyConfig();
+          ctx.config = config;
         },
       },
       {
@@ -72,7 +74,7 @@ export class DeployContract extends Command {
       {
         title: "Connecting to node",
         task: async (ctx) => {
-          const api = new DeployApi("ws://127.0.0.1:9944");
+          const api = new DeployApi(ctx.node.nodeAddress);
           await api.start();
           ctx.api = api;
         },

@@ -29,6 +29,7 @@ export interface SwankyConfig {
     localPath?: string;
     url?: string;
     supportedInk?: string;
+    nodeAddress?: string;
   };
 }
 
