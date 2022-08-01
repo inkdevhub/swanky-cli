@@ -59,7 +59,7 @@ export class CreateAccount extends Command {
 
     const config = await getSwankyConfig();
 
-    config.users.push(accountData);
+    config.accounts.push(accountData);
 
     writeFileSync("swanky.config.json", JSON.stringify(config, null, 2));
 
