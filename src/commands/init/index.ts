@@ -23,7 +23,7 @@ export interface SwankyConfig {
   name: string;
   nodeTargetDir?: string;
   nodeFileName?: string;
-  contracts?: string[];
+  contracts?: { name: string; address: string }[];
   node: {
     type?: string;
     localPath?: string;
@@ -274,7 +274,9 @@ export class Generate extends Command {
             delete ctx.nodeFileName;
             delete ctx.nodeTargetDir;
 
-            ctx.contracts = readdirSync(path.resolve(ctx.name, "contracts"));
+            ctx.contracts = readdirSync(
+              path.resolve(ctx.name, "contracts")
+            ).map((dirName) => ({ name: dirName, address: "" }));
 
             writeFileSync(
               path.resolve(`${ctx.name}`, "swanky.config.json"),

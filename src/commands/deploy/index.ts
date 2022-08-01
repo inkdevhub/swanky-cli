@@ -2,13 +2,13 @@ import { Command, Flags } from "@oclif/core";
 import { readFileSync, writeFileSync } from "node:fs";
 import path = require("node:path");
 import { CodePromise, Abi } from "@polkadot/api-contract";
-import { Keyring } from "@polkadot/keyring";
-import { readJSONSync } from "fs-extra";
+import { readJSONSync, writeJSONSync } from "fs-extra";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { ChainApi } from "../../lib/substrate-api";
 import { KeyringPair } from "@polkadot/keyring/types";
 import { Listr } from "listr2";
 import { ensureSwankyProject, getSwankyConfig } from "../../lib/command-utils";
+import { ChainAccount } from "../../lib/account";
 export class DeployContract extends Command {
   static description = "Deploy contract to a running node";
 
@@ -50,7 +50,7 @@ export class DeployContract extends Command {
               "Provided account alias not found in swanky.config.json"
             );
           }
-          ctx.mnemonic = account.mnemonic;
+          ctx.account = new ChainAccount(account.mnemonic);
         },
       },
       {
@@ -73,17 +73,9 @@ export class DeployContract extends Command {
         },
       },
       {
-        title: "Getting keypair",
-        task: (ctx) => {
-          const keyring = new Keyring({ type: "sr25519" });
-          const pair = keyring.createFromUri(`//${flags.account}`);
-          ctx.pair = pair;
-        },
-      },
-      {
         title: "Connecting to node",
         task: async (ctx) => {
-          const api = new DeployApi(ctx.node.nodeAddress);
+          const api = new DeployApi(ctx.config.node.nodeAddress);
           await api.start();
           ctx.api = api;
         },
@@ -94,7 +86,7 @@ export class DeployContract extends Command {
           const contractAddress = await ctx.api.deploy(
             ctx.abi,
             ctx.wasm,
-            ctx.pair,
+            ctx.account.pair,
             flags.gas,
             flags.args
           );
@@ -103,25 +95,21 @@ export class DeployContract extends Command {
       },
       {
         title: "Writing config",
-        task: (ctx) => {
-          let config = {
-            contracts: {},
-          };
+        task: async (ctx) => {
+          const config = await getSwankyConfig();
 
-          const file = readFileSync("swanky.config.json", {
-            encoding: "utf-8",
-          });
-          config = JSON.parse(file);
+          if (!config.contracts) {
+            config.contracts = [];
+          }
 
-          config.contracts[flags.contract] = {
+          config.contracts.push({
             name: flags.contract,
             address: ctx.contractAddress,
-          };
+          });
 
-          writeFileSync(
-            path.resolve("swanky.config.json"),
-            JSON.stringify(config, null, 2)
-          );
+          writeJSONSync(path.resolve("swanky.config.json"), config, {
+            spaces: 2,
+          });
         },
       },
     ]);
