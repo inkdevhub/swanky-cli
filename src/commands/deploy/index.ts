@@ -1,4 +1,4 @@
-import { Command, Flags, CliUx } from "@oclif/core";
+import { Command, Flags } from "@oclif/core";
 import { readFileSync, writeFileSync } from "node:fs";
 import path = require("node:path");
 import { CodePromise, Abi } from "@polkadot/api-contract";
@@ -15,7 +15,7 @@ export class DeployContract extends Command {
   static flags = {
     account: Flags.string({
       required: true,
-      options: ["Alice", "Bob", "Charlie", "Dave", "Eve", "Ferdie"],
+      description: "Alias of account to be used",
     }),
     contract: Flags.string({ char: "c", required: true }),
     gas: Flags.string({
@@ -42,6 +42,15 @@ export class DeployContract extends Command {
           await cryptoWaitReady();
           const config = await getSwankyConfig();
           ctx.config = config;
+          const account = config.accounts.find(
+            (account) => account.alias === flags.account
+          );
+          if (!account) {
+            this.error(
+              "Provided account alias not found in swanky.config.json"
+            );
+          }
+          ctx.mnemonic = account.mnemonic;
         },
       },
       {
