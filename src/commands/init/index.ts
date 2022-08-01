@@ -31,6 +31,7 @@ export interface SwankyConfig {
     supportedInk?: string;
     nodeAddress?: string;
   };
+  users: { alias: string; mnemonic: string }[];
 }
 
 const contractTypes = [
@@ -330,6 +331,7 @@ export class Generate extends Command {
       node: {
         type: flags.node,
       },
+      users: [],
     });
   }
 }

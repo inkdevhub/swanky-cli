@@ -13,12 +13,14 @@ export class ChainAccount implements IChainAccount {
   private _mnemonic: string;
   private _keyringType: KeypairType;
 
+  public static generate() {
+    return mnemonicGenerate();
+  }
+
   constructor(mnemonic: string, type: KeypairType = "sr25519") {
     this._keyringType = type;
     this._keyring = new Keyring({ type: type });
-
-    // create a random account if no mnemonic was provided
-    this._mnemonic = mnemonic || mnemonicGenerate();
+    this._mnemonic = mnemonic;
   }
 
   public get pair(): KeyringPair {
