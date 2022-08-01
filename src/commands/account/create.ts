@@ -6,7 +6,7 @@ import { ChainAccount } from "../../lib/account";
 import { ensureSwankyProject, getSwankyConfig } from "../../lib/command-utils";
 
 export class CreateAccount extends Command {
-  static description = "Deploy contract to a running node";
+  static description = "Create a new dev account in config";
 
   static flags = {
     force: Flags.boolean({
