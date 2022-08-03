@@ -213,3 +213,4 @@ node_modules
 oclif.manifest.json
 
 test_project/**/*
+temp_project/**/*

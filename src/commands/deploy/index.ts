@@ -1,8 +1,7 @@
 import { Command, Flags } from "@oclif/core";
-import { readFileSync, writeFileSync } from "node:fs";
 import path = require("node:path");
 import { CodePromise, Abi } from "@polkadot/api-contract";
-import { readJSONSync, writeJSONSync } from "fs-extra";
+import { readJSONSync, writeJSONSync, readFileSync } from "fs-extra";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { ChainApi } from "../../lib/substrate-api";
 import { KeyringPair } from "@polkadot/keyring/types";
@@ -114,7 +113,7 @@ export class DeployContract extends Command {
       },
     ]);
 
-    await tasks.run({});
+    await tasks.run({ renderer: "verbose" });
 
     this.log(`Contract deployed!`);
     this.log(`Contract address: ${tasks.ctx.contractAddress}`);
