@@ -271,12 +271,24 @@ export class Generate extends Command {
               ctx.nodeTargetDir as string,
               ctx.nodeFileName as string
             );
+            ctx.node.nodeAddress = "ws://127.0.0.1:9944";
             delete ctx.nodeFileName;
             delete ctx.nodeTargetDir;
 
             ctx.contracts = readdirSync(
               path.resolve(ctx.name, "contracts")
             ).map((dirName) => ({ name: dirName, address: "" }));
+
+            ctx.accounts = [
+              {
+                alias: "alice",
+                mnemonic: "//Alice",
+              },
+              {
+                alias: "bob",
+                mnemonic: "//Bob",
+              },
+            ];
 
             writeFileSync(
               path.resolve(`${ctx.name}`, "swanky.config.json"),
