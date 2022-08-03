@@ -325,7 +325,7 @@ export class Generate extends Command {
       }
     );
 
-    tasks.run({
+    await tasks.run({
       platform: this.config.platform,
       name: args.name,
       language: flags.language,
@@ -335,5 +335,7 @@ export class Generate extends Command {
       },
       accounts: [],
     });
+
+    this.log("Successfully Initialized");
   }
 }
