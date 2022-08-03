@@ -21,5 +21,7 @@ export class StartNode extends Command {
     execSync(`${config.node.localPath} --dev`, {
       stdio: "inherit",
     });
+
+    this.log("Node started");
   }
 }
