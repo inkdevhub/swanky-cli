@@ -23,13 +23,15 @@ export interface SwankyConfig {
   name: string;
   nodeTargetDir?: string;
   nodeFileName?: string;
-  contracts?: string[];
+  contracts?: { name: string; address: string }[];
   node: {
     type?: string;
     localPath?: string;
     url?: string;
     supportedInk?: string;
+    nodeAddress?: string;
   };
+  accounts: { alias: string; mnemonic: string }[];
 }
 
 const contractTypes = [
@@ -269,10 +271,24 @@ export class Generate extends Command {
               ctx.nodeTargetDir as string,
               ctx.nodeFileName as string
             );
+            ctx.node.nodeAddress = "ws://127.0.0.1:9944";
             delete ctx.nodeFileName;
             delete ctx.nodeTargetDir;
 
-            ctx.contracts = readdirSync(path.resolve(ctx.name, "contracts"));
+            ctx.contracts = readdirSync(
+              path.resolve(ctx.name, "contracts")
+            ).map((dirName) => ({ name: dirName, address: "" }));
+
+            ctx.accounts = [
+              {
+                alias: "alice",
+                mnemonic: "//Alice",
+              },
+              {
+                alias: "bob",
+                mnemonic: "//Bob",
+              },
+            ];
 
             writeFileSync(
               path.resolve(`${ctx.name}`, "swanky.config.json"),
@@ -329,6 +345,7 @@ export class Generate extends Command {
       node: {
         type: flags.node,
       },
+      accounts: [],
     });
 
     this.log("Successfully Initialized");
