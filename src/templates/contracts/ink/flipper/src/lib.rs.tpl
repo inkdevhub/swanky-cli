@@ -3,18 +3,18 @@
 use ink_lang as ink;
 
 #[ink::contract]
-mod swanky_contract_test {
+mod {{contract_name_snake}} {
 
     /// Defines the storage of your contract.
     /// Add new fields to the below struct in order
     /// to add new static storage fields to your contract.
     #[ink(storage)]
-    pub struct SwankyContractTest {
+    pub struct {{{{contract_name_pascal}}}} {
         /// Stores a single `bool` value on the storage.
         value: bool,
     }
 
-    impl SwankyContractTest {
+    impl {{contract_name_pascal}} {
         /// Constructor that initializes the `bool` value to the given `init_value`.
         #[ink(constructor)]
         pub fn new(init_value: bool) -> Self {
@@ -58,17 +58,17 @@ mod swanky_contract_test {
         /// We test if the default constructor does its job.
         #[ink::test]
         fn default_works() {
-            let swanky_contract_test = SwankyContractTest::default();
-            assert_eq!(swanky_contract_test.get(), false);
+            let {{contract_name_snake}} = {{contract_name_pascal}}::default();
+            assert_eq!({{contract_name_snake}}.get(), false);
         }
 
         /// We test a simple use case of our contract.
         #[ink::test]
         fn it_works() {
-            let mut swanky_contract_test = SwankyContractTest::new(false);
-            assert_eq!(swanky_contract_test.get(), false);
-            swanky_contract_test.flip();
-            assert_eq!(swanky_contract_test.get(), true);
+            let mut {{contract_name_snake}} = {{contract_name_pascal}}::new(false);
+            assert_eq!({{contract_name_snake}}.get(), false);
+            {{contract_name_snake}}.flip();
+            assert_eq!({{contract_name_snake}}.get(), true);
         }
     }
 }

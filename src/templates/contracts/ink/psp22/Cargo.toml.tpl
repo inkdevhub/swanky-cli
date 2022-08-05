@@ -1,7 +1,7 @@
 [package]
-name = "my_psp22"
-version = "1.6.1"
-authors = ["Supercolony <green.baneling@supercolony.net>"]
+name = "{{contract_name_snake}}"
+version = "0.1.0"
+authors = ["{{author_name}}"]
 edition = "2021"
 
 [dependencies]
@@ -19,8 +19,8 @@ scale-info = { version = "2", default-features = false, features = ["derive"], o
 brush = { tag = "v1.6.1", git = "https://github.com/Supercolony-net/openbrush-contracts", default-features = false, features = ["psp22"] }
 
 [lib]
-name = "my_psp22"
-path = "lib.rs"
+name = "{{contract_name_snake}}"
+path = "src/lib.rs"
 crate-type = [
     # Used for normal contract Wasm blobs.
     "cdylib",

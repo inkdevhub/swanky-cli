@@ -1,7 +1,7 @@
 [package]
-name = "swanky_contract"
+name = "{{contract_name_snake}}"
 version = "0.1.0"
-authors = ["[your_name] <[your_email]>"]
+authors = ["{{author_name}}"]
 edition = "2021"
 
 [dependencies]
@@ -16,8 +16,8 @@ scale = { package = "parity-scale-codec", version = "3", default-features = fals
 scale-info = { version = "2", default-features = false, features = ["derive"], optional = true }
 
 [lib]
-name = "swanky_contract"
-path = "lib.rs"
+name = "{{contract_name_snake}}"
+path = "src/lib.rs"
 crate-type = [
 	# Used for normal contract Wasm blobs.
 	"cdylib",

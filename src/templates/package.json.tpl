@@ -1,8 +1,7 @@
 {
-  "name": "swanky-template",
+  "name": {{project_name}},
   "version": "1.0.0",
-  "main": "index.js",
-  "author": "Astar Network",
+  "author": {{author_name}},
   "license": "MIT",
   "scripts": {
     "run-node": "swanky node start",
@@ -10,6 +9,6 @@
     "deploy": "swanky deploy"
   },
   "dependencies": {
-    "@astar-network/swanky-cli": "0.1.4"
+    "@astar-network/swanky-cli": "{{swanky_version}}"
   }
 }
