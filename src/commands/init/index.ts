@@ -15,6 +15,7 @@ import download = require("download");
 import { nodes } from "../../nodes";
 import { writeFileSync } from "node:fs";
 import execa = require("execa");
+import { checkCliDependencies } from "../../lib/tasks";
 
 export interface SwankyConfig {
   platform: string;
@@ -69,28 +70,14 @@ export class Generate extends Command {
 
     const tasks = new Listr<SwankyConfig>(
       [
-        {
-          title: "Checking dependencies",
-          task: (ctx, task) => {
-            const tasks = Object.entries({
-              rust: "rustc --version",
-              cargo: "cargo -V",
-              "cargo contract": "cargo contract -V",
-            }).map(([dependency, command]) => ({
-              title: `Checking ${dependency}`,
-              task: () => {
-                try {
-                  execa.command(command, { stdio: "ignore" });
-                } catch {
-                  throw new Error(
-                    `"${dependency}" is not installed. Please follow the guide: https://docs.substrate.io/tutorials/v3/ink-workshop/pt1/#update-your-rust-environment`
-                  );
-                }
-              },
-            }));
-            return task.newListr(tasks, { concurrent: true });
+        await checkCliDependencies([
+          { dependencyName: "rust", versionCommand: "rust --version" },
+          { dependencyName: "cargo", versionCommand: "cargo -V" },
+          {
+            dependencyName: "cargo contract",
+            versionCommand: "cargo contract -V",
           },
-        },
+        ]),
         {
           title: "Cloning template",
           task: (ctx, task) =>
