@@ -14,7 +14,6 @@ import decompress = require("decompress");
 import download = require("download");
 import { nodes } from "../../nodes";
 import { writeFileSync } from "node:fs";
-import execa = require("execa");
 import { checkCliDependencies } from "../../lib/tasks";
 
 export interface SwankyConfig {
@@ -44,7 +43,7 @@ export class Generate extends Command {
   static description = "Generate a new smart contract environment";
 
   static flags = {
-    language: Flags.string({ options: ["ink", "ask"] }),
+    language: Flags.string({ options: ["ink", "ask"], default: "ink" }),
     template: Flags.string({
       options: contractTypes.map((type) => type.message.toLowerCase()),
     }),
@@ -71,7 +70,7 @@ export class Generate extends Command {
     const tasks = new Listr<SwankyConfig>(
       [
         await checkCliDependencies([
-          { dependencyName: "rust", versionCommand: "rust --version" },
+          { dependencyName: "rust", versionCommand: "rustc --version" },
           { dependencyName: "cargo", versionCommand: "cargo -V" },
           {
             dependencyName: "cargo contract",
