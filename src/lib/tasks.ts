@@ -1,4 +1,4 @@
-import { ListrTaskWrapper, ListrDefaultRenderer, ListrRenderer } from "listr2";
+import { ListrTaskWrapper, ListrRenderer } from "listr2";
 import execa = require("execa");
 
 export async function checkCliDependencies(

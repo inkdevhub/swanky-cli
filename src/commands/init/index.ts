@@ -20,7 +20,7 @@ export interface SwankyConfig {
   platform: string;
   language?: string;
   contractTemplate?: string;
-  name: string;
+  project_name: string;
   nodeTargetDir?: string;
   nodeFileName?: string;
   contracts?: { name: string; address: string }[];
@@ -43,16 +43,15 @@ export class Generate extends Command {
   static description = "Generate a new smart contract environment";
 
   static flags = {
-    language: Flags.string({ options: ["ink", "ask"], default: "ink" }),
     template: Flags.string({
       options: contractTypes.map((type) => type.message.toLowerCase()),
     }),
-    node: Flags.string({ options: ["swanky", "substrate-contracts-node"] }),
+    "swanky-node": Flags.boolean(),
   };
 
   static args = [
     {
-      name: "name",
+      name: "project_name",
       required: true,
       description: "directory name of new project",
     },
@@ -60,12 +59,6 @@ export class Generate extends Command {
 
   async run(): Promise<void> {
     const { args, flags } = await this.parse(Generate);
-
-    if (flags.language && flags.language !== "ink") {
-      this.error(`Sorry, ${flags.language} is not supported yet`, {
-        exit: 0,
-      });
-    }
 
     const tasks = new Listr<SwankyConfig>(
       [
@@ -81,31 +74,6 @@ export class Generate extends Command {
           title: "Cloning template",
           task: (ctx, task) =>
             task.newListr([
-              {
-                title: "Pick language",
-                task: async (ctx, task): Promise<void> => {
-                  const language = await task.prompt([
-                    {
-                      name: "language",
-                      message: "Which framework would you like to develop on?",
-                      type: "Select",
-                      choices: [
-                        { message: "Ink!", name: "ink" },
-                        { message: "Ask!", name: "ask" },
-                      ],
-                    },
-                  ]);
-
-                  if (language !== "ink") {
-                    this.error(`Sorry, ${language} is not supported yet`, {
-                      exit: 0,
-                    });
-                  }
-
-                  ctx.language = language;
-                },
-                skip: Boolean(ctx.language),
-              },
               {
                 title: "Pick template",
                 task: async (ctx, task): Promise<void> => {
@@ -127,28 +95,28 @@ export class Generate extends Command {
                 skip: Boolean(ctx.contractTemplate),
               },
               {
-                title: "Cloning template repo",
+                title: "Template name",
                 task: (ctx): void => {
                   execSync(
                     `git clone -b ${
                       ctx.contractTemplate
                     } --single-branch https://github.com/AstarNetwork/swanky-template-ink.git "${path.resolve(
-                      ctx.name
+                      ctx.project_name
                     )}"`,
                     { stdio: "ignore" }
                   );
                 },
               },
               {
-                title: "Clean up",
+                title: "Author name",
                 task: (ctx): void => {
-                  rmSync(`${path.resolve(ctx.name, ".git")}`, {
+                  rmSync(`${path.resolve(ctx.project_name, ".git")}`, {
                     recursive: true,
                   });
-                  execSync(`rm -f ${ctx.name}/**/.gitkeep`, {
+                  execSync(`rm -f ${ctx.project_name}/**/.gitkeep`, {
                     stdio: "ignore",
                   });
-                  execSync(`git init`, { cwd: ctx.name });
+                  execSync(`git init`, { cwd: ctx.project_name });
                 },
               },
             ]),
@@ -183,7 +151,7 @@ export class Generate extends Command {
                 title: "Downloading",
                 task: async (ctx, task): Promise<void> =>
                   new Promise<void>((resolve, reject) => {
-                    const targetDir = path.resolve(ctx.name, "bin");
+                    const targetDir = path.resolve(ctx.project_name, "bin");
                     if (!existsSync(targetDir)) {
                       mkdirSync(targetDir);
                     }
@@ -262,7 +230,7 @@ export class Generate extends Command {
             delete ctx.nodeTargetDir;
 
             ctx.contracts = readdirSync(
-              path.resolve(ctx.name, "contracts")
+              path.resolve(ctx.project_name, "contracts")
             ).map((dirName) => ({ name: dirName, address: "" }));
 
             ctx.accounts = [
@@ -277,7 +245,7 @@ export class Generate extends Command {
             ];
 
             writeFileSync(
-              path.resolve(`${ctx.name}`, "swanky.config.json"),
+              path.resolve(`${ctx.project_name}`, "swanky.config.json"),
               JSON.stringify(ctx, null, 2)
             );
           },
@@ -286,7 +254,7 @@ export class Generate extends Command {
           title: "Installing",
           task: async (ctx, task): Promise<void> =>
             new Promise<void>((resolve, reject) => {
-              const pjsonPath = path.resolve(ctx.name, "package.json");
+              const pjsonPath = path.resolve(ctx.project_name, "package.json");
               const packageJson = JSON.parse(
                 readFileSync(pjsonPath, {
                   encoding: "utf-8",
@@ -308,7 +276,7 @@ export class Generate extends Command {
               }
 
               task.output = `Running ${installCommand}..`;
-              exec(installCommand, { cwd: ctx.name }, (error) => {
+              exec(installCommand, { cwd: ctx.project_name }, (error) => {
                 if (error) {
                   reject(error);
                 }
@@ -325,7 +293,7 @@ export class Generate extends Command {
 
     await tasks.run({
       platform: this.config.platform,
-      name: args.name,
+      project_name: args.project_name,
       language: flags.language,
       contractTemplate: flags.template,
       node: {
