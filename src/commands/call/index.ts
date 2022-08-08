@@ -17,6 +17,9 @@ export class CallContract extends Command {
     dry: Flags.boolean({
       char: "d",
     }),
+    gas: Flags.string({
+      char: "g",
+    }),
   };
 
   static args = [];
@@ -36,7 +39,9 @@ export class CallContract extends Command {
     execSync(
       `cargo contract call --contract ${
         config.contracts[0].address
-      } --message ${flags.message} --suri //Alice --gas 100000000000 ${
+      } --message ${flags.message} --suri //Alice --gas ${
+        flags.gas ? flags.gas : "100000000000" 
+      } ${
         flags.dry ? "--dry-run" : ""
       }`,
       {
