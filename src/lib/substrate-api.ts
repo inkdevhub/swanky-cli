@@ -6,7 +6,6 @@ import { DispatchError, BlockHash } from "@polkadot/types/interfaces";
 import { ChainAccount } from "./account";
 import BN from "bn.js";
 import { ExtrinsicPayload, ChainProperty } from "../types";
-import { Abi, CodePromise } from "@polkadot/api-contract";
 import { KeyringPair } from "@polkadot/keyring/types";
 const AUTO_CONNECT_MS = 10_000; // [ms]
 

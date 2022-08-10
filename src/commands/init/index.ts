@@ -303,14 +303,14 @@ export class Generate extends Command {
               const pjsonPath = path.resolve(ctx.name, "package.json");
               const packageJson = JSON.parse(
                 readFileSync(pjsonPath, {
-                  encoding: "utf-8",
+                  encoding: "utf8",
                 })
               );
               packageJson.dependencies = {
                 [this.config.pjson.name]: this.config.pjson.version,
               };
               writeFileSync(pjsonPath, JSON.stringify(packageJson, null, 2), {
-                encoding: "utf-8",
+                encoding: "utf8",
               });
               let installCommand = "npm install";
               try {

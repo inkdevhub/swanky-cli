@@ -1,5 +1,6 @@
 import { Command, Flags } from "@oclif/core";
-import { yellowBright, greenBright } from "chalk";
+import yellowBright from "chalk";
+import greenBright from "chalk";
 import { prompt } from "enquirer";
 import { writeFileSync } from "fs-extra";
 import { ChainAccount } from "../../lib/account";
