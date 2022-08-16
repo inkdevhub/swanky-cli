@@ -12,7 +12,7 @@ export class StartNode extends Command {
   async run(): Promise<void> {
     let config: SwankyConfig = {
       platform: "",
-      name: "",
+      project_name: "",
       node: {},
       accounts: [],
     };

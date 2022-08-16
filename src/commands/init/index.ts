@@ -8,13 +8,14 @@ import {
   mkdirSync,
   readFileSync,
   readdirSync,
+  writeFileSync,
 } from "node:fs";
 import { Listr } from "listr2";
 import decompress = require("decompress");
 import download = require("download");
 import { nodes } from "../../nodes";
-import { writeFileSync } from "node:fs";
 import { checkCliDependencies } from "../../lib/tasks";
+import execa = require("execa");
 
 export interface SwankyConfig {
   platform: string;
@@ -34,17 +35,22 @@ export interface SwankyConfig {
   accounts: { alias: string; mnemonic: string }[];
 }
 
-const contractTypes = [
-  { message: "Blank", name: "master" },
-  { message: "Flipper", name: "flipper" },
-  { message: "PSP22", name: "psp22" },
-];
+const templatesPath = path.resolve("src", "templates", "contracts", "ink");
+const fileList = readdirSync(templatesPath, {
+  withFileTypes: true,
+});
+const templatesList = fileList
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => ({
+    message: entry.name,
+    name: entry.name,
+  }));
 export class Generate extends Command {
   static description = "Generate a new smart contract environment";
 
   static flags = {
     template: Flags.string({
-      options: contractTypes.map((type) => type.message.toLowerCase()),
+      options: templatesList.map((template) => template.name),
     }),
     "swanky-node": Flags.boolean(),
   };
@@ -82,12 +88,7 @@ export class Generate extends Command {
                       name: "contractTemplate",
                       message: "Which template should we use?",
                       type: "Select",
-                      choices: [
-                        { message: "Blank", name: "master" },
-                        { message: "Flipper", name: "flipper" },
-                        { message: "PSP22", name: "psp22" },
-                        { message: "Dual contract", name: "dual-contract" },
-                      ],
+                      choices: templatesList,
                     },
                   ]);
                   ctx.contractTemplate = template;
@@ -96,28 +97,38 @@ export class Generate extends Command {
               },
               {
                 title: "Template name",
-                task: (ctx): void => {
-                  execSync(
-                    `git clone -b ${
-                      ctx.contractTemplate
-                    } --single-branch https://github.com/AstarNetwork/swanky-template-ink.git "${path.resolve(
-                      ctx.project_name
-                    )}"`,
-                    { stdio: "ignore" }
-                  );
+                task: async (ctx, task): Promise<void> => {
+                  const templateName = await task.prompt({
+                    message: "What should we name your contract?",
+                    type: "Input",
+                    initial: ctx.contractTemplate,
+                  });
                 },
               },
               {
-                title: "Author name",
-                task: (ctx): void => {
-                  rmSync(`${path.resolve(ctx.project_name, ".git")}`, {
-                    recursive: true,
+                title: "Author info",
+                task: async (ctx, task): Promise<void> => {
+                  const gitUserName = execa.commandSync(
+                    "git config --get user.name"
+                  ).stdout;
+                  const gitUserEmail = execa.commandSync(
+                    "git config --get user.email"
+                  ).stdout;
+                  const authorName = await task.prompt({
+                    message: "What is your name?",
+                    type: "Input",
+                    initial: gitUserName,
                   });
-                  execSync(`rm -f ${ctx.project_name}/**/.gitkeep`, {
-                    stdio: "ignore",
+                  const authorEmail = await task.prompt({
+                    message: "What is your email?",
+                    type: "Input",
+                    initial: gitUserEmail,
                   });
-                  execSync(`git init`, { cwd: ctx.project_name });
                 },
+              },
+              {
+                title: "Apply user data to template",
+                task: async (ctx) => {},
               },
             ]),
         },
@@ -294,7 +305,7 @@ export class Generate extends Command {
     await tasks.run({
       platform: this.config.platform,
       project_name: args.project_name,
-      language: flags.language,
+      language: "ink",
       contractTemplate: flags.template,
       node: {
         type: flags.node,
