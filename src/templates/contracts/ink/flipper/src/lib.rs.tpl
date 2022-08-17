@@ -9,7 +9,7 @@ mod {{contract_name_snake}} {
     /// Add new fields to the below struct in order
     /// to add new static storage fields to your contract.
     #[ink(storage)]
-    pub struct {{{{contract_name_pascal}}}} {
+    pub struct {{contract_name_pascal}} {
         /// Stores a single `bool` value on the storage.
         value: bool,
     }

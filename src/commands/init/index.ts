@@ -2,20 +2,26 @@ import { execSync, exec } from "node:child_process";
 import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
 import {
-  rmSync,
   createWriteStream,
   existsSync,
   mkdirSync,
   readFileSync,
   readdirSync,
   writeFileSync,
-} from "node:fs";
+  ensureDir,
+  rmSync,
+  copyFileSync,
+  copy,
+} from "fs-extra";
 import { Listr } from "listr2";
 import decompress = require("decompress");
 import download = require("download");
 import { nodes } from "../../nodes";
 import { checkCliDependencies } from "../../lib/tasks";
 import execa = require("execa");
+import handlebars from "handlebars";
+import globby = require("globby");
+import { paramCase, pascalCase, snakeCase } from "change-case";
 
 export interface SwankyConfig {
   platform: string;
@@ -32,7 +38,12 @@ export interface SwankyConfig {
     supportedInk?: string;
     nodeAddress?: string;
   };
+  author: {
+    name: string;
+    email: string;
+  };
   accounts: { alias: string; mnemonic: string }[];
+  contractName?: string;
 }
 
 const templatesPath = path.resolve("src", "templates", "contracts", "ink");
@@ -98,11 +109,12 @@ export class Generate extends Command {
               {
                 title: "Template name",
                 task: async (ctx, task): Promise<void> => {
-                  const templateName = await task.prompt({
+                  const contractName = await task.prompt({
                     message: "What should we name your contract?",
                     type: "Input",
                     initial: ctx.contractTemplate,
                   });
+                  ctx.contractName = contractName;
                 },
               },
               {
@@ -124,11 +136,73 @@ export class Generate extends Command {
                     type: "Input",
                     initial: gitUserEmail,
                   });
+                  ctx.author = { name: authorName, email: authorEmail };
+                },
+              },
+              {
+                title: "Copy core template files",
+                task: async (ctx) => {
+                  await ensureDir(ctx.project_name);
+                  // TODO: use glob
+                  const files = [
+                    ".gitignore",
+                    "package.json.tpl",
+                    "tsconfig.json",
+                  ];
+                  files.forEach((file) => {
+                    copyFileSync(
+                      path.resolve("src", "templates", file),
+                      path.resolve(ctx.project_name, file)
+                    );
+                  });
+                },
+              },
+              {
+                title: "Copy contract template files",
+                task: async (ctx) => {
+                  await copy(
+                    path.resolve(
+                      "src",
+                      "templates",
+                      "contracts",
+                      ctx.language as string,
+                      ctx.contractTemplate as string
+                    ),
+                    path.resolve(
+                      ctx.project_name,
+                      "contracts",
+                      ctx.contractName as string
+                    )
+                  );
                 },
               },
               {
                 title: "Apply user data to template",
-                task: async (ctx) => {},
+                task: async (ctx) => {
+                  if (!ctx.contractTemplate)
+                    this.error("No template selected!");
+                  const templateFiles = await globby(ctx.project_name, {
+                    expandDirectories: { files: ["*.tpl"] },
+                  });
+                  templateFiles.forEach(async (tplFilePath) => {
+                    const rawTemplate = readFileSync(tplFilePath, "utf8");
+                    const template = handlebars.compile(rawTemplate);
+                    const compiledFile = template({
+                      project_name: paramCase(ctx.project_name),
+                      author_name: ctx.author.name,
+                      //TODO: get from package.json
+                      swanky_version: "0.1.4",
+                      contract_name_snake: snakeCase(
+                        ctx.contractName as string
+                      ),
+                      contract_name_pascal: pascalCase(
+                        ctx.contractName as string
+                      ),
+                    });
+                    rmSync(tplFilePath);
+                    writeFileSync(tplFilePath.split(".tpl")[0], compiledFile);
+                  });
+                },
               },
             ]),
         },
@@ -311,6 +385,7 @@ export class Generate extends Command {
         type: flags.node,
       },
       accounts: [],
+      author: { name: "", email: "" },
     });
 
     this.log("Successfully Initialized");

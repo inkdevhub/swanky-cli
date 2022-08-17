@@ -1,7 +1,7 @@
 {
-  "name": {{project_name}},
+  "name": "{{project_name}}",
   "version": "1.0.0",
-  "author": {{author_name}},
+  "author": "{{author_name}}",
   "license": "MIT",
   "scripts": {
     "run-node": "swanky node start",
