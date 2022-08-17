@@ -15,6 +15,7 @@ export class StartNode extends Command {
       project_name: "",
       node: {},
       accounts: [],
+      author: { name: "", email: "" },
     };
     try {
       const file = readFileSync("swanky.config.json", { encoding: "utf-8" });
