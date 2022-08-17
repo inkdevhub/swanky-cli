@@ -2,7 +2,7 @@ import { Command, Flags } from "@oclif/core";
 import { yellowBright, greenBright } from "chalk";
 import { ensureSwankyProject, getSwankyConfig } from "../../lib/command-utils";
 
-export class CreateAccount extends Command {
+export class ListAccounts extends Command {
   static description = "List dev accounts stored in config";
   static aliases = [`account:ls`];
 
