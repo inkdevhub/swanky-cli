@@ -46,23 +46,24 @@ export interface SwankyConfig {
   contractName?: string;
 }
 
-const templatesPath = path.resolve("src", "templates", "contracts", "ink");
-const fileList = readdirSync(templatesPath, {
-  withFileTypes: true,
-});
-const templatesList = fileList
-  .filter((entry) => entry.isDirectory())
-  .map((entry) => ({
-    message: entry.name,
-    name: entry.name,
-  }));
+function getTemplates() {
+  const templatesPath = path.resolve("src", "templates", "contracts", "ink");
+  const fileList = readdirSync(templatesPath, {
+    withFileTypes: true,
+  });
+  const templatesList = fileList
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => ({
+      message: entry.name,
+      name: entry.name,
+    }));
+
+  return { templatesPath, templatesList };
+}
 export class Generate extends Command {
   static description = "Generate a new smart contract environment";
 
   static flags = {
-    template: Flags.string({
-      options: templatesList.map((template) => template.name),
-    }),
     "swanky-node": Flags.boolean(),
   };
 
@@ -99,7 +100,7 @@ export class Generate extends Command {
                       name: "contractTemplate",
                       message: "Which template should we use?",
                       type: "Select",
-                      choices: templatesList,
+                      choices: getTemplates().templatesList,
                     },
                   ]);
                   ctx.contractTemplate = template;
