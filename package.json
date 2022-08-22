@@ -92,13 +92,14 @@
     ]
   },
   "scripts": {
-    "build": "shx rm -rf dist && rm tsconfig.tsbuildinfo && tsc -b",
+    "build": "shx rm -rf dist && rm tsconfig.tsbuildinfo && tsc -b && yarn copy-template",
     "lint": "eslint . --ext .ts --config .eslintrc",
     "postpack": "shx rm -f oclif.manifest.json",
     "posttest": "yarn lint",
     "prepack": "yarn build && oclif manifest && oclif readme",
     "test": "mocha --forbid-only \"test/**/*.test.js\"",
-    "version": "oclif readme && git add README.md"
+    "version": "oclif readme && git add README.md",
+    "copy-template": "cp -R ./src/templates ./dist/"
   },
   "engines": {
     "node": ">=12.0.0"

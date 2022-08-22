@@ -46,25 +46,35 @@ export interface SwankyConfig {
   contractName?: string;
 }
 
-function getTemplates() {
-  const templatesPath = path.resolve("src", "templates", "contracts", "ink");
-  const fileList = readdirSync(templatesPath, {
+function getTemplates(language = "ink") {
+  const templatesPath = path.resolve(__dirname, "../..", "templates");
+  const contractTemplatesPath = path.resolve(
+    templatesPath,
+    "contracts",
+    language
+  );
+  const fileList = readdirSync(contractTemplatesPath, {
     withFileTypes: true,
   });
-  const templatesList = fileList
+  const contractTemplatesList = fileList
     .filter((entry) => entry.isDirectory())
     .map((entry) => ({
       message: entry.name,
       name: entry.name,
     }));
 
-  return { templatesPath, templatesList };
+  return { templatesPath, contractTemplatesPath, contractTemplatesList };
 }
 export class Generate extends Command {
   static description = "Generate a new smart contract environment";
 
   static flags = {
     "swanky-node": Flags.boolean(),
+    template: Flags.string({
+      options: getTemplates().contractTemplatesList.map(
+        (template) => template.name
+      ),
+    }),
   };
 
   static args = [
@@ -100,7 +110,7 @@ export class Generate extends Command {
                       name: "contractTemplate",
                       message: "Which template should we use?",
                       type: "Select",
-                      choices: getTemplates().templatesList,
+                      choices: getTemplates().contractTemplatesList,
                     },
                   ]);
                   ctx.contractTemplate = template;
@@ -144,6 +154,7 @@ export class Generate extends Command {
                 title: "Copy core template files",
                 task: async (ctx) => {
                   await ensureDir(ctx.project_name);
+                  const templatesPath = getTemplates().templatesPath;
                   // TODO: use glob
                   const files = [
                     ".gitignore",
@@ -152,7 +163,7 @@ export class Generate extends Command {
                   ];
                   files.forEach((file) => {
                     copyFileSync(
-                      path.resolve("src", "templates", file),
+                      path.resolve(templatesPath, file),
                       path.resolve(ctx.project_name, file)
                     );
                   });
@@ -161,12 +172,11 @@ export class Generate extends Command {
               {
                 title: "Copy contract template files",
                 task: async (ctx) => {
+                  const contractTemplatesPath =
+                    getTemplates().contractTemplatesPath;
                   await copy(
                     path.resolve(
-                      "src",
-                      "templates",
-                      "contracts",
-                      ctx.language as string,
+                      contractTemplatesPath,
                       ctx.contractTemplate as string
                     ),
                     path.resolve(

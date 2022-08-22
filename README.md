@@ -179,14 +179,13 @@ Generate a new smart contract environment
 
 ```
 USAGE
-  $ swanky init [PROJECT_NAME] [--template blank|flipper|psp22] [--swanky-node]
+  $ swanky init [PROJECT_NAME] [--swanky-node]
 
 ARGUMENTS
   PROJECT_NAME  directory name of new project
 
 FLAGS
   --swanky-node
-  --template=<option>  <options: blank|flipper|psp22>
 
 DESCRIPTION
   Generate a new smart contract environment
