@@ -220,6 +220,14 @@ export class Generate extends Command {
                   });
                 },
               },
+              {
+                title: "Init git",
+                task: async (ctx) => {
+                  await execa.command("git init", {
+                    cwd: path.resolve(ctx.project_name),
+                  });
+                },
+              },
             ]),
         },
         {
