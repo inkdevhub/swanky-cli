@@ -207,7 +207,7 @@ export class Generate extends Command {
                       project_name: paramCase(ctx.project_name),
                       author_name: ctx.author.name,
                       //TODO: get from package.json
-                      swanky_version: "0.1.4",
+                      swanky_version: "0.1.5",
                       contract_name_snake: snakeCase(
                         ctx.contractName as string
                       ),
