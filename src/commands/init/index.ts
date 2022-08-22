@@ -12,6 +12,7 @@ import {
   rmSync,
   copyFileSync,
   copy,
+  rename,
 } from "fs-extra";
 import { Listr } from "listr2";
 import decompress = require("decompress");
@@ -157,7 +158,7 @@ export class Generate extends Command {
                   const templatesPath = getTemplates().templatesPath;
                   // TODO: use glob
                   const files = [
-                    ".gitignore",
+                    "gitignore",
                     "package.json.tpl",
                     "tsconfig.json",
                   ];
@@ -167,6 +168,10 @@ export class Generate extends Command {
                       path.resolve(ctx.project_name, file)
                     );
                   });
+                  rename(
+                    path.resolve(ctx.project_name, "gitignore"),
+                    path.resolve(ctx.project_name, ".gitignore")
+                  );
                 },
               },
               {
@@ -193,7 +198,7 @@ export class Generate extends Command {
                   if (!ctx.contractTemplate)
                     this.error("No template selected!");
                   const templateFiles = await globby(ctx.project_name, {
-                    expandDirectories: { files: ["*.tpl"] },
+                    expandDirectories: { extensions: ["tpl"] },
                   });
                   templateFiles.forEach(async (tplFilePath) => {
                     const rawTemplate = readFileSync(tplFilePath, "utf8");
