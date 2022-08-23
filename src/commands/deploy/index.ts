@@ -22,7 +22,6 @@ export class DeployContract extends Command {
       char: "g",
     }),
     args: Flags.string({
-      required: true,
       char: "a",
       multiple: true,
     }),
