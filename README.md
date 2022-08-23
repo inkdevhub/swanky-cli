@@ -1,36 +1,33 @@
 # Swanky CLI
 
 <!-- toc -->
-
-- [Swanky CLI](#swanky-cli)
-- [Usage](#usage)
-- [Commands](#commands)
+* [Swanky CLI](#swanky-cli)
+* [Usage](#usage)
+* [Commands](#commands)
+* [Config](#config)
 <!-- tocstop -->
 
 # Usage
 
 <!-- usage -->
-
 ```sh-session
 $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
 running command...
 $ swanky (--version|-V|-v)
-@astar-network/swanky-cli/0.1.5 darwin-x64 node-v18.2.0
+@astar-network/swanky-cli/0.1.6 darwin-x64 node-v18.2.0
 $ swanky --help [COMMAND]
 USAGE
   $ swanky COMMAND
 ...
 ```
-
 <!-- usagestop -->
 
 # Commands
 
 <!-- commands -->
-
-- [`swanky help [COMMAND]`](#swanky-help-command)
-- [`swanky version`](#swanky-version)
+* [`swanky help [COMMAND]`](#swanky-help-command)
+* [`swanky version`](#swanky-version)
 
 ## `swanky help [COMMAND]`
 
@@ -71,7 +68,6 @@ FLAG DESCRIPTIONS
 ```
 
 _See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.1.1/src/commands/version.ts)_
-
 <!-- commandsstop -->
 
 # Config
