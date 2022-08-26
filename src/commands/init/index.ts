@@ -67,7 +67,7 @@ function getTemplates(language = "ink") {
   return { templatesPath, contractTemplatesPath, contractTemplatesList };
 }
 
-export class Generate extends Command {
+export class Init extends Command {
   static description = "Generate a new smart contract environment";
 
   static flags = {
@@ -88,7 +88,7 @@ export class Generate extends Command {
   ];
 
   async run(): Promise<void> {
-    const { args, flags } = await this.parse(Generate);
+    const { args, flags } = await this.parse(Init);
 
     const tasks = new Listr<SwankyConfig>(
       [
