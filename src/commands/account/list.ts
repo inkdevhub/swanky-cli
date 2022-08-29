@@ -1,5 +1,6 @@
-import { Command, Flags } from "@oclif/core";
-import { yellowBright, greenBright } from "chalk";
+import { Command } from "@oclif/core";
+import yellowBright from "chalk";
+import greenBright from "chalk";
 import { ensureSwankyProject, getSwankyConfig } from "../../lib/command-utils";
 
 export class CreateAccount extends Command {
