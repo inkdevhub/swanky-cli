@@ -1,15 +1,17 @@
 # Swanky CLI
 
 <!-- toc -->
-* [Swanky CLI](#swanky-cli)
-* [Usage](#usage)
-* [Commands](#commands)
-* [Config](#config)
+
+- [Swanky CLI](#swanky-cli)
+- [Usage](#usage)
+- [Commands](#commands)
+- [Config](#config)
 <!-- tocstop -->
 
 # Usage
 
 <!-- usage -->
+
 ```sh-session
 $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
@@ -21,68 +23,21 @@ USAGE
   $ swanky COMMAND
 ...
 ```
+
 <!-- usagestop -->
 
 # Commands
 
 <!-- commands -->
-* [`swanky account create`](#swanky-account-create)
-* [`swanky account list`](#swanky-account-list)
-* [`swanky account ls`](#swanky-account-ls)
-* [`swanky call`](#swanky-call)
-* [`swanky check`](#swanky-check)
-* [`swanky compile`](#swanky-compile)
-* [`swanky deploy`](#swanky-deploy)
-* [`swanky help [COMMAND]`](#swanky-help-command)
-* [`swanky init PROJECT_NAME`](#swanky-init-project_name)
-* [`swanky node start`](#swanky-node-start)
-* [`swanky version`](#swanky-version)
 
-## `swanky account create`
-
-Create a new dev account in config
-
-```
-USAGE
-  $ swanky account create [-f] [-g]
-
-FLAGS
-  -f, --force
-  -g, --generate
-
-DESCRIPTION
-  Create a new dev account in config
-```
-
-## `swanky account list`
-
-List dev accounts stored in config
-
-```
-USAGE
-  $ swanky account list
-
-DESCRIPTION
-  List dev accounts stored in config
-
-ALIASES
-  $ swanky account ls
-```
-
-## `swanky account ls`
-
-List dev accounts stored in config
-
-```
-USAGE
-  $ swanky account ls
-
-DESCRIPTION
-  List dev accounts stored in config
-
-ALIASES
-  $ swanky account ls
-```
+- [`swanky call`](#swanky-call)
+- [`swanky check`](#swanky-check)
+- [`swanky compile`](#swanky-compile)
+- [`swanky deploy`](#swanky-deploy)
+- [`swanky help [COMMAND]`](#swanky-help-command)
+- [`swanky init PROJECT_NAME`](#swanky-init-project_name)
+- [`swanky node start`](#swanky-node-start)
+- [`swanky version`](#swanky-version)
 
 ## `swanky call`
 
@@ -226,6 +181,7 @@ FLAG DESCRIPTIONS
 ```
 
 _See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.1.1/src/commands/version.ts)_
+
 <!-- commandsstop -->
 
 # Config

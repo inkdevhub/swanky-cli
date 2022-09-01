@@ -91,7 +91,7 @@ export default class Check extends Command {
             }
 
             const cargoTomlString = fs.readFileSync(tomlPath, {
-              encoding: "utf-8",
+              encoding: "utf8",
             });
 
             const cargoToml = toml.parse(cargoTomlString);

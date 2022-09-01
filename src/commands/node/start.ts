@@ -18,7 +18,7 @@ export class StartNode extends Command {
       author: { name: "", email: "" },
     };
     try {
-      const file = readFileSync("swanky.config.json", { encoding: "utf-8" });
+      const file = readFileSync("swanky.config.json", { encoding: "utf8" });
       config = JSON.parse(file);
     } catch {
       throw new Error("No 'swanky.config.json' detected in current folder!");

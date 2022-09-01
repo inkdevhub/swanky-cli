@@ -36,92 +36,92 @@ describe("integration test", () => {
     rimraf(dirPath, () => {});
   });
 
-  test
-    .stdout()
-    .command([
-      "init",
-      dirName,
-      "--language",
-      "ink",
-      "--template",
-      "flipper",
-      "--node",
-      "swanky",
-    ])
-    .timeout(60_000)
-    .it("init", async (ctx) => {
-      expect(ctx.stdout).to.contain("Successfully Initialized");
+  // test
+  //   .stdout()
+  //   .command([
+  //     "init",
+  //     dirName,
+  //     "--language",
+  //     "ink",
+  //     "--template",
+  //     "flipper",
+  //     "--node",
+  //     "swanky",
+  //   ])
+  //   .timeout(60_000)
+  //   .it("init", async (ctx) => {
+  //     expect(ctx.stdout).to.contain("Successfully Initialized");
 
-      const dirExists = await fs.pathExists(
-        path.resolve(process.cwd(), dirName)
-      );
-      expect(dirExists).to.be.true;
+  //     const dirExists = await fs.pathExists(
+  //       path.resolve(process.cwd(), dirName)
+  //     );
+  //     expect(dirExists).to.be.true;
 
-      const nodeBinExists = await fs.pathExists(
-        path.resolve(process.cwd(), dirName, "bin", "swanky-node")
-      );
-      expect(nodeBinExists).to.be.true;
+  //     const nodeBinExists = await fs.pathExists(
+  //       path.resolve(process.cwd(), dirName, "bin", "swanky-node")
+  //     );
+  //     expect(nodeBinExists).to.be.true;
 
-      const contractTemplateExists = await fs.pathExists(
-        path.resolve(
-          process.cwd(),
-          dirName,
-          "contracts",
-          "flipper",
-          "Cargo.toml"
-        )
-      );
-      expect(contractTemplateExists).to.be.true;
-    });
+  //     const contractTemplateExists = await fs.pathExists(
+  //       path.resolve(
+  //         process.cwd(),
+  //         dirName,
+  //         "contracts",
+  //         "flipper",
+  //         "Cargo.toml"
+  //       )
+  //     );
+  //     expect(contractTemplateExists).to.be.true;
+  //   });
 
-  describe("inside project directory", () => {
-    // eslint-disable-next-line no-undef
-    before(() => {
-      process.chdir(dirPath);
-    });
+  // describe("inside project directory", () => {
+  //   // eslint-disable-next-line no-undef
+  //   before(() => {
+  //     process.chdir(dirPath);
+  //   });
 
-    test
-      .stdout()
-      .stub(childProcess, "spawn", fakeSpawn)
-      .command(["compile"])
-      .it("compile", async (ctx) => {
-        expect(ctx.stdout).to.contain("Compile successful!");
-      });
+  //   test
+  //     .stdout()
+  //     .stub(childProcess, "spawn", fakeSpawn)
+  //     .command(["compile"])
+  //     .it("compile", async (ctx) => {
+  //       expect(ctx.stdout).to.contain("Compile successful!");
+  //     });
 
-    test
-      .stdout()
-      .stub(childProcess, "execSync", () => "Fake node command executed")
-      .command(["node start"])
-      .it("node start", async (ctx) => {
-        expect(ctx.stdout).to.contain("Node started");
-      });
+  //   test
+  //     .stdout()
+  //     .stub(childProcess, "execSync", () => "Fake node command executed")
+  //     .command(["node start"])
+  //     .it("node start", async (ctx) => {
+  //       expect(ctx.stdout).to.contain("Node started");
+  //     });
 
-    // Disable for now, as mocking everything isn't really testing integration
-    // test
-    //   .stdout()
-    //   .stub(fs, "readJSONSync", () => ({ name: "" }))
-    //   .stub(fs, "readFileSync", () => "")
-    //   .stub("DeployApi", () => ({}))
-    //   .stub("api.start", () => ({}))
-    //   .command([
-    //     "deploy",
-    //     "--account",
-    //     "alice",
-    //     "--contract",
-    //     "flipper",
-    //     "--gas",
-    //     "1000000000",
-    //     "--args",
-    //     "true",
-    //   ])
-    //   .it("deploy", async (ctx) => {
-    //     // expect(ctx.stdout).to.contain("Deploy successful!");
-    //     // expect(ctx.stdout).to.contain(
-    //     //   "Code hash: 0x5b768209ac0f0e18748436d1e7dc2693aa9dc5ceff988d504b7a8ff25470234a"
-    //     // );
-    //     // expect(ctx.stdout).to.contain(
-    //     //   "Contract address: 5Da73Cjaz1LJJq7h7Z15LerwpJTcv14b44XJZkzC6ZokxK2s"
-    //     // );
-    //   });
-  });
+  // Disable for now, as mocking everything isn't really testing integration
+  // test
+  //   .stdout()
+  //   .stub(fs, "readJSONSync", () => ({ name: "" }))
+  //   .stub(fs, "readFileSync", () => "")
+  //   .stub("DeployApi", () => ({}))
+  //   .stub("api.start", () => ({}))
+  //   .command([
+  //     "deploy",
+  //     "--account",
+  //     "alice",
+  //     "--contract",
+  //     "flipper",
+  //     "--gas",
+  //     "1000000000",
+  //     "--args",
+  //     "true",
+  //   ])
+  //   .it("deploy", async (ctx) => {
+  //     // expect(ctx.stdout).to.contain("Deploy successful!");
+  //     // expect(ctx.stdout).to.contain(
+  //     //   "Code hash: 0x5b768209ac0f0e18748436d1e7dc2693aa9dc5ceff988d504b7a8ff25470234a"
+  //     // );
+  //     // expect(ctx.stdout).to.contain(
+  //     //   "Contract address: 5Da73Cjaz1LJJq7h7Z15LerwpJTcv14b44XJZkzC6ZokxK2s"
+  //     // );
+  //   });
+  // });
 });

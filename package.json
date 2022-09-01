@@ -17,7 +17,7 @@
     "/oclif.manifest.json"
   ],
   "dependencies": {
-    "@oclif/core": "1.13.1",
+    "@oclif/core": "1.16.0",
     "@oclif/plugin-help": "^5",
     "@oclif/plugin-plugins": "^2.0.1",
     "@oclif/plugin-version": "^1.1.1",
@@ -26,13 +26,17 @@
     "@polkadot/keyring": "^10.1.2",
     "@polkadot/util": "^10.1.2",
     "@polkadot/util-crypto": "^10.1.2",
+    "@typescript-eslint/eslint-plugin": "^5.35.1",
+    "@typescript-eslint/parser": "^5.35.1",
     "bn.js": "^5.2.1",
+    "chalk": "4.1.2",
     "change-case": "^4.1.2",
     "command-exists": "^1.2.9",
     "debug": "^4.3.4",
     "decompress": "^4.2.1",
     "download": "^8.0.0",
     "enquirer": "^2.3.6",
+    "eslint-plugin-unicorn": "^43.0.2",
     "execa": "5.1.1",
     "fs-extra": "^10.1.0",
     "handlebars": "^4.7.7",
@@ -92,7 +96,7 @@
     ]
   },
   "scripts": {
-    "build": "shx rm -rf dist && rm tsconfig.tsbuildinfo && tsc -b && yarn copy-template",
+    "build": "shx rm -rf dist && rm -f tsconfig.tsbuildinfo && tsc -b && yarn copy-template",
     "lint": "eslint . --ext .ts --config .eslintrc",
     "postpack": "shx rm -f oclif.manifest.json",
     "posttest": "yarn lint",

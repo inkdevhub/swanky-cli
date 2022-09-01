@@ -207,7 +207,7 @@ export class Generate extends Command {
                     const compiledFile = template({
                       project_name: paramCase(ctx.project_name),
                       author_name: ctx.author.name,
-                      //TODO: get from package.json
+                      // TODO: get from package.json
                       swanky_version: "0.1.5",
                       contract_name_snake: snakeCase(
                         ctx.contractName as string
@@ -367,14 +367,14 @@ export class Generate extends Command {
               const pjsonPath = path.resolve(ctx.project_name, "package.json");
               const packageJson = JSON.parse(
                 readFileSync(pjsonPath, {
-                  encoding: "utf-8",
+                  encoding: "utf8",
                 })
               );
               packageJson.dependencies = {
                 [this.config.pjson.name]: this.config.pjson.version,
               };
               writeFileSync(pjsonPath, JSON.stringify(packageJson, null, 2), {
-                encoding: "utf-8",
+                encoding: "utf8",
               });
               let installCommand = "npm install";
               try {
@@ -407,7 +407,7 @@ export class Generate extends Command {
       language: "ink",
       contractTemplate: flags.template,
       node: {
-        type: flags.node,
+        type: flags["swanky-node"] ? "swanky" : undefined,
       },
       accounts: [],
       author: { name: "", email: "" },

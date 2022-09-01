@@ -17,6 +17,9 @@ export class CallContract extends Command {
     dry: Flags.boolean({
       char: "d",
     }),
+    gas: Flags.string({
+      char: "g",
+    }),
   };
 
   static args = [];
@@ -27,7 +30,7 @@ export class CallContract extends Command {
       contracts: [""],
     };
     try {
-      const file = readFileSync("swanky.config.json", { encoding: "utf-8" });
+      const file = readFileSync("swanky.config.json", { encoding: "utf8" });
       config = JSON.parse(file);
     } catch {
       throw new Error("No 'swanky.config.json' detected in current folder!");
@@ -36,9 +39,9 @@ export class CallContract extends Command {
     execSync(
       `cargo contract call --contract ${
         config.contracts[0].address
-      } --message ${flags.message} --suri //Alice --gas 100000000000 ${
-        flags.dry ? "--dry-run" : ""
-      }`,
+      } --message ${flags.message} --suri //Alice --gas ${
+        flags.gas ?? "100000000000"
+      } ${flags.dry ? "--dry-run" : ""}`,
       {
         stdio: "inherit",
         cwd: path.resolve(

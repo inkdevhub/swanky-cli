@@ -1,5 +1,5 @@
 import { Command, Flags } from "@oclif/core";
-import { yellowBright, greenBright } from "chalk";
+import chalk = require("chalk");
 import { prompt } from "enquirer";
 import { writeFileSync } from "fs-extra";
 import { ChainAccount } from "../../lib/account";
@@ -26,7 +26,7 @@ export class CreateAccount extends Command {
     const confirmation: { confirmed: boolean } = await prompt([
       {
         type: "confirm",
-        message: `${yellowBright(
+        message: `${chalk.yellowBright(
           "WARNING: Only store test accounts this way. Mnemonic will be stored in the config file."
         )}
       Are you sure you want to proceed?`,
@@ -64,7 +64,7 @@ export class CreateAccount extends Command {
     writeFileSync("swanky.config.json", JSON.stringify(config, null, 2));
 
     this.log(
-      `${greenBright("✔")} Account with alias ${yellowBright(
+      `${chalk.greenBright("✔")} Account with alias ${chalk.yellowBright(
         accountData.alias
       )} stored to config`
     );

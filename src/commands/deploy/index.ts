@@ -48,6 +48,25 @@ export class DeployContract extends Command {
               "Provided account alias not found in swanky.config.json"
             );
           }
+
+          ctx.account = new ChainAccount(account.mnemonic);
+        },
+      },
+      {
+        title: "Initialising",
+        task: async (ctx) => {
+          await cryptoWaitReady();
+          const config = await getSwankyConfig();
+          ctx.config = config;
+          const account = config.accounts.find(
+            (account) => account.alias === flags.account
+          );
+          if (!account) {
+            this.error(
+              "Provided account alias not found in swanky.config.json"
+            );
+          }
+
           ctx.account = new ChainAccount(account.mnemonic);
         },
       },
@@ -120,10 +139,12 @@ export class DeployContract extends Command {
 }
 
 class DeployApi extends ChainApi {
+  // eslint-disable-next-line no-useless-constructor
   constructor(endpoint: string) {
     super(endpoint);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   public async getGasCost() {}
 
   public async deploy(
