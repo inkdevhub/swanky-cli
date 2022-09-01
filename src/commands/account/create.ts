@@ -1,5 +1,5 @@
 import { Command, Flags } from "@oclif/core";
-import chalk = require("chalk");
+import chalk from "chalk";
 import { prompt } from "enquirer";
 import { writeFileSync } from "fs-extra";
 import { ChainAccount } from "../../lib/account";

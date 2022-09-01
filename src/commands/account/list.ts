@@ -1,5 +1,5 @@
 import { Command } from "@oclif/core";
-import chalk = require("chalk");
+import chalk from "chalk";
 import { ensureSwankyProject, getSwankyConfig } from "../../lib/command-utils";
 
 export class CreateAccount extends Command {

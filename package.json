@@ -29,7 +29,7 @@
     "@typescript-eslint/eslint-plugin": "^5.35.1",
     "@typescript-eslint/parser": "^5.35.1",
     "bn.js": "^5.2.1",
-    "chalk": "4.1.2",
+    "chalk": "4",
     "change-case": "^4.1.2",
     "command-exists": "^1.2.9",
     "debug": "^4.3.4",
