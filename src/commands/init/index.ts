@@ -66,6 +66,7 @@ function getTemplates(language = "ink") {
 
   return { templatesPath, contractTemplatesPath, contractTemplatesList };
 }
+
 export class Generate extends Command {
   static description = "Generate a new smart contract environment";
 
