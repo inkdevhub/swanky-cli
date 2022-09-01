@@ -2,25 +2,33 @@ import { execSync, exec } from "node:child_process";
 import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
 import {
-  rmSync,
   createWriteStream,
   existsSync,
   mkdirSync,
   readFileSync,
   readdirSync,
-} from "node:fs";
+  writeFileSync,
+  ensureDir,
+  rmSync,
+  copyFileSync,
+  copy,
+  rename,
+} from "fs-extra";
 import { Listr } from "listr2";
 import decompress = require("decompress");
 import download = require("download");
 import { nodes } from "../../nodes";
-import { writeFileSync } from "node:fs";
+import { checkCliDependencies } from "../../lib/tasks";
 import execa = require("execa");
+import handlebars from "handlebars";
+import globby = require("globby");
+import { paramCase, pascalCase, snakeCase } from "change-case";
 
 export interface SwankyConfig {
   platform: string;
   language?: string;
   contractTemplate?: string;
-  name: string;
+  project_name: string;
   nodeTargetDir?: string;
   nodeFileName?: string;
   contracts?: { name: string; address: string }[];
@@ -31,28 +39,49 @@ export interface SwankyConfig {
     supportedInk?: string;
     nodeAddress?: string;
   };
+  author: {
+    name: string;
+    email: string;
+  };
   accounts: { alias: string; mnemonic: string }[];
+  contractName?: string;
 }
 
-const contractTypes = [
-  { message: "Blank", name: "master" },
-  { message: "Flipper", name: "flipper" },
-  { message: "PSP22", name: "psp22" },
-];
+function getTemplates(language = "ink") {
+  const templatesPath = path.resolve(__dirname, "../..", "templates");
+  const contractTemplatesPath = path.resolve(
+    templatesPath,
+    "contracts",
+    language
+  );
+  const fileList = readdirSync(contractTemplatesPath, {
+    withFileTypes: true,
+  });
+  const contractTemplatesList = fileList
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => ({
+      message: entry.name,
+      name: entry.name,
+    }));
+
+  return { templatesPath, contractTemplatesPath, contractTemplatesList };
+}
+
 export class Generate extends Command {
   static description = "Generate a new smart contract environment";
 
   static flags = {
-    language: Flags.string({ options: ["ink", "ask"] }),
+    "swanky-node": Flags.boolean(),
     template: Flags.string({
-      options: contractTypes.map((type) => type.message.toLowerCase()),
+      options: getTemplates().contractTemplatesList.map(
+        (template) => template.name
+      ),
     }),
-    node: Flags.string({ options: ["swanky", "substrate-contracts-node"] }),
   };
 
   static args = [
     {
-      name: "name",
+      name: "project_name",
       required: true,
       description: "directory name of new project",
     },
@@ -61,65 +90,20 @@ export class Generate extends Command {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(Generate);
 
-    if (flags.language && flags.language !== "ink") {
-      this.error(`Sorry, ${flags.language} is not supported yet`, {
-        exit: 0,
-      });
-    }
-
     const tasks = new Listr<SwankyConfig>(
       [
-        {
-          title: "Checking dependencies",
-          task: (ctx, task) => {
-            const tasks = Object.entries({
-              rust: "rustc --version",
-              cargo: "cargo -V",
-              "cargo contract": "cargo contract -V",
-            }).map(([dependency, command]) => ({
-              title: `Checking ${dependency}`,
-              task: () => {
-                try {
-                  execa.command(command, { stdio: "ignore" });
-                } catch {
-                  throw new Error(
-                    `"${dependency}" is not installed. Please follow the guide: https://docs.substrate.io/tutorials/v3/ink-workshop/pt1/#update-your-rust-environment`
-                  );
-                }
-              },
-            }));
-            return task.newListr(tasks, { concurrent: true });
+        await checkCliDependencies([
+          { dependencyName: "rust", versionCommand: "rustc --version" },
+          { dependencyName: "cargo", versionCommand: "cargo -V" },
+          {
+            dependencyName: "cargo contract",
+            versionCommand: "cargo contract -V",
           },
-        },
+        ]),
         {
           title: "Cloning template",
           task: (ctx, task) =>
             task.newListr([
-              {
-                title: "Pick language",
-                task: async (ctx, task): Promise<void> => {
-                  const language = await task.prompt([
-                    {
-                      name: "language",
-                      message: "Which framework would you like to develop on?",
-                      type: "Select",
-                      choices: [
-                        { message: "Ink!", name: "ink" },
-                        { message: "Ask!", name: "ask" },
-                      ],
-                    },
-                  ]);
-
-                  if (language !== "ink") {
-                    this.error(`Sorry, ${language} is not supported yet`, {
-                      exit: 0,
-                    });
-                  }
-
-                  ctx.language = language;
-                },
-                skip: Boolean(ctx.language),
-              },
               {
                 title: "Pick template",
                 task: async (ctx, task): Promise<void> => {
@@ -128,12 +112,7 @@ export class Generate extends Command {
                       name: "contractTemplate",
                       message: "Which template should we use?",
                       type: "Select",
-                      choices: [
-                        { message: "Blank", name: "master" },
-                        { message: "Flipper", name: "flipper" },
-                        { message: "PSP22", name: "psp22" },
-                        { message: "Dual contract", name: "dual-contract" },
-                      ],
+                      choices: getTemplates().contractTemplatesList,
                     },
                   ]);
                   ctx.contractTemplate = template;
@@ -141,28 +120,113 @@ export class Generate extends Command {
                 skip: Boolean(ctx.contractTemplate),
               },
               {
-                title: "Cloning template repo",
-                task: (ctx): void => {
-                  execSync(
-                    `git clone -b ${
-                      ctx.contractTemplate
-                    } --single-branch https://github.com/AstarNetwork/swanky-template-ink.git "${path.resolve(
-                      ctx.name
-                    )}"`,
-                    { stdio: "ignore" }
+                title: "Template name",
+                task: async (ctx, task): Promise<void> => {
+                  const contractName = await task.prompt({
+                    message: "What should we name your contract?",
+                    type: "Input",
+                    initial: ctx.contractTemplate,
+                  });
+                  ctx.contractName = contractName;
+                },
+              },
+              {
+                title: "Author info",
+                task: async (ctx, task): Promise<void> => {
+                  const gitUserName = execa.commandSync(
+                    "git config --get user.name"
+                  ).stdout;
+                  const gitUserEmail = execa.commandSync(
+                    "git config --get user.email"
+                  ).stdout;
+                  const authorName = await task.prompt({
+                    message: "What is your name?",
+                    type: "Input",
+                    initial: gitUserName,
+                  });
+                  const authorEmail = await task.prompt({
+                    message: "What is your email?",
+                    type: "Input",
+                    initial: gitUserEmail,
+                  });
+                  ctx.author = { name: authorName, email: authorEmail };
+                },
+              },
+              {
+                title: "Copy core template files",
+                task: async (ctx) => {
+                  await ensureDir(ctx.project_name);
+                  const templatesPath = getTemplates().templatesPath;
+                  // TODO: use glob
+                  const files = [
+                    "gitignore",
+                    "package.json.tpl",
+                    "tsconfig.json",
+                  ];
+                  files.forEach((file) => {
+                    copyFileSync(
+                      path.resolve(templatesPath, file),
+                      path.resolve(ctx.project_name, file)
+                    );
+                  });
+                  rename(
+                    path.resolve(ctx.project_name, "gitignore"),
+                    path.resolve(ctx.project_name, ".gitignore")
                   );
                 },
               },
               {
-                title: "Clean up",
-                task: (ctx): void => {
-                  rmSync(`${path.resolve(ctx.name, ".git")}`, {
-                    recursive: true,
+                title: "Copy contract template files",
+                task: async (ctx) => {
+                  const contractTemplatesPath =
+                    getTemplates().contractTemplatesPath;
+                  await copy(
+                    path.resolve(
+                      contractTemplatesPath,
+                      ctx.contractTemplate as string
+                    ),
+                    path.resolve(
+                      ctx.project_name,
+                      "contracts",
+                      ctx.contractName as string
+                    )
+                  );
+                },
+              },
+              {
+                title: "Apply user data to template",
+                task: async (ctx) => {
+                  if (!ctx.contractTemplate)
+                    this.error("No template selected!");
+                  const templateFiles = await globby(ctx.project_name, {
+                    expandDirectories: { extensions: ["tpl"] },
                   });
-                  execSync(`rm -f ${ctx.name}/**/.gitkeep`, {
-                    stdio: "ignore",
+                  templateFiles.forEach(async (tplFilePath) => {
+                    const rawTemplate = readFileSync(tplFilePath, "utf8");
+                    const template = handlebars.compile(rawTemplate);
+                    const compiledFile = template({
+                      project_name: paramCase(ctx.project_name),
+                      author_name: ctx.author.name,
+                      // TODO: get from package.json
+                      swanky_version: "0.1.5",
+                      contract_name_snake: snakeCase(
+                        ctx.contractName as string
+                      ),
+                      contract_name_pascal: pascalCase(
+                        ctx.contractName as string
+                      ),
+                    });
+                    rmSync(tplFilePath);
+                    writeFileSync(tplFilePath.split(".tpl")[0], compiledFile);
                   });
-                  execSync(`git init`, { cwd: ctx.name });
+                },
+              },
+              {
+                title: "Init git",
+                task: async (ctx) => {
+                  await execa.command("git init", {
+                    cwd: path.resolve(ctx.project_name),
+                  });
                 },
               },
             ]),
@@ -197,7 +261,7 @@ export class Generate extends Command {
                 title: "Downloading",
                 task: async (ctx, task): Promise<void> =>
                   new Promise<void>((resolve, reject) => {
-                    const targetDir = path.resolve(ctx.name, "bin");
+                    const targetDir = path.resolve(ctx.project_name, "bin");
                     if (!existsSync(targetDir)) {
                       mkdirSync(targetDir);
                     }
@@ -276,7 +340,7 @@ export class Generate extends Command {
             delete ctx.nodeTargetDir;
 
             ctx.contracts = readdirSync(
-              path.resolve(ctx.name, "contracts")
+              path.resolve(ctx.project_name, "contracts")
             ).map((dirName) => ({ name: dirName, address: "" }));
 
             ctx.accounts = [
@@ -291,7 +355,7 @@ export class Generate extends Command {
             ];
 
             writeFileSync(
-              path.resolve(`${ctx.name}`, "swanky.config.json"),
+              path.resolve(`${ctx.project_name}`, "swanky.config.json"),
               JSON.stringify(ctx, null, 2)
             );
           },
@@ -300,7 +364,7 @@ export class Generate extends Command {
           title: "Installing",
           task: async (ctx, task): Promise<void> =>
             new Promise<void>((resolve, reject) => {
-              const pjsonPath = path.resolve(ctx.name, "package.json");
+              const pjsonPath = path.resolve(ctx.project_name, "package.json");
               const packageJson = JSON.parse(
                 readFileSync(pjsonPath, {
                   encoding: "utf8",
@@ -322,7 +386,7 @@ export class Generate extends Command {
               }
 
               task.output = `Running ${installCommand}..`;
-              exec(installCommand, { cwd: ctx.name }, (error) => {
+              exec(installCommand, { cwd: ctx.project_name }, (error) => {
                 if (error) {
                   reject(error);
                 }
@@ -339,13 +403,14 @@ export class Generate extends Command {
 
     await tasks.run({
       platform: this.config.platform,
-      name: args.name,
-      language: flags.language,
+      project_name: args.project_name,
+      language: "ink",
       contractTemplate: flags.template,
       node: {
-        type: flags.node,
+        type: flags["swanky-node"] ? "swanky" : undefined,
       },
       accounts: [],
+      author: { name: "", email: "" },
     });
 
     this.log("Successfully Initialized");

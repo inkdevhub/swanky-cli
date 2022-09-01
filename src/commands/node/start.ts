@@ -12,9 +12,10 @@ export class StartNode extends Command {
   async run(): Promise<void> {
     let config: SwankyConfig = {
       platform: "",
-      name: "",
+      project_name: "",
       node: {},
       accounts: [],
+      author: { name: "", email: "" },
     };
     try {
       const file = readFileSync("swanky.config.json", { encoding: "utf8" });

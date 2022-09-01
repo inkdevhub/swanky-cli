@@ -1,12 +1,12 @@
 export const nodes = {
   swanky: {
-    version: "0.4.0",
-    polkadotPalletVersions: "polkadot-v0.9.19",
-    supportedInk: "v3.0.1",
+    version: "0.10.0",
+    polkadotPalletVersions: "polkadot-v0.9.27",
+    supportedInk: "v3.3.1",
     darwin:
-      "https://github.com/AstarNetwork/swanky-node/releases/download/v0.3.0/swanky-node-macOS-latest-x86_64.zip",
+      "https://github.com/AstarNetwork/swanky-node/releases/download/v0.10.0/swanky-node-v0.10.0-macOS-x86_64.tar.gz",
     linux:
-      "https://github.com/AstarNetwork/swanky-node/releases/download/v0.3.0/swanky-node-ubuntu-latest-x86_64.zip",
+      "https://github.com/AstarNetwork/swanky-node/releases/download/v0.10.0/swanky-node-v0.10.0-ubuntu-x86_64.tar.gz",
   },
   "substrate-contracts-node": {
     darwin:

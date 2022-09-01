@@ -5,6 +5,9 @@
     "unicorn/no-process-exit": "off",
     "unicorn/no-await-expression-member": "off",
     "no-process-exit": "off",
-    "max-params": "off"
+    "max-params": "off",
+    "unicorn/prefer-module": "off",
+    "camelcase": "off",
+    "unicorn/no-empty-file": "off"
   }
 }

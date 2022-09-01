@@ -22,7 +22,6 @@ export class DeployContract extends Command {
       char: "g",
     }),
     args: Flags.string({
-      required: true,
       char: "a",
       multiple: true,
     }),
@@ -35,6 +34,24 @@ export class DeployContract extends Command {
     const { flags } = await this.parse(DeployContract);
 
     const tasks = new Listr([
+      {
+        title: "Initialising",
+        task: async (ctx) => {
+          await cryptoWaitReady();
+          const config = await getSwankyConfig();
+          ctx.config = config;
+          const account = config.accounts.find(
+            (account) => account.alias === flags.account
+          );
+          if (!account) {
+            this.error(
+              "Provided account alias not found in swanky.config.json"
+            );
+          }
+
+          ctx.account = new ChainAccount(account.mnemonic);
+        },
+      },
       {
         title: "Initialising",
         task: async (ctx) => {
