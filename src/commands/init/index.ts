@@ -49,11 +49,7 @@ export interface SwankyConfig {
 
 function getTemplates(language = "ink") {
   const templatesPath = path.resolve(__dirname, "../..", "templates");
-  const contractTemplatesPath = path.resolve(
-    templatesPath,
-    "contracts",
-    language
-  );
+  const contractTemplatesPath = path.resolve(templatesPath, "contracts", language);
   const fileList = readdirSync(contractTemplatesPath, {
     withFileTypes: true,
   });
@@ -73,9 +69,7 @@ export class Init extends Command {
   static flags = {
     "swanky-node": Flags.boolean(),
     template: Flags.string({
-      options: getTemplates().contractTemplatesList.map(
-        (template) => template.name
-      ),
+      options: getTemplates().contractTemplatesList.map((template) => template.name),
     }),
   };
 
@@ -133,12 +127,8 @@ export class Init extends Command {
               {
                 title: "Author info",
                 task: async (ctx, task): Promise<void> => {
-                  const gitUserName = execa.commandSync(
-                    "git config --get user.name"
-                  ).stdout;
-                  const gitUserEmail = execa.commandSync(
-                    "git config --get user.email"
-                  ).stdout;
+                  const gitUserName = execa.commandSync("git config --get user.name").stdout;
+                  const gitUserEmail = execa.commandSync("git config --get user.email").stdout;
                   const authorName = await task.prompt({
                     message: "What is your name?",
                     type: "Input",
@@ -158,46 +148,27 @@ export class Init extends Command {
                   await ensureDir(ctx.project_name);
                   const templatesPath = getTemplates().templatesPath;
                   // TODO: use glob
-                  const files = [
-                    "gitignore",
-                    "package.json.tpl",
-                    "tsconfig.json",
-                  ];
+                  const files = ["gitignore", "package.json.tpl", "tsconfig.json"];
                   files.forEach((file) => {
-                    copyFileSync(
-                      path.resolve(templatesPath, file),
-                      path.resolve(ctx.project_name, file)
-                    );
+                    copyFileSync(path.resolve(templatesPath, file), path.resolve(ctx.project_name, file));
                   });
-                  rename(
-                    path.resolve(ctx.project_name, "gitignore"),
-                    path.resolve(ctx.project_name, ".gitignore")
-                  );
+                  rename(path.resolve(ctx.project_name, "gitignore"), path.resolve(ctx.project_name, ".gitignore"));
                 },
               },
               {
                 title: "Copy contract template files",
                 task: async (ctx) => {
-                  const contractTemplatesPath =
-                    getTemplates().contractTemplatesPath;
+                  const contractTemplatesPath = getTemplates().contractTemplatesPath;
                   await copy(
-                    path.resolve(
-                      contractTemplatesPath,
-                      ctx.contractTemplate as string
-                    ),
-                    path.resolve(
-                      ctx.project_name,
-                      "contracts",
-                      ctx.contractName as string
-                    )
+                    path.resolve(contractTemplatesPath, ctx.contractTemplate as string),
+                    path.resolve(ctx.project_name, "contracts", ctx.contractName as string)
                   );
                 },
               },
               {
                 title: "Apply user data to template",
                 task: async (ctx) => {
-                  if (!ctx.contractTemplate)
-                    this.error("No template selected!");
+                  if (!ctx.contractTemplate) this.error("No template selected!");
                   const templateFiles = await globby(ctx.project_name, {
                     expandDirectories: { extensions: ["tpl"] },
                   });
@@ -209,12 +180,8 @@ export class Init extends Command {
                       author_name: ctx.author.name,
                       // TODO: get from package.json
                       swanky_version: "0.1.5",
-                      contract_name_snake: snakeCase(
-                        ctx.contractName as string
-                      ),
-                      contract_name_pascal: pascalCase(
-                        ctx.contractName as string
-                      ),
+                      contract_name_snake: snakeCase(ctx.contractName as string),
+                      contract_name_pascal: pascalCase(ctx.contractName as string),
                     });
                     rmSync(tplFilePath);
                     writeFileSync(tplFilePath.split(".tpl")[0], compiledFile);
@@ -272,34 +239,22 @@ export class Init extends Command {
                     ctx.nodeTargetDir = targetDir;
                     ctx.nodeFileName = `${ctx.node.type}-node`;
 
-                    const writer = createWriteStream(
-                      path.resolve(ctx.nodeTargetDir as string, "node.zip")
-                    );
+                    const writer = createWriteStream(path.resolve(ctx.nodeTargetDir as string, "node.zip"));
 
                     const response = download(ctx.node.url as string);
 
                     response.on("response", (res) => {
-                      const contentLength = Number.parseInt(
-                        res.headers["content-length"] as unknown as string,
-                        10
-                      );
+                      const contentLength = Number.parseInt(res.headers["content-length"] as unknown as string, 10);
                       let progress = 0;
                       response.on("data", (chunk) => {
                         progress += chunk.length;
-                        task.output = `Downloaded ${(
-                          (progress / contentLength) *
-                          100
-                        ).toFixed(0)}%`;
+                        task.output = `Downloaded ${((progress / contentLength) * 100).toFixed(0)}%`;
                       });
                       response.on("end", () => {
                         resolve();
                       });
                       response.on("error", (error) => {
-                        reject(
-                          new Error(
-                            `Error downloading node: , ${error.message}`
-                          )
-                        );
+                        reject(new Error(`Error downloading node: , ${error.message}`));
                       });
                     });
                     response.pipe(writer);
@@ -309,21 +264,15 @@ export class Init extends Command {
                 title: "Decompressing",
                 task: async (ctx): Promise<void> => {
                   try {
-                    const archiveFilePath = path.resolve(
-                      ctx.nodeTargetDir as string,
-                      "node.zip"
-                    );
+                    const archiveFilePath = path.resolve(ctx.nodeTargetDir as string, "node.zip");
 
-                    const decompressed = await decompress(
-                      archiveFilePath,
-                      ctx.nodeTargetDir as string
-                    );
+                    const decompressed = await decompress(archiveFilePath, ctx.nodeTargetDir as string);
                     ctx.nodeFileName = decompressed[0].path;
                     execSync(`rm -f ${archiveFilePath}`);
-                    execSync(
-                      `chmod +x ${ctx.nodeTargetDir}/${ctx.nodeFileName}`
-                    );
-                  } catch {}
+                    execSync(`chmod +x ${ctx.nodeTargetDir}/${ctx.nodeFileName}`);
+                  } catch {
+                    console.error("Error decompressing");
+                  }
                 },
               },
             ]),
@@ -331,17 +280,15 @@ export class Init extends Command {
         {
           title: "Storing config",
           task: (ctx) => {
-            ctx.node.localPath = path.resolve(
-              ctx.nodeTargetDir as string,
-              ctx.nodeFileName as string
-            );
+            ctx.node.localPath = path.resolve(ctx.nodeTargetDir as string, ctx.nodeFileName as string);
             ctx.node.nodeAddress = "ws://127.0.0.1:9944";
             delete ctx.nodeFileName;
             delete ctx.nodeTargetDir;
 
-            ctx.contracts = readdirSync(
-              path.resolve(ctx.project_name, "contracts")
-            ).map((dirName) => ({ name: dirName, address: "" }));
+            ctx.contracts = readdirSync(path.resolve(ctx.project_name, "contracts")).map((dirName) => ({
+              name: dirName,
+              address: "",
+            }));
 
             ctx.accounts = [
               {
@@ -354,10 +301,7 @@ export class Init extends Command {
               },
             ];
 
-            writeFileSync(
-              path.resolve(`${ctx.project_name}`, "swanky.config.json"),
-              JSON.stringify(ctx, null, 2)
-            );
+            writeFileSync(path.resolve(`${ctx.project_name}`, "swanky.config.json"), JSON.stringify(ctx, null, 2));
           },
         },
         {
