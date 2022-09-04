@@ -101,7 +101,7 @@
     "postpack": "shx rm -f oclif.manifest.json",
     "posttest": "yarn lint",
     "prepack": "yarn build && oclif manifest && oclif readme",
-    "test": "mocha --forbid-only -r ts-node/register \"test/**/*.test.js\"",
+    "test": "mocha --forbid-only -r ts-node/register \"test/**/*.test.ts\"",
     "version": "oclif readme && git add README.md",
     "copy-template": "cp -R ./src/templates ./dist/"
   },
