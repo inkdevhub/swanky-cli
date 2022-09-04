@@ -23,6 +23,8 @@ import execa = require("execa");
 import handlebars from "handlebars";
 import globby = require("globby");
 import { paramCase, pascalCase, snakeCase } from "change-case";
+import inquirer = require("inquirer");
+import { choice, email, name, pickTemplate } from "../../lib/prompts";
 
 export interface SwankyConfig {
   platform: string;
@@ -57,7 +59,7 @@ function getTemplates(language = "ink") {
     .filter((entry) => entry.isDirectory())
     .map((entry) => ({
       message: entry.name,
-      name: entry.name,
+      value: entry.name,
     }));
 
   return { templatesPath, contractTemplatesPath, contractTemplatesList };
@@ -69,7 +71,7 @@ export class Init extends Command {
   static flags = {
     "swanky-node": Flags.boolean(),
     template: Flags.string({
-      options: getTemplates().contractTemplatesList.map((template) => template.name),
+      options: getTemplates().contractTemplatesList.map((template) => template.value),
     }),
   };
 
@@ -83,6 +85,15 @@ export class Init extends Command {
 
   async run(): Promise<void> {
     const { args, flags } = await this.parse(Init);
+
+    const answers = await inquirer.prompt([
+      pickTemplate(getTemplates().contractTemplatesList),
+      name("contract", (ans) => ans.contractTemplate, "What should we name your contract?"),
+      name("author", () => execa.commandSync("git config --get user.name").stdout, "What is your name?"),
+      email(execa.commandSync("git config --get user.email").stdout),
+      choice("useSwankyNode", "Do you want to download Swanky node?"),
+    ]);
+    console.log(answers);
 
     const tasks = new Listr<SwankyConfig>(
       [
@@ -100,46 +111,22 @@ export class Init extends Command {
             task.newListr([
               {
                 title: "Pick template",
-                task: async (ctx, task): Promise<void> => {
-                  const template = await task.prompt([
-                    {
-                      name: "contractTemplate",
-                      message: "Which template should we use?",
-                      type: "Select",
-                      choices: getTemplates().contractTemplatesList,
-                    },
-                  ]);
-                  ctx.contractTemplate = template;
+                task: async (ctx): Promise<void> => {
+                  ctx.contractTemplate = answers.contractTemplate;
                 },
+
                 skip: Boolean(ctx.contractTemplate),
               },
               {
                 title: "Template name",
-                task: async (ctx, task): Promise<void> => {
-                  const contractName = await task.prompt({
-                    message: "What should we name your contract?",
-                    type: "Input",
-                    initial: ctx.contractTemplate,
-                  });
-                  ctx.contractName = contractName;
+                task: async (ctx): Promise<void> => {
+                  ctx.contractName = answers.contractName;
                 },
               },
               {
                 title: "Author info",
-                task: async (ctx, task): Promise<void> => {
-                  const gitUserName = execa.commandSync("git config --get user.name").stdout;
-                  const gitUserEmail = execa.commandSync("git config --get user.email").stdout;
-                  const authorName = await task.prompt({
-                    message: "What is your name?",
-                    type: "Input",
-                    initial: gitUserName,
-                  });
-                  const authorEmail = await task.prompt({
-                    message: "What is your email?",
-                    type: "Input",
-                    initial: gitUserEmail,
-                  });
-                  ctx.author = { name: authorName, email: authorEmail };
+                task: async (ctx): Promise<void> => {
+                  ctx.author = { name: answers.authorName, email: answers.email };
                 },
               },
               {
@@ -204,23 +191,8 @@ export class Init extends Command {
             task.newListr([
               {
                 title: "Pick node type",
-                task: async (ctx, task): Promise<void> => {
-                  const nodeType = await task.prompt([
-                    {
-                      name: "nodeType",
-                      message: "What node type you want to develop on?",
-                      type: "Select",
-                      choices: [
-                        { message: "Swanky node", name: "swanky" },
-                        {
-                          message: "Substrate contracts node",
-                          name: "substrate-contracts-node",
-                        },
-                      ],
-                    },
-                  ]);
-
-                  ctx.node.type = nodeType;
+                task: async (ctx): Promise<void> => {
+                  ctx.node.type = answers.useSwankyNode ? "swanky" : "substrate-contracts-node";
                 },
                 skip: Boolean(ctx.node.type),
               },
@@ -259,6 +231,7 @@ export class Init extends Command {
                     });
                     response.pipe(writer);
                   }),
+                skip: !answers.useSwankyNode,
               },
               {
                 title: "Decompressing",
@@ -274,6 +247,7 @@ export class Init extends Command {
                     console.error("Error decompressing");
                   }
                 },
+                skip: !answers.useSwankyNode,
               },
             ]),
         },
