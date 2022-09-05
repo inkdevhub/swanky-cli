@@ -8,17 +8,14 @@ import {
   readFileSync,
   readdirSync,
   writeFileSync,
-  ensureDir,
   rmSync,
-  copyFileSync,
   copy,
-  rename,
 } from "fs-extra";
 import { Listr } from "listr2";
 import decompress = require("decompress");
 import download = require("download");
 import { nodes } from "../../nodes";
-import { checkCliDependencies } from "../../lib/tasks";
+import { checkCliDependencies, copyCoreTemplates } from "../../lib/tasks";
 import execa = require("execa");
 import handlebars from "handlebars";
 import globby = require("globby");
@@ -77,7 +74,7 @@ export class Init extends Command {
 
   static args = [
     {
-      name: "project_name",
+      name: "projectName",
       required: true,
       description: "directory name of new project",
     },
@@ -95,53 +92,21 @@ export class Init extends Command {
     ]);
     console.log(answers);
 
+    await checkCliDependencies([
+      { dependencyName: "rust", versionCommand: "rustc --version" },
+      { dependencyName: "cargo", versionCommand: "cargo -V" },
+      {
+        dependencyName: "cargo contract",
+        versionCommand: "cargo contract -V",
+      },
+    ]);
+    await copyCoreTemplates(getTemplates().templatesPath, args.projectName);
     const tasks = new Listr<SwankyConfig>(
       [
-        await checkCliDependencies([
-          { dependencyName: "rust", versionCommand: "rustc --version" },
-          { dependencyName: "cargo", versionCommand: "cargo -V" },
-          {
-            dependencyName: "cargo contract",
-            versionCommand: "cargo contract -V",
-          },
-        ]),
         {
           title: "Cloning template",
           task: (ctx, task) =>
             task.newListr([
-              {
-                title: "Pick template",
-                task: async (ctx): Promise<void> => {
-                  ctx.contractTemplate = answers.contractTemplate;
-                },
-
-                skip: Boolean(ctx.contractTemplate),
-              },
-              {
-                title: "Template name",
-                task: async (ctx): Promise<void> => {
-                  ctx.contractName = answers.contractName;
-                },
-              },
-              {
-                title: "Author info",
-                task: async (ctx): Promise<void> => {
-                  ctx.author = { name: answers.authorName, email: answers.email };
-                },
-              },
-              {
-                title: "Copy core template files",
-                task: async (ctx) => {
-                  await ensureDir(ctx.project_name);
-                  const templatesPath = getTemplates().templatesPath;
-                  // TODO: use glob
-                  const files = ["gitignore", "package.json.tpl", "tsconfig.json"];
-                  files.forEach((file) => {
-                    copyFileSync(path.resolve(templatesPath, file), path.resolve(ctx.project_name, file));
-                  });
-                  rename(path.resolve(ctx.project_name, "gitignore"), path.resolve(ctx.project_name, ".gitignore"));
-                },
-              },
               {
                 title: "Copy contract template files",
                 task: async (ctx) => {

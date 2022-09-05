@@ -43,6 +43,7 @@
     "mock-spawn": "^0.2.6",
     "rimraf": "^3.0.2",
     "semver": "^7.3.7",
+    "tasuku": "^2.0.0",
     "toml": "^3.0.0"
   },
   "devDependencies": {
@@ -97,7 +98,7 @@
   },
   "scripts": {
     "build": "shx rm -rf dist && rm -f tsconfig.tsbuildinfo && tsc -b && yarn copy-template",
-    "lint": "eslint . --ext .ts --config .eslintrc",
+    "lint": "eslint . --ext .ts --quiet --config .eslintrc",
     "postpack": "shx rm -f oclif.manifest.json",
     "posttest": "yarn lint",
     "prepack": "yarn build && oclif manifest && oclif readme",
