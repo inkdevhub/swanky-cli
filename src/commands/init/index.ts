@@ -13,12 +13,7 @@ import { Listr } from "listr2";
 import decompress = require("decompress");
 import download = require("download");
 import { nodes } from "../../nodes";
-import {
-  checkCliDependencies,
-  copyContractTemplates,
-  copyCoreTemplates,
-  processTemplates,
-} from "../../lib/tasks";
+import { checkCliDependencies, copyTemplateFiles, processTemplates } from "../../lib/tasks";
 import execa = require("execa");
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer = require("inquirer");
@@ -84,8 +79,11 @@ export class Init extends Command {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(Init);
 
+    const projectPath = path.resolve(args.projectName);
+    const templates = getTemplates();
+
     const answers = await inquirer.prompt([
-      pickTemplate(getTemplates().contractTemplatesList),
+      pickTemplate(templates.contractTemplatesList),
       name("contract", (ans) => ans.contractTemplate, "What should we name your contract?"),
       name(
         "author",
@@ -96,9 +94,6 @@ export class Init extends Command {
       choice("useSwankyNode", "Do you want to download Swanky node?"),
     ]);
 
-    const projectPath = path.resolve(args.projectName);
-    const templates = getTemplates();
-    const templatePath = path.resolve(templates.contractTemplatesPath, answers.contractTemplate);
     await checkCliDependencies([
       { dependencyName: "rust", versionCommand: "rustc --version" },
       { dependencyName: "cargo", versionCommand: "cargo -V" },
@@ -107,9 +102,15 @@ export class Init extends Command {
         versionCommand: "cargo contract -V",
       },
     ]);
-    await copyCoreTemplates(templates.templatesPath, args.projectName);
-    await copyContractTemplates(templatePath, args.projectName, answers.contractName);
-    await processTemplates(templatePath, projectPath, {
+
+    await copyTemplateFiles(
+      templates.templatesPath,
+      path.resolve(templates.contractTemplatesPath, answers.contractTemplate),
+      answers.contractName,
+      projectPath
+    );
+
+    await processTemplates(projectPath, {
       project_name: paramCase(args.projectName),
       author_name: answers.authorName,
       author_email: answers.email,
@@ -119,6 +120,7 @@ export class Init extends Command {
     });
 
     await execa.command("git init", { cwd: projectPath });
+
     const tasks = new Listr<SwankyConfig>(
       [
         {
