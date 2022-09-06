@@ -23,15 +23,14 @@ export async function checkCliDependencies(
   });
 }
 
-export async function copyCoreTemplates(templatesPath: string, projectName: string) {
+export async function copyCoreTemplates(templatesPath: string, projectPath: string) {
   return task("Copying core templates", async () => {
-    await ensureDir(projectName);
-    // TODO: use glob
-    const files = ["gitignore", "package.json.tpl", "tsconfig.json"];
+    await ensureDir(projectPath);
+    const files = await globby(`*`, { cwd: templatesPath });
     files.forEach((file) => {
-      copyFileSync(path.resolve(templatesPath, file), path.resolve(projectName, file));
+      copyFileSync(path.resolve(templatesPath, file), path.resolve(projectPath, file));
     });
-    await rename(path.resolve(projectName, "gitignore"), path.resolve(projectName, ".gitignore"));
+    await rename(path.resolve(projectPath, "gitignore"), path.resolve(projectPath, ".gitignore"));
   });
 }
 

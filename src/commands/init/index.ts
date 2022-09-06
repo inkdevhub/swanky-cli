@@ -96,6 +96,7 @@ export class Init extends Command {
       choice("useSwankyNode", "Do you want to download Swanky node?"),
     ]);
 
+    const projectPath = path.resolve(args.projectName);
     const templates = getTemplates();
     const templatePath = path.resolve(templates.contractTemplatesPath, answers.contractTemplate);
     await checkCliDependencies([
@@ -108,7 +109,7 @@ export class Init extends Command {
     ]);
     await copyCoreTemplates(templates.templatesPath, args.projectName);
     await copyContractTemplates(templatePath, args.projectName, answers.contractName);
-    await processTemplates(templatePath, args.projectName, {
+    await processTemplates(templatePath, projectPath, {
       project_name: paramCase(args.projectName),
       author_name: answers.authorName,
       author_email: answers.email,
@@ -116,22 +117,10 @@ export class Init extends Command {
       contract_name_snake: snakeCase(answers.contractName),
       contract_name_pascal: pascalCase(answers.contractName),
     });
+
+    await execa.command("git init", { cwd: projectPath });
     const tasks = new Listr<SwankyConfig>(
       [
-        {
-          title: "Cloning template",
-          task: (ctx, task) =>
-            task.newListr([
-              {
-                title: "Init git",
-                task: async (ctx) => {
-                  await execa.command("git init", {
-                    cwd: path.resolve(ctx.project_name),
-                  });
-                },
-              },
-            ]),
-        },
         {
           title: "Downloading node",
           task: (ctx, task) =>
