@@ -8,17 +8,19 @@ import {
   readFileSync,
   readdirSync,
   writeFileSync,
-  rmSync,
-  copy,
+  readJSONSync,
 } from "fs-extra";
 import { Listr } from "listr2";
 import decompress = require("decompress");
 import download = require("download");
 import { nodes } from "../../nodes";
-import { checkCliDependencies, copyCoreTemplates } from "../../lib/tasks";
+import {
+  checkCliDependencies,
+  copyContractTemplates,
+  copyCoreTemplates,
+  processTemplates,
+} from "../../lib/tasks";
 import execa = require("execa");
-import handlebars from "handlebars";
-import globby = require("globby");
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer = require("inquirer");
 import { choice, email, name, pickTemplate } from "../../lib/prompts";
@@ -86,12 +88,17 @@ export class Init extends Command {
     const answers = await inquirer.prompt([
       pickTemplate(getTemplates().contractTemplatesList),
       name("contract", (ans) => ans.contractTemplate, "What should we name your contract?"),
-      name("author", () => execa.commandSync("git config --get user.name").stdout, "What is your name?"),
+      name(
+        "author",
+        () => execa.commandSync("git config --get user.name").stdout,
+        "What is your name?"
+      ),
       email(execa.commandSync("git config --get user.email").stdout),
       choice("useSwankyNode", "Do you want to download Swanky node?"),
     ]);
-    console.log(answers);
 
+    const templates = getTemplates();
+    const templatePath = path.resolve(templates.contractTemplatesPath, answers.contractTemplate);
     await checkCliDependencies([
       { dependencyName: "rust", versionCommand: "rustc --version" },
       { dependencyName: "cargo", versionCommand: "cargo -V" },
@@ -100,46 +107,22 @@ export class Init extends Command {
         versionCommand: "cargo contract -V",
       },
     ]);
-    await copyCoreTemplates(getTemplates().templatesPath, args.projectName);
+    await copyCoreTemplates(templates.templatesPath, args.projectName);
+    await copyContractTemplates(templatePath, args.projectName, answers.contractName);
+    await processTemplates(templatePath, args.projectName, {
+      project_name: paramCase(args.projectName),
+      author_name: answers.authorName,
+      author_email: answers.email,
+      swanky_version: this.config.pjson.version,
+      contract_name_snake: snakeCase(answers.contractName),
+      contract_name_pascal: pascalCase(answers.contractName),
+    });
     const tasks = new Listr<SwankyConfig>(
       [
         {
           title: "Cloning template",
           task: (ctx, task) =>
             task.newListr([
-              {
-                title: "Copy contract template files",
-                task: async (ctx) => {
-                  const contractTemplatesPath = getTemplates().contractTemplatesPath;
-                  await copy(
-                    path.resolve(contractTemplatesPath, ctx.contractTemplate as string),
-                    path.resolve(ctx.project_name, "contracts", ctx.contractName as string)
-                  );
-                },
-              },
-              {
-                title: "Apply user data to template",
-                task: async (ctx) => {
-                  if (!ctx.contractTemplate) this.error("No template selected!");
-                  const templateFiles = await globby(ctx.project_name, {
-                    expandDirectories: { extensions: ["tpl"] },
-                  });
-                  templateFiles.forEach(async (tplFilePath) => {
-                    const rawTemplate = readFileSync(tplFilePath, "utf8");
-                    const template = handlebars.compile(rawTemplate);
-                    const compiledFile = template({
-                      project_name: paramCase(ctx.project_name),
-                      author_name: ctx.author.name,
-                      // TODO: get from package.json
-                      swanky_version: "0.1.5",
-                      contract_name_snake: snakeCase(ctx.contractName as string),
-                      contract_name_pascal: pascalCase(ctx.contractName as string),
-                    });
-                    rmSync(tplFilePath);
-                    writeFileSync(tplFilePath.split(".tpl")[0], compiledFile);
-                  });
-                },
-              },
               {
                 title: "Init git",
                 task: async (ctx) => {
@@ -176,16 +159,23 @@ export class Init extends Command {
                     ctx.nodeTargetDir = targetDir;
                     ctx.nodeFileName = `${ctx.node.type}-node`;
 
-                    const writer = createWriteStream(path.resolve(ctx.nodeTargetDir as string, "node.zip"));
+                    const writer = createWriteStream(
+                      path.resolve(ctx.nodeTargetDir as string, "node.zip")
+                    );
 
                     const response = download(ctx.node.url as string);
 
                     response.on("response", (res) => {
-                      const contentLength = Number.parseInt(res.headers["content-length"] as unknown as string, 10);
+                      const contentLength = Number.parseInt(
+                        res.headers["content-length"] as unknown as string,
+                        10
+                      );
                       let progress = 0;
                       response.on("data", (chunk) => {
                         progress += chunk.length;
-                        task.output = `Downloaded ${((progress / contentLength) * 100).toFixed(0)}%`;
+                        task.output = `Downloaded ${((progress / contentLength) * 100).toFixed(
+                          0
+                        )}%`;
                       });
                       response.on("end", () => {
                         resolve();
@@ -204,7 +194,10 @@ export class Init extends Command {
                   try {
                     const archiveFilePath = path.resolve(ctx.nodeTargetDir as string, "node.zip");
 
-                    const decompressed = await decompress(archiveFilePath, ctx.nodeTargetDir as string);
+                    const decompressed = await decompress(
+                      archiveFilePath,
+                      ctx.nodeTargetDir as string
+                    );
                     ctx.nodeFileName = decompressed[0].path;
                     execSync(`rm -f ${archiveFilePath}`);
                     execSync(`chmod +x ${ctx.nodeTargetDir}/${ctx.nodeFileName}`);
@@ -219,15 +212,20 @@ export class Init extends Command {
         {
           title: "Storing config",
           task: (ctx) => {
-            ctx.node.localPath = path.resolve(ctx.nodeTargetDir as string, ctx.nodeFileName as string);
+            ctx.node.localPath = path.resolve(
+              ctx.nodeTargetDir as string,
+              ctx.nodeFileName as string
+            );
             ctx.node.nodeAddress = "ws://127.0.0.1:9944";
             delete ctx.nodeFileName;
             delete ctx.nodeTargetDir;
 
-            ctx.contracts = readdirSync(path.resolve(ctx.project_name, "contracts")).map((dirName) => ({
-              name: dirName,
-              address: "",
-            }));
+            ctx.contracts = readdirSync(path.resolve(ctx.project_name, "contracts")).map(
+              (dirName) => ({
+                name: dirName,
+                address: "",
+              })
+            );
 
             ctx.accounts = [
               {
@@ -240,7 +238,10 @@ export class Init extends Command {
               },
             ];
 
-            writeFileSync(path.resolve(`${ctx.project_name}`, "swanky.config.json"), JSON.stringify(ctx, null, 2));
+            writeFileSync(
+              path.resolve(`${ctx.project_name}`, "swanky.config.json"),
+              JSON.stringify(ctx, null, 2)
+            );
           },
         },
         {
