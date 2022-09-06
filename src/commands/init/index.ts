@@ -8,7 +8,6 @@ import {
   readFileSync,
   readdirSync,
   writeFileSync,
-  readJSONSync,
 } from "fs-extra";
 import { Listr } from "listr2";
 import decompress = require("decompress");
@@ -93,7 +92,7 @@ export class Init extends Command {
         () => execa.commandSync("git config --get user.name").stdout,
         "What is your name?"
       ),
-      email(execa.commandSync("git config --get user.email").stdout),
+      email(),
       choice("useSwankyNode", "Do you want to download Swanky node?"),
     ]);
 

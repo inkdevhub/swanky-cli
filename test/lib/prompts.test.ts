@@ -51,6 +51,7 @@ describe("Prompts", function () {
         expect(result).to.not.have.property("default");
       });
     });
+
     describe("Optional params", function () {
       const question = "What yer email be?";
       const initial = "my@e.mail";
