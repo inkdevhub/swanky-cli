@@ -14,6 +14,7 @@ import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer = require("inquirer");
 import { choice, email, name, pickTemplate } from "../../lib/prompts";
 import task from "tasuku";
+import { Spinner } from "../../lib/spinner";
 
 export interface SwankyConfig {
   platform: string;
@@ -62,6 +63,7 @@ export class Init extends Command {
     template: Flags.string({
       options: getTemplates().contractTemplatesList.map((template) => template.value),
     }),
+    verbose: Flags.boolean({ char: "v" }),
   };
 
   static args = [
@@ -95,57 +97,75 @@ export class Init extends Command {
 
     const answers = await inquirer.prompt(questions);
 
-    await checkCliDependencies();
+    const spinner = new Spinner(flags.verbose);
 
-    await copyTemplateFiles(
-      templates.templatesPath,
-      path.resolve(templates.contractTemplatesPath, answers.contractTemplate),
-      answers.contractName,
-      projectPath
+    await spinner.runCommand(
+      () => checkCliDependencies(spinner),
+      "Checking",
+      "Deps ok",
+      "Deps failed"
     );
 
-    await processTemplates(projectPath, {
-      project_name: paramCase(args.projectName),
-      author_name: answers.authorName,
-      author_email: answers.email,
-      swanky_version: this.config.pjson.version,
-      contract_name_snake: snakeCase(answers.contractName),
-      contract_name_pascal: pascalCase(answers.contractName),
-    });
+    // try {
+    //   spinner.start("Checking dependencies");
+    //   await checkCliDependencies(spinner);
+    //   spinner.succeed("Dependencies OK!");
+    // } catch (error) {
+    //   spinner.fail("Dependencies not installed, check web: ");
+    //   if (flags.verbose) console.error(error);
+    // }
 
-    await execa.command("git init", { cwd: projectPath });
+    // await checkCliDependencies();
 
-    let nodePath = "";
-    if (flags["swanky-node"] || answers.useSwankyNode) {
-      const taskResult = await downloadNode(projectPath, swankyNode);
-      nodePath = taskResult.result;
-    }
+    // await copyTemplateFiles(
+    //   templates.templatesPath,
+    //   path.resolve(templates.contractTemplatesPath, answers.contractTemplate),
+    //   answers.contractName,
+    //   projectPath
+    // );
 
-    await installDeps(projectPath);
+    // await processTemplates(projectPath, {
+    //   project_name: paramCase(args.projectName),
+    //   author_name: answers.authorName,
+    //   author_email: answers.email,
+    //   swanky_version: this.config.pjson.version,
+    //   contract_name_snake: snakeCase(answers.contractName),
+    //   contract_name_pascal: pascalCase(answers.contractName),
+    // });
 
-    await writeJSON(
-      path.resolve(projectPath, "swanky.config.json"),
-      {
-        node: {
-          localPath: nodePath,
-          nodeAddress: "ws://127.0.0.1:9944",
-        },
-        accounts: [
-          {
-            alias: "alice",
-            mnemonic: "//Alice",
-          },
-          {
-            alias: "bob",
-            mnemonic: "//Bob",
-          },
-        ],
-      },
-      { spaces: 2 }
-    );
+    // await execa.command("git init", { cwd: projectPath });
 
-    task("Swanky project successfully initialised!", async () => {
-      return;
-    });
+    // let nodePath = "";
+    // if (flags["swanky-node"] || answers.useSwankyNode) {
+    //   const taskResult = await downloadNode(projectPath, swankyNode);
+    //   nodePath = taskResult.result;
+    // }
+
+    // await installDeps(projectPath);
+
+    // await writeJSON(
+    //   path.resolve(projectPath, "swanky.config.json"),
+    //   {
+    //     node: {
+    //       localPath: nodePath,
+    //       nodeAddress: "ws://127.0.0.1:9944",
+    //     },
+    //     accounts: [
+    //       {
+    //         alias: "alice",
+    //         mnemonic: "//Alice",
+    //       },
+    //       {
+    //         alias: "bob",
+    //         mnemonic: "//Bob",
+    //       },
+    //     ],
+    //   },
+    //   { spaces: 2 }
+    // );
+
+    // task("Swanky project successfully initialised!", async () => {
+    //   return;
+    // });
   }
 }

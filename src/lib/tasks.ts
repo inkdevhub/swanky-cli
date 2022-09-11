@@ -8,7 +8,9 @@ import { DownloadEndedStats, DownloaderHelper } from "node-downloader-helper";
 import process from "node:process";
 import { nodeInfo } from "./nodeInfo";
 import decompress from "decompress";
-export async function checkCliDependencies() {
+import { Spinner } from "./spinner";
+
+export async function checkCliDependencies(spinner: Spinner) {
   const dependencyList = [
     { dependencyName: "rust", versionCommand: "rustc --version" },
     { dependencyName: "cargo", versionCommand: "cargo -V" },
@@ -17,15 +19,12 @@ export async function checkCliDependencies() {
       versionCommand: "cargo contract -V",
     },
   ];
-  return task("Checking CLI dependencies", async ({ task, setTitle }) => {
-    for (const dep of dependencyList) {
-      task(`Checking ${dep.dependencyName}`, async ({ setTitle }) => {
-        await execa.command(dep.versionCommand);
-        setTitle(`${dep.dependencyName} OK!`);
-      });
-    }
-    setTitle("Dependencies OK!");
-  });
+
+  for (const dep of dependencyList) {
+    spinner.text(`  Checking ${dep.dependencyName}`);
+    await execa.command(dep.versionCommand);
+    // spinner.succeed(`  ${dep.dependencyName} OK!`);
+  }
 }
 
 export async function copyTemplateFiles(
