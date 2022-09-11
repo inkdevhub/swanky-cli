@@ -13,30 +13,16 @@ import execa = require("execa");
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer = require("inquirer");
 import { choice, email, name, pickTemplate } from "../../lib/prompts";
-import task from "tasuku";
 import { Spinner } from "../../lib/spinner";
 
 export interface SwankyConfig {
-  platform: string;
-  language?: string;
-  contractTemplate?: string;
-  project_name: string;
-  nodeTargetDir?: string;
-  nodeFileName?: string;
-  contracts?: { name: string; address: string }[];
   node: {
-    type?: string;
-    localPath?: string;
-    url?: string;
-    supportedInk?: string;
-    nodeAddress?: string;
-  };
-  author: {
-    name: string;
-    email: string;
+    polkadotPalletVersions: string;
+    localPath: string;
+    supportedInk: string;
+    nodeAddress: string;
   };
   accounts: { alias: string; mnemonic: string }[];
-  contractName?: string;
 }
 
 function getTemplates(language = "ink") {
@@ -99,73 +85,71 @@ export class Init extends Command {
 
     const spinner = new Spinner(flags.verbose);
 
+    await spinner.runCommand(() => checkCliDependencies(spinner), "Checking dependencies");
+
     await spinner.runCommand(
-      () => checkCliDependencies(spinner),
-      "Checking",
-      "Deps ok",
-      "Deps failed"
+      () =>
+        copyTemplateFiles(
+          templates.templatesPath,
+          path.resolve(templates.contractTemplatesPath, answers.contractTemplate),
+          answers.contractName,
+          projectPath
+        ),
+      "Copying template files"
     );
 
-    // try {
-    //   spinner.start("Checking dependencies");
-    //   await checkCliDependencies(spinner);
-    //   spinner.succeed("Dependencies OK!");
-    // } catch (error) {
-    //   spinner.fail("Dependencies not installed, check web: ");
-    //   if (flags.verbose) console.error(error);
-    // }
+    await spinner.runCommand(
+      () =>
+        processTemplates(projectPath, {
+          project_name: paramCase(args.projectName),
+          author_name: answers.authorName,
+          author_email: answers.email,
+          swanky_version: this.config.pjson.version,
+          contract_name_snake: snakeCase(answers.contractName),
+          contract_name_pascal: pascalCase(answers.contractName),
+        }),
+      "Processing templates"
+    );
 
-    // await checkCliDependencies();
+    await spinner.runCommand(
+      () => execa.command("git init", { cwd: projectPath }),
+      "Initializing git"
+    );
 
-    // await copyTemplateFiles(
-    //   templates.templatesPath,
-    //   path.resolve(templates.contractTemplatesPath, answers.contractTemplate),
-    //   answers.contractName,
-    //   projectPath
-    // );
+    let nodePath = "";
+    if (flags["swanky-node"] || answers.useSwankyNode) {
+      const taskResult = (await spinner.runCommand(
+        () => downloadNode(projectPath, swankyNode, spinner),
+        "Downloading Swanky node"
+      )) as { result: string };
+      nodePath = taskResult.result;
+    }
 
-    // await processTemplates(projectPath, {
-    //   project_name: paramCase(args.projectName),
-    //   author_name: answers.authorName,
-    //   author_email: answers.email,
-    //   swanky_version: this.config.pjson.version,
-    //   contract_name_snake: snakeCase(answers.contractName),
-    //   contract_name_pascal: pascalCase(answers.contractName),
-    // });
+    await spinner.runCommand(() => installDeps(projectPath), "Installing dependencies");
 
-    // await execa.command("git init", { cwd: projectPath });
+    const config: SwankyConfig = {
+      node: {
+        localPath: nodePath,
+        nodeAddress: "ws://127.0.0.1:9944",
+        polkadotPalletVersions: swankyNode.polkadotPalletVersions,
+        supportedInk: swankyNode.supportedInk,
+      },
+      accounts: [
+        {
+          alias: "alice",
+          mnemonic: "//Alice",
+        },
+        {
+          alias: "bob",
+          mnemonic: "//Bob",
+        },
+      ],
+    };
+    await spinner.runCommand(
+      () => writeJSON(path.resolve(projectPath, "swanky.config.json"), config, { spaces: 2 }),
+      "Writing config"
+    );
 
-    // let nodePath = "";
-    // if (flags["swanky-node"] || answers.useSwankyNode) {
-    //   const taskResult = await downloadNode(projectPath, swankyNode);
-    //   nodePath = taskResult.result;
-    // }
-
-    // await installDeps(projectPath);
-
-    // await writeJSON(
-    //   path.resolve(projectPath, "swanky.config.json"),
-    //   {
-    //     node: {
-    //       localPath: nodePath,
-    //       nodeAddress: "ws://127.0.0.1:9944",
-    //     },
-    //     accounts: [
-    //       {
-    //         alias: "alice",
-    //         mnemonic: "//Alice",
-    //       },
-    //       {
-    //         alias: "bob",
-    //         mnemonic: "//Bob",
-    //       },
-    //     ],
-    //   },
-    //   { spaces: 2 }
-    // );
-
-    // task("Swanky project successfully initialised!", async () => {
-    //   return;
-    // });
+    spinner.succeed("Swanky project successfully initialised!");
   }
 }

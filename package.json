@@ -45,7 +45,6 @@
     "ora": "5.4.1",
     "rimraf": "^3.0.2",
     "semver": "^7.3.7",
-    "tasuku": "^2.0.0",
     "toml": "^3.0.0"
   },
   "devDependencies": {

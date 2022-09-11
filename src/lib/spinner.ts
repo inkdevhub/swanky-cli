@@ -3,7 +3,7 @@ import ora, { Ora } from "ora";
 export class Spinner {
   ora: Ora;
   verbose: boolean;
-  constructor(verbose: boolean) {
+  constructor(verbose = false) {
     this.ora = ora();
     this.verbose = verbose;
   }
@@ -32,18 +32,18 @@ export class Spinner {
   }
 
   async runCommand(
-    command: () => Promise<any>,
+    command: () => Promise<unknown>,
     runningMessage: string,
-    successMessage: string,
-    failMessage: string
+    successMessage?: string,
+    failMessage?: string
   ) {
     try {
       this.start(runningMessage);
       const res = await command();
-      this.succeed(successMessage);
+      this.succeed(successMessage || `${runningMessage} OK`);
       return res;
     } catch (error) {
-      this.fail(failMessage);
+      this.fail(failMessage || `Error ${runningMessage}`);
       if (this.verbose) console.error(error);
     }
   }
