@@ -1,6 +1,6 @@
 import execa from "execa";
 import task from "tasuku";
-import { ensureDir, rename, copy, readFile, rm, writeFile, mkdir, remove } from "fs-extra";
+import { ensureDir, rename, copy, readFile, rm, writeFile, remove } from "fs-extra";
 import path from "node:path";
 import globby from "globby";
 import handlebars from "handlebars";
@@ -26,14 +26,6 @@ export async function checkCliDependencies() {
     }
     setTitle("Dependencies OK!");
   });
-  // return task.group((task) =>
-  //   dependencyList.map(({ dependencyName, versionCommand }) =>
-  //     task(`Checking ${dependencyName}`, async ({ setTitle }) => {
-  //       await execa.command(versionCommand);
-  //       setTitle(`${dependencyName} OK!`);
-  //     })
-  //   )
-  // );
 }
 
 export async function copyTemplateFiles(
