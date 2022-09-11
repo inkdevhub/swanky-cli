@@ -1,19 +1,17 @@
 import { execSync, exec } from "node:child_process";
 import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
-import {
-  createWriteStream,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  readdirSync,
-  writeFileSync,
-} from "fs-extra";
+import { createWriteStream, readFileSync, readdirSync, writeFileSync, readJSON } from "fs-extra";
 import { Listr } from "listr2";
 import decompress = require("decompress");
 import download = require("download");
-import { nodes } from "../../nodes";
-import { checkCliDependencies, copyTemplateFiles, processTemplates } from "../../lib/tasks";
+import { swankyNode } from "../../lib/nodeInfo";
+import {
+  checkCliDependencies,
+  copyTemplateFiles,
+  downloadNode,
+  processTemplates,
+} from "../../lib/tasks";
 import execa = require("execa");
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer = require("inquirer");
@@ -94,14 +92,7 @@ export class Init extends Command {
       choice("useSwankyNode", "Do you want to download Swanky node?"),
     ]);
 
-    await checkCliDependencies([
-      { dependencyName: "rust", versionCommand: "rustc --version" },
-      { dependencyName: "cargo", versionCommand: "cargo -V" },
-      {
-        dependencyName: "cargo contract",
-        versionCommand: "cargo contract -V",
-      },
-    ]);
+    await checkCliDependencies();
 
     await copyTemplateFiles(
       templates.templatesPath,
@@ -121,63 +112,15 @@ export class Init extends Command {
 
     await execa.command("git init", { cwd: projectPath });
 
+    if (answers.useSwankyNode) {
+      await downloadNode(projectPath, swankyNode);
+    }
     const tasks = new Listr<SwankyConfig>(
       [
         {
           title: "Downloading node",
           task: (ctx, task) =>
             task.newListr([
-              {
-                title: "Pick node type",
-                task: async (ctx): Promise<void> => {
-                  ctx.node.type = answers.useSwankyNode ? "swanky" : "substrate-contracts-node";
-                },
-                skip: Boolean(ctx.node.type),
-              },
-              {
-                title: "Downloading",
-                task: async (ctx, task): Promise<void> =>
-                  new Promise<void>((resolve, reject) => {
-                    const targetDir = path.resolve(ctx.project_name, "bin");
-                    if (!existsSync(targetDir)) {
-                      mkdirSync(targetDir);
-                    }
-
-                    const selectedNode = nodes[ctx.node.type as string];
-                    ctx.node.url = selectedNode[ctx.platform];
-                    ctx.node.supportedInk = selectedNode.supportedInk;
-                    ctx.nodeTargetDir = targetDir;
-                    ctx.nodeFileName = `${ctx.node.type}-node`;
-
-                    const writer = createWriteStream(
-                      path.resolve(ctx.nodeTargetDir as string, "node.zip")
-                    );
-
-                    const response = download(ctx.node.url as string);
-
-                    response.on("response", (res) => {
-                      const contentLength = Number.parseInt(
-                        res.headers["content-length"] as unknown as string,
-                        10
-                      );
-                      let progress = 0;
-                      response.on("data", (chunk) => {
-                        progress += chunk.length;
-                        task.output = `Downloaded ${((progress / contentLength) * 100).toFixed(
-                          0
-                        )}%`;
-                      });
-                      response.on("end", () => {
-                        resolve();
-                      });
-                      response.on("error", (error) => {
-                        reject(new Error(`Error downloading node: , ${error.message}`));
-                      });
-                    });
-                    response.pipe(writer);
-                  }),
-                skip: !answers.useSwankyNode,
-              },
               {
                 title: "Decompressing",
                 task: async (ctx): Promise<void> => {
@@ -275,17 +218,17 @@ export class Init extends Command {
       }
     );
 
-    await tasks.run({
-      platform: this.config.platform,
-      project_name: args.project_name,
-      language: "ink",
-      contractTemplate: flags.template,
-      node: {
-        type: flags["swanky-node"] ? "swanky" : undefined,
-      },
-      accounts: [],
-      author: { name: "", email: "" },
-    });
+    // await tasks.run({
+    //   platform: this.config.platform,
+    //   project_name: args.project_name,
+    //   language: "ink",
+    //   contractTemplate: flags.template,
+    //   node: {
+    //     type: flags["swanky-node"] ? "swanky" : undefined,
+    //   },
+    //   accounts: [],
+    //   author: { name: "", email: "" },
+    // });
 
     this.log("Successfully Initialized");
   }
