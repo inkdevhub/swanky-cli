@@ -32,7 +32,6 @@
     "command-exists": "^1.2.9",
     "debug": "^4.3.4",
     "decompress": "^4.2.1",
-    "download": "^8.0.0",
     "enquirer": "^2.3.6",
     "eslint-plugin-unicorn": "^43.0.2",
     "execa": "5.1.1",
