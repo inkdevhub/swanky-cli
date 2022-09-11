@@ -1,21 +1,19 @@
-import { execSync, exec } from "node:child_process";
 import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
-import { createWriteStream, readFileSync, readdirSync, writeFileSync, readJSON } from "fs-extra";
-import { Listr } from "listr2";
-import decompress = require("decompress");
-import download = require("download");
+import { readdirSync, writeJSON } from "fs-extra";
 import { swankyNode } from "../../lib/nodeInfo";
 import {
   checkCliDependencies,
   copyTemplateFiles,
   downloadNode,
+  installDeps,
   processTemplates,
 } from "../../lib/tasks";
 import execa = require("execa");
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer = require("inquirer");
 import { choice, email, name, pickTemplate } from "../../lib/prompts";
+import task from "tasuku";
 
 export interface SwankyConfig {
   platform: string;
@@ -80,7 +78,7 @@ export class Init extends Command {
     const projectPath = path.resolve(args.projectName);
     const templates = getTemplates();
 
-    const answers = await inquirer.prompt([
+    const questions = [
       pickTemplate(templates.contractTemplatesList),
       name("contract", (ans) => ans.contractTemplate, "What should we name your contract?"),
       name(
@@ -89,8 +87,13 @@ export class Init extends Command {
         "What is your name?"
       ),
       email(),
-      choice("useSwankyNode", "Do you want to download Swanky node?"),
-    ]);
+    ];
+
+    if (!flags["swanky-node"]) {
+      questions.push(choice("useSwankyNode", "Do you want to download Swanky node?"));
+    }
+
+    const answers = await inquirer.prompt(questions);
 
     await checkCliDependencies();
 
@@ -112,124 +115,37 @@ export class Init extends Command {
 
     await execa.command("git init", { cwd: projectPath });
 
-    if (answers.useSwankyNode) {
-      await downloadNode(projectPath, swankyNode);
+    let nodePath = "";
+    if (flags["swanky-node"] || answers.useSwankyNode) {
+      const taskResult = await downloadNode(projectPath, swankyNode);
+      nodePath = taskResult.result;
     }
-    const tasks = new Listr<SwankyConfig>(
-      [
-        {
-          title: "Downloading node",
-          task: (ctx, task) =>
-            task.newListr([
-              {
-                title: "Decompressing",
-                task: async (ctx): Promise<void> => {
-                  try {
-                    const archiveFilePath = path.resolve(ctx.nodeTargetDir as string, "node.zip");
 
-                    const decompressed = await decompress(
-                      archiveFilePath,
-                      ctx.nodeTargetDir as string
-                    );
-                    ctx.nodeFileName = decompressed[0].path;
-                    execSync(`rm -f ${archiveFilePath}`);
-                    execSync(`chmod +x ${ctx.nodeTargetDir}/${ctx.nodeFileName}`);
-                  } catch {
-                    console.error("Error decompressing");
-                  }
-                },
-                skip: !answers.useSwankyNode,
-              },
-            ]),
-        },
-        {
-          title: "Storing config",
-          task: (ctx) => {
-            ctx.node.localPath = path.resolve(
-              ctx.nodeTargetDir as string,
-              ctx.nodeFileName as string
-            );
-            ctx.node.nodeAddress = "ws://127.0.0.1:9944";
-            delete ctx.nodeFileName;
-            delete ctx.nodeTargetDir;
+    await installDeps(projectPath);
 
-            ctx.contracts = readdirSync(path.resolve(ctx.project_name, "contracts")).map(
-              (dirName) => ({
-                name: dirName,
-                address: "",
-              })
-            );
-
-            ctx.accounts = [
-              {
-                alias: "alice",
-                mnemonic: "//Alice",
-              },
-              {
-                alias: "bob",
-                mnemonic: "//Bob",
-              },
-            ];
-
-            writeFileSync(
-              path.resolve(`${ctx.project_name}`, "swanky.config.json"),
-              JSON.stringify(ctx, null, 2)
-            );
-          },
-        },
-        {
-          title: "Installing",
-          task: async (ctx, task): Promise<void> =>
-            new Promise<void>((resolve, reject) => {
-              const pjsonPath = path.resolve(ctx.project_name, "package.json");
-              const packageJson = JSON.parse(
-                readFileSync(pjsonPath, {
-                  encoding: "utf8",
-                })
-              );
-              packageJson.dependencies = {
-                [this.config.pjson.name]: this.config.pjson.version,
-              };
-              writeFileSync(pjsonPath, JSON.stringify(packageJson, null, 2), {
-                encoding: "utf8",
-              });
-              let installCommand = "npm install";
-              try {
-                execSync("yarn --version");
-                installCommand = "yarn install";
-                task.output = "Yarn detected..";
-              } catch {
-                task.output = "No Yarn detected, using NPM..";
-              }
-
-              task.output = `Running ${installCommand}..`;
-              exec(installCommand, { cwd: ctx.project_name }, (error) => {
-                if (error) {
-                  reject(error);
-                }
-
-                resolve();
-              });
-            }),
-        },
-      ],
+    await writeJSON(
+      path.resolve(projectPath, "swanky.config.json"),
       {
-        rendererOptions: { collapse: true },
-      }
+        node: {
+          localPath: nodePath,
+          nodeAddress: "ws://127.0.0.1:9944",
+        },
+        accounts: [
+          {
+            alias: "alice",
+            mnemonic: "//Alice",
+          },
+          {
+            alias: "bob",
+            mnemonic: "//Bob",
+          },
+        ],
+      },
+      { spaces: 2 }
     );
 
-    // await tasks.run({
-    //   platform: this.config.platform,
-    //   project_name: args.project_name,
-    //   language: "ink",
-    //   contractTemplate: flags.template,
-    //   node: {
-    //     type: flags["swanky-node"] ? "swanky" : undefined,
-    //   },
-    //   accounts: [],
-    //   author: { name: "", email: "" },
-    // });
-
-    this.log("Successfully Initialized");
+    task("Swanky project successfully initialised!", async () => {
+      return;
+    });
   }
 }
