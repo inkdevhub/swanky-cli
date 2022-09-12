@@ -23,6 +23,7 @@ export interface SwankyConfig {
     nodeAddress: string;
   };
   accounts: { alias: string; mnemonic: string }[];
+  contracts?: { name: string; address: string }[];
 }
 
 function getTemplates(language = "ink") {
@@ -121,8 +122,8 @@ export class Init extends Command {
       const taskResult = (await spinner.runCommand(
         () => downloadNode(projectPath, swankyNode, spinner),
         "Downloading Swanky node"
-      )) as { result: string };
-      nodePath = taskResult.result;
+      )) as string;
+      nodePath = taskResult;
     }
 
     await spinner.runCommand(() => installDeps(projectPath), "Installing dependencies");
