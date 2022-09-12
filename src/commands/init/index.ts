@@ -151,6 +151,6 @@ export class Init extends Command {
       "Writing config"
     );
 
-    spinner.succeed("Swanky project successfully initialised!");
+    this.log("🎉 😎 Swanky project successfully initialised! 😎 🎉");
   }
 }
