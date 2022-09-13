@@ -40,6 +40,6 @@ export function resolveNetworkUrl(
   try {
     return config.networks[networkName].url;
   } catch {
-    throw new Error("Network not found in 'swanky.config.json'");
+    throw new Error("Network name not found in SwankyConfig");
   }
 }
