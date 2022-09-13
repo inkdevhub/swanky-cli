@@ -37,7 +37,6 @@ export interface SwankyConfig {
     localPath?: string;
     url?: string;
     supportedInk?: string;
-    nodeAddress?: string;
   };
   author: {
     name: string;
@@ -45,7 +44,17 @@ export interface SwankyConfig {
   };
   accounts: { alias: string; mnemonic: string }[];
   contractName?: string;
+  networks: {
+    [network: string]: {
+      url: string;
+    };
+  };
 }
+
+export const DEFAULT_NETWORK_URL = "ws://127.0.0.1:9944";
+export const DEFAULT_ASTAR_NETWORK_URL = "wss://rpc.astar.network";
+export const DEFAULT_SHIDEN_NETWORK_URL = "wss://rpc.shiden.astar.network";
+export const DEFAULT_SHIBUYA_NETWORK_URL = "wss://rpc.shibuya.astar.network";
 
 function getTemplates(language = "ink") {
   const templatesPath = path.resolve(__dirname, "../..", "templates");
@@ -335,7 +344,6 @@ export class Generate extends Command {
               ctx.nodeTargetDir as string,
               ctx.nodeFileName as string
             );
-            ctx.node.nodeAddress = "ws://127.0.0.1:9944";
             delete ctx.nodeFileName;
             delete ctx.nodeTargetDir;
 
@@ -353,6 +361,13 @@ export class Generate extends Command {
                 mnemonic: "//Bob",
               },
             ];
+
+            ctx.networks = {
+              local: { url: DEFAULT_NETWORK_URL },
+              astar: { url: DEFAULT_ASTAR_NETWORK_URL },
+              shiden: { url: DEFAULT_SHIDEN_NETWORK_URL },
+              shibuya: { url: DEFAULT_SHIBUYA_NETWORK_URL },
+            };
 
             writeFileSync(
               path.resolve(`${ctx.project_name}`, "swanky.config.json"),
@@ -411,6 +426,7 @@ export class Generate extends Command {
       },
       accounts: [],
       author: { name: "", email: "" },
+      networks: {},
     });
 
     this.log("Successfully Initialized");

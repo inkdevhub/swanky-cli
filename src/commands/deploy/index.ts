@@ -6,7 +6,11 @@ import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { ChainApi } from "../../lib/substrate-api";
 import { KeyringPair } from "@polkadot/keyring/types";
 import { Listr } from "listr2";
-import { ensureSwankyProject, getSwankyConfig } from "../../lib/command-utils";
+import {
+  ensureSwankyProject,
+  getSwankyConfig,
+  resolveNetworkUrl,
+} from "../../lib/command-utils";
 import { ChainAccount } from "../../lib/account";
 export class DeployContract extends Command {
   static description = "Deploy contract to a running node";
@@ -15,6 +19,10 @@ export class DeployContract extends Command {
     account: Flags.string({
       required: true,
       description: "Alias of account to be used",
+    }),
+    network: Flags.string({
+      default: "",
+      description: "Network name to connect to",
     }),
     contract: Flags.string({ char: "c", required: true }),
     gas: Flags.string({
@@ -34,24 +42,6 @@ export class DeployContract extends Command {
     const { flags } = await this.parse(DeployContract);
 
     const tasks = new Listr([
-      {
-        title: "Initialising",
-        task: async (ctx) => {
-          await cryptoWaitReady();
-          const config = await getSwankyConfig();
-          ctx.config = config;
-          const account = config.accounts.find(
-            (account) => account.alias === flags.account
-          );
-          if (!account) {
-            this.error(
-              "Provided account alias not found in swanky.config.json"
-            );
-          }
-
-          ctx.account = new ChainAccount(account.mnemonic);
-        },
-      },
       {
         title: "Initialising",
         task: async (ctx) => {
@@ -92,7 +82,9 @@ export class DeployContract extends Command {
       {
         title: "Connecting to node",
         task: async (ctx) => {
-          const api = new DeployApi(ctx.config.node.nodeAddress);
+          const api = new DeployApi(
+            resolveNetworkUrl(ctx.config, flags.network)
+          );
           await api.start();
           ctx.api = api;
         },
