@@ -1,49 +1,28 @@
-import { execSync, exec } from "node:child_process";
 import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
+import { readdirSync, writeJSON } from "fs-extra";
+import { swankyNode } from "../../lib/nodeInfo";
 import {
-  createWriteStream,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  readdirSync,
-  writeFileSync,
-  ensureDir,
-  rmSync,
-  copyFileSync,
-  copy,
-  rename,
-} from "fs-extra";
-import { Listr } from "listr2";
-import decompress = require("decompress");
-import download = require("download");
-import { nodes } from "../../nodes";
-import { checkCliDependencies } from "../../lib/tasks";
+  checkCliDependencies,
+  copyTemplateFiles,
+  downloadNode,
+  installDeps,
+  processTemplates,
+} from "../../lib/tasks";
 import execa = require("execa");
-import handlebars from "handlebars";
-import globby = require("globby");
 import { paramCase, pascalCase, snakeCase } from "change-case";
+import inquirer = require("inquirer");
+import { choice, email, name, pickTemplate } from "../../lib/prompts";
+import { Spinner } from "../../lib/spinner";
 
 export interface SwankyConfig {
-  platform: string;
-  language?: string;
-  contractTemplate?: string;
-  project_name: string;
-  nodeTargetDir?: string;
-  nodeFileName?: string;
-  contracts?: { name: string; address: string }[];
   node: {
-    type?: string;
-    localPath?: string;
-    url?: string;
-    supportedInk?: string;
-  };
-  author: {
-    name: string;
-    email: string;
+    polkadotPalletVersions: string;
+    localPath: string;
+    supportedInk: string;
   };
   accounts: { alias: string; mnemonic: string }[];
-  contractName?: string;
+  contracts?: { name: string; address: string }[];
   networks: {
     [network: string]: {
       url: string;
@@ -58,11 +37,7 @@ export const DEFAULT_SHIBUYA_NETWORK_URL = "wss://rpc.shibuya.astar.network";
 
 function getTemplates(language = "ink") {
   const templatesPath = path.resolve(__dirname, "../..", "templates");
-  const contractTemplatesPath = path.resolve(
-    templatesPath,
-    "contracts",
-    language
-  );
+  const contractTemplatesPath = path.resolve(templatesPath, "contracts", language);
   const fileList = readdirSync(contractTemplatesPath, {
     withFileTypes: true,
   });
@@ -70,365 +45,126 @@ function getTemplates(language = "ink") {
     .filter((entry) => entry.isDirectory())
     .map((entry) => ({
       message: entry.name,
-      name: entry.name,
+      value: entry.name,
     }));
 
   return { templatesPath, contractTemplatesPath, contractTemplatesList };
 }
 
-export class Generate extends Command {
+export class Init extends Command {
   static description = "Generate a new smart contract environment";
 
   static flags = {
     "swanky-node": Flags.boolean(),
     template: Flags.string({
-      options: getTemplates().contractTemplatesList.map(
-        (template) => template.name
-      ),
+      options: getTemplates().contractTemplatesList.map((template) => template.value),
     }),
+    verbose: Flags.boolean({ char: "v" }),
   };
 
   static args = [
     {
-      name: "project_name",
+      name: "projectName",
       required: true,
       description: "directory name of new project",
     },
   ];
 
   async run(): Promise<void> {
-    const { args, flags } = await this.parse(Generate);
+    const { args, flags } = await this.parse(Init);
 
-    const tasks = new Listr<SwankyConfig>(
-      [
-        await checkCliDependencies([
-          { dependencyName: "rust", versionCommand: "rustc --version" },
-          { dependencyName: "cargo", versionCommand: "cargo -V" },
-          {
-            dependencyName: "cargo contract",
-            versionCommand: "cargo contract -V",
-          },
-        ]),
-        {
-          title: "Cloning template",
-          task: (ctx, task) =>
-            task.newListr([
-              {
-                title: "Pick template",
-                task: async (ctx, task): Promise<void> => {
-                  const template = await task.prompt([
-                    {
-                      name: "contractTemplate",
-                      message: "Which template should we use?",
-                      type: "Select",
-                      choices: getTemplates().contractTemplatesList,
-                    },
-                  ]);
-                  ctx.contractTemplate = template;
-                },
-                skip: Boolean(ctx.contractTemplate),
-              },
-              {
-                title: "Template name",
-                task: async (ctx, task): Promise<void> => {
-                  const contractName = await task.prompt({
-                    message: "What should we name your contract?",
-                    type: "Input",
-                    initial: ctx.contractTemplate,
-                  });
-                  ctx.contractName = contractName;
-                },
-              },
-              {
-                title: "Author info",
-                task: async (ctx, task): Promise<void> => {
-                  const gitUserName = execa.commandSync(
-                    "git config --get user.name"
-                  ).stdout;
-                  const gitUserEmail = execa.commandSync(
-                    "git config --get user.email"
-                  ).stdout;
-                  const authorName = await task.prompt({
-                    message: "What is your name?",
-                    type: "Input",
-                    initial: gitUserName,
-                  });
-                  const authorEmail = await task.prompt({
-                    message: "What is your email?",
-                    type: "Input",
-                    initial: gitUserEmail,
-                  });
-                  ctx.author = { name: authorName, email: authorEmail };
-                },
-              },
-              {
-                title: "Copy core template files",
-                task: async (ctx) => {
-                  await ensureDir(ctx.project_name);
-                  const templatesPath = getTemplates().templatesPath;
-                  // TODO: use glob
-                  const files = [
-                    "gitignore",
-                    "package.json.tpl",
-                    "tsconfig.json",
-                  ];
-                  files.forEach((file) => {
-                    copyFileSync(
-                      path.resolve(templatesPath, file),
-                      path.resolve(ctx.project_name, file)
-                    );
-                  });
-                  rename(
-                    path.resolve(ctx.project_name, "gitignore"),
-                    path.resolve(ctx.project_name, ".gitignore")
-                  );
-                },
-              },
-              {
-                title: "Copy contract template files",
-                task: async (ctx) => {
-                  const contractTemplatesPath =
-                    getTemplates().contractTemplatesPath;
-                  await copy(
-                    path.resolve(
-                      contractTemplatesPath,
-                      ctx.contractTemplate as string
-                    ),
-                    path.resolve(
-                      ctx.project_name,
-                      "contracts",
-                      ctx.contractName as string
-                    )
-                  );
-                },
-              },
-              {
-                title: "Apply user data to template",
-                task: async (ctx) => {
-                  if (!ctx.contractTemplate)
-                    this.error("No template selected!");
-                  const templateFiles = await globby(ctx.project_name, {
-                    expandDirectories: { extensions: ["tpl"] },
-                  });
-                  templateFiles.forEach(async (tplFilePath) => {
-                    const rawTemplate = readFileSync(tplFilePath, "utf8");
-                    const template = handlebars.compile(rawTemplate);
-                    const compiledFile = template({
-                      project_name: paramCase(ctx.project_name),
-                      author_name: ctx.author.name,
-                      // TODO: get from package.json
-                      swanky_version: "0.1.5",
-                      contract_name_snake: snakeCase(
-                        ctx.contractName as string
-                      ),
-                      contract_name_pascal: pascalCase(
-                        ctx.contractName as string
-                      ),
-                    });
-                    rmSync(tplFilePath);
-                    writeFileSync(tplFilePath.split(".tpl")[0], compiledFile);
-                  });
-                },
-              },
-              {
-                title: "Init git",
-                task: async (ctx) => {
-                  await execa.command("git init", {
-                    cwd: path.resolve(ctx.project_name),
-                  });
-                },
-              },
-            ]),
-        },
-        {
-          title: "Downloading node",
-          task: (ctx, task) =>
-            task.newListr([
-              {
-                title: "Pick node type",
-                task: async (ctx, task): Promise<void> => {
-                  const nodeType = await task.prompt([
-                    {
-                      name: "nodeType",
-                      message: "What node type you want to develop on?",
-                      type: "Select",
-                      choices: [
-                        { message: "Swanky node", name: "swanky" },
-                        {
-                          message: "Substrate contracts node",
-                          name: "substrate-contracts-node",
-                        },
-                      ],
-                    },
-                  ]);
+    const projectPath = path.resolve(args.projectName);
+    const templates = getTemplates();
 
-                  ctx.node.type = nodeType;
-                },
-                skip: Boolean(ctx.node.type),
-              },
-              {
-                title: "Downloading",
-                task: async (ctx, task): Promise<void> =>
-                  new Promise<void>((resolve, reject) => {
-                    const targetDir = path.resolve(ctx.project_name, "bin");
-                    if (!existsSync(targetDir)) {
-                      mkdirSync(targetDir);
-                    }
+    const questions = [
+      pickTemplate(templates.contractTemplatesList),
+      name("contract", (ans) => ans.contractTemplate, "What should we name your contract?"),
+      name(
+        "author",
+        () => execa.commandSync("git config --get user.name").stdout,
+        "What is your name?"
+      ),
+      email(),
+    ];
 
-                    const selectedNode = nodes[ctx.node.type as string];
-                    ctx.node.url = selectedNode[ctx.platform];
-                    ctx.node.supportedInk = selectedNode.supportedInk;
-                    ctx.nodeTargetDir = targetDir;
-                    ctx.nodeFileName = `${ctx.node.type}-node`;
+    if (!flags["swanky-node"]) {
+      questions.push(choice("useSwankyNode", "Do you want to download Swanky node?"));
+    }
 
-                    const writer = createWriteStream(
-                      path.resolve(ctx.nodeTargetDir as string, "node.zip")
-                    );
+    const answers = await inquirer.prompt(questions);
 
-                    const response = download(ctx.node.url as string);
+    const spinner = new Spinner(flags.verbose);
 
-                    response.on("response", (res) => {
-                      const contentLength = Number.parseInt(
-                        res.headers["content-length"] as unknown as string,
-                        10
-                      );
-                      let progress = 0;
-                      response.on("data", (chunk) => {
-                        progress += chunk.length;
-                        task.output = `Downloaded ${(
-                          (progress / contentLength) *
-                          100
-                        ).toFixed(0)}%`;
-                      });
-                      response.on("end", () => {
-                        resolve();
-                      });
-                      response.on("error", (error) => {
-                        reject(
-                          new Error(
-                            `Error downloading node: , ${error.message}`
-                          )
-                        );
-                      });
-                    });
-                    response.pipe(writer);
-                  }),
-              },
-              {
-                title: "Decompressing",
-                task: async (ctx): Promise<void> => {
-                  try {
-                    const archiveFilePath = path.resolve(
-                      ctx.nodeTargetDir as string,
-                      "node.zip"
-                    );
+    await spinner.runCommand(() => checkCliDependencies(spinner), "Checking dependencies");
 
-                    const decompressed = await decompress(
-                      archiveFilePath,
-                      ctx.nodeTargetDir as string
-                    );
-                    ctx.nodeFileName = decompressed[0].path;
-                    execSync(`rm -f ${archiveFilePath}`);
-                    execSync(
-                      `chmod +x ${ctx.nodeTargetDir}/${ctx.nodeFileName}`
-                    );
-                  } catch {}
-                },
-              },
-            ]),
-        },
-        {
-          title: "Storing config",
-          task: (ctx) => {
-            ctx.node.localPath = path.resolve(
-              ctx.nodeTargetDir as string,
-              ctx.nodeFileName as string
-            );
-            delete ctx.nodeFileName;
-            delete ctx.nodeTargetDir;
-
-            ctx.contracts = readdirSync(
-              path.resolve(ctx.project_name, "contracts")
-            ).map((dirName) => ({ name: dirName, address: "" }));
-
-            ctx.accounts = [
-              {
-                alias: "alice",
-                mnemonic: "//Alice",
-              },
-              {
-                alias: "bob",
-                mnemonic: "//Bob",
-              },
-            ];
-
-            ctx.networks = {
-              local: { url: DEFAULT_NETWORK_URL },
-              astar: { url: DEFAULT_ASTAR_NETWORK_URL },
-              shiden: { url: DEFAULT_SHIDEN_NETWORK_URL },
-              shibuya: { url: DEFAULT_SHIBUYA_NETWORK_URL },
-            };
-
-            writeFileSync(
-              path.resolve(`${ctx.project_name}`, "swanky.config.json"),
-              JSON.stringify(ctx, null, 2)
-            );
-          },
-        },
-        {
-          title: "Installing",
-          task: async (ctx, task): Promise<void> =>
-            new Promise<void>((resolve, reject) => {
-              const pjsonPath = path.resolve(ctx.project_name, "package.json");
-              const packageJson = JSON.parse(
-                readFileSync(pjsonPath, {
-                  encoding: "utf8",
-                })
-              );
-              packageJson.dependencies = {
-                [this.config.pjson.name]: this.config.pjson.version,
-              };
-              writeFileSync(pjsonPath, JSON.stringify(packageJson, null, 2), {
-                encoding: "utf8",
-              });
-              let installCommand = "npm install";
-              try {
-                execSync("yarn --version");
-                installCommand = "yarn install";
-                task.output = "Yarn detected..";
-              } catch {
-                task.output = "No Yarn detected, using NPM..";
-              }
-
-              task.output = `Running ${installCommand}..`;
-              exec(installCommand, { cwd: ctx.project_name }, (error) => {
-                if (error) {
-                  reject(error);
-                }
-
-                resolve();
-              });
-            }),
-        },
-      ],
-      {
-        rendererOptions: { collapse: true },
-      }
+    await spinner.runCommand(
+      () =>
+        copyTemplateFiles(
+          templates.templatesPath,
+          path.resolve(templates.contractTemplatesPath, answers.contractTemplate),
+          answers.contractName,
+          projectPath
+        ),
+      "Copying template files"
     );
 
-    await tasks.run({
-      platform: this.config.platform,
-      project_name: args.project_name,
-      language: "ink",
-      contractTemplate: flags.template,
-      node: {
-        type: flags["swanky-node"] ? "swanky" : undefined,
-      },
-      accounts: [],
-      author: { name: "", email: "" },
-      networks: {},
-    });
+    await spinner.runCommand(
+      () =>
+        processTemplates(projectPath, {
+          project_name: paramCase(args.projectName),
+          author_name: answers.authorName,
+          author_email: answers.email,
+          swanky_version: this.config.pjson.version,
+          contract_name_snake: snakeCase(answers.contractName),
+          contract_name_pascal: pascalCase(answers.contractName),
+        }),
+      "Processing templates"
+    );
 
-    this.log("Successfully Initialized");
+    await spinner.runCommand(
+      () => execa.command("git init", { cwd: projectPath }),
+      "Initializing git"
+    );
+
+    let nodePath = "";
+    if (flags["swanky-node"] || answers.useSwankyNode) {
+      const taskResult = (await spinner.runCommand(
+        () => downloadNode(projectPath, swankyNode, spinner),
+        "Downloading Swanky node"
+      )) as string;
+      nodePath = taskResult;
+    }
+
+    await spinner.runCommand(() => installDeps(projectPath), "Installing dependencies");
+
+    const config: SwankyConfig = {
+      node: {
+        localPath: nodePath,
+        polkadotPalletVersions: swankyNode.polkadotPalletVersions,
+        supportedInk: swankyNode.supportedInk,
+      },
+      accounts: [
+        {
+          alias: "alice",
+          mnemonic: "//Alice",
+        },
+        {
+          alias: "bob",
+          mnemonic: "//Bob",
+        },
+      ],
+      networks: {
+        local: { url: DEFAULT_NETWORK_URL },
+        astar: { url: DEFAULT_ASTAR_NETWORK_URL },
+        shiden: { url: DEFAULT_SHIDEN_NETWORK_URL },
+        shibuya: { url: DEFAULT_SHIBUYA_NETWORK_URL },
+      },
+    };
+    await spinner.runCommand(
+      () => writeJSON(path.resolve(projectPath, "swanky.config.json"), config, { spaces: 2 }),
+      "Writing config"
+    );
+
+    this.log("🎉 😎 Swanky project successfully initialised! 😎 🎉");
   }
 }
