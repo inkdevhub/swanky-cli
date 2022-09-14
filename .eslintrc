@@ -1,13 +1,6 @@
 {
-  "extends": ["oclif", "oclif-typescript", "plugin:prettier/recommended"],
-  "rules": {
-    "unicorn/no-array-for-each": "off",
-    "unicorn/no-process-exit": "off",
-    "unicorn/no-await-expression-member": "off",
-    "no-process-exit": "off",
-    "max-params": "off",
-    "unicorn/prefer-module": "off",
-    "camelcase": "off",
-    "unicorn/no-empty-file": "off"
-  }
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint", "prettier"],
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"],
+  "rules": {}
 }

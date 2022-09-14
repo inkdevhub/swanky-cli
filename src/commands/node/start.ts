@@ -1,7 +1,7 @@
 import { Command } from "@oclif/core";
-import { execSync } from "node:child_process";
-import { readFileSync } from "node:fs";
-import { SwankyConfig } from "../init";
+import execa from "execa";
+import { readJSON } from "fs-extra";
+import { ensureSwankyProject } from "../../lib/command-utils";
 export class StartNode extends Command {
   static description = "Start a local node";
 
@@ -10,21 +10,10 @@ export class StartNode extends Command {
   static args = [];
 
   async run(): Promise<void> {
-    let config: SwankyConfig = {
-      platform: "",
-      project_name: "",
-      node: {},
-      accounts: [],
-      author: { name: "", email: "" },
-    };
-    try {
-      const file = readFileSync("swanky.config.json", { encoding: "utf8" });
-      config = JSON.parse(file);
-    } catch {
-      throw new Error("No 'swanky.config.json' detected in current folder!");
-    }
+    ensureSwankyProject();
 
-    execSync(`${config.node.localPath} --dev`, {
+    const config = await readJSON("swanky.config.json");
+    await execa.command(`${config.node.localPath} --dev`, {
       stdio: "inherit",
     });
 
