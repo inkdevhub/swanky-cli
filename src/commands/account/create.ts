@@ -1,10 +1,10 @@
 import { Command, Flags } from "@oclif/core";
 import chalk = require("chalk");
-import { prompt } from "enquirer";
-import { writeFileSync } from "fs-extra";
+import { writeJSON } from "fs-extra";
 import { ChainAccount } from "../../lib/account";
 import { ensureSwankyProject, getSwankyConfig } from "../../lib/command-utils";
-
+import { choice } from "../../lib/prompts";
+import inquirer from "inquirer";
 export class CreateAccount extends Command {
   static description = "Create a new dev account in config";
 
@@ -21,22 +21,20 @@ export class CreateAccount extends Command {
 
   async run(): Promise<void> {
     await ensureSwankyProject();
-
     const { flags } = await this.parse(CreateAccount);
-    const confirmation: { confirmed: boolean } = await prompt([
-      {
-        type: "confirm",
-        message: `${chalk.yellowBright(
-          "WARNING: Only store test accounts this way. Mnemonic will be stored in the config file."
-        )}
-      Are you sure you want to proceed?`,
-        name: "confirmed",
-        skip: flags.force || flags.generate,
-      },
-    ]);
 
-    if (!confirmation.confirmed && !(flags.force || flags.generate))
-      this.exit();
+    if (!(flags.force || flags.generate)) {
+      const answers = await inquirer.prompt([
+        choice(
+          "confirmDevAcc",
+          `${chalk.yellowBright(
+            "WARNING: Only store test accounts this way. Mnemonic will be stored in the config file."
+          )}
+    Are you sure you want to proceed?`
+        ),
+      ]);
+      if (!answers.confirmDevAcc) this.exit();
+    }
 
     const accountData = {
       mnemonic: "",
@@ -49,7 +47,7 @@ export class CreateAccount extends Command {
       accountData.mnemonic = mnemonic;
       accountData.alias = alias;
     } else {
-      const answers: { alias: string; mnemonic: string } = await prompt([
+      const answers: { alias: string; mnemonic: string } = await inquirer.prompt([
         { type: "input", message: "Enter mnemonic: ", name: "mnemonic" },
         { type: "input", message: "Enter alias: ", name: "alias" },
       ]);
@@ -61,7 +59,7 @@ export class CreateAccount extends Command {
 
     config.accounts.push(accountData);
 
-    writeFileSync("swanky.config.json", JSON.stringify(config, null, 2));
+    await writeJSON("swanky.config.json", config, { spaces: 2 });
 
     this.log(
       `${chalk.greenBright("✔")} Account with alias ${chalk.yellowBright(
