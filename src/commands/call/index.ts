@@ -24,7 +24,7 @@ export class CallContract extends Command {
     }),
     network: Flags.string({
       char: "n",
-      default: "",
+      description: "Network name to connect to",
     }),
   };
 
@@ -49,7 +49,7 @@ export class CallContract extends Command {
         config.contracts[0].address
       } --message ${flags.message} --suri //Alice --gas ${
         flags.gas ?? "100000000000"
-      } --url ${resolveNetworkUrl(swankyConfig, flags.network)} ${
+      } --url ${resolveNetworkUrl(swankyConfig, flags.network ?? "")} ${
         flags.dry ? "--dry-run" : ""
       }`,
       {

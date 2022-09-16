@@ -20,10 +20,6 @@ export class DeployContract extends Command {
       required: true,
       description: "Alias of account to be used",
     }),
-    network: Flags.string({
-      default: "",
-      description: "Network name to connect to",
-    }),
     contract: Flags.string({ char: "c", required: true }),
     gas: Flags.integer({
       required: true,
@@ -32,6 +28,10 @@ export class DeployContract extends Command {
     args: Flags.string({
       char: "a",
       multiple: true,
+    }),
+    network: Flags.string({
+      char: "n",
+      description: "Network name to connect to",
     }),
   };
 
@@ -62,7 +62,7 @@ export class DeployContract extends Command {
     }, "Getting WASM")) as { abi: Abi; wasm: Buffer };
 
     const api = (await spinner.runCommand(async () => {
-      const api = new DeployApi(resolveNetworkUrl(config, flags.network));
+      const api = new DeployApi(resolveNetworkUrl(config, flags.network ?? ""));
       await api.start();
       return api;
     }, "Connecting to node")) as DeployApi;
