@@ -226,7 +226,7 @@ A newly generated project will have a `swanky.config.json` file.
 ```
 
 ## Network Management
-You can deploy/call wasm smart contracts on any chains supporting the substrate contracts module (`pallet-contract`) by swanky-cli.
+You can deploy/call wasm smart contracts on any chains supporting the substrate contracts module ([`pallet-contracts`](https://github.com/paritytech/substrate/tree/master/frame/contracts)) by swanky-cli.
 `--network` flag is available for `deploy` and `call` commands. For example,
 ```
 swanky deploy --account alice --gas 100000000000 --contract flipper --args true --network shibuya
