@@ -20,11 +20,20 @@ export interface SwankyConfig {
     polkadotPalletVersions: string;
     localPath: string;
     supportedInk: string;
-    nodeAddress: string;
   };
   accounts: { alias: string; mnemonic: string }[];
   contracts?: { name: string; address: string }[];
+  networks: {
+    [network: string]: {
+      url: string;
+    };
+  };
 }
+
+export const DEFAULT_NETWORK_URL = "ws://127.0.0.1:9944";
+export const DEFAULT_ASTAR_NETWORK_URL = "wss://rpc.astar.network";
+export const DEFAULT_SHIDEN_NETWORK_URL = "wss://rpc.shiden.astar.network";
+export const DEFAULT_SHIBUYA_NETWORK_URL = "wss://rpc.shibuya.astar.network";
 
 function getTemplates(language = "ink") {
   const templatesPath = path.resolve(__dirname, "../..", "templates");
@@ -131,7 +140,6 @@ export class Init extends Command {
     const config: SwankyConfig = {
       node: {
         localPath: nodePath,
-        nodeAddress: "ws://127.0.0.1:9944",
         polkadotPalletVersions: swankyNode.polkadotPalletVersions,
         supportedInk: swankyNode.supportedInk,
       },
@@ -145,6 +153,12 @@ export class Init extends Command {
           mnemonic: "//Bob",
         },
       ],
+      networks: {
+        local: { url: DEFAULT_NETWORK_URL },
+        astar: { url: DEFAULT_ASTAR_NETWORK_URL },
+        shiden: { url: DEFAULT_SHIDEN_NETWORK_URL },
+        shibuya: { url: DEFAULT_SHIBUYA_NETWORK_URL },
+      },
     };
     await spinner.runCommand(
       () => writeJSON(path.resolve(projectPath, "swanky.config.json"), config, { spaces: 2 }),

@@ -5,7 +5,11 @@ import { readJSON, readFile, writeJSON } from "fs-extra";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { ChainApi } from "../../lib/substrate-api";
 import { KeyringPair } from "@polkadot/keyring/types";
-import { ensureSwankyProject, getSwankyConfig } from "../../lib/command-utils";
+import {
+  ensureSwankyProject,
+  getSwankyConfig,
+  resolveNetworkUrl,
+} from "../../lib/command-utils";
 import { ChainAccount } from "../../lib/account";
 import { Spinner } from "../../lib/spinner";
 export class DeployContract extends Command {
@@ -24,6 +28,10 @@ export class DeployContract extends Command {
     args: Flags.string({
       char: "a",
       multiple: true,
+    }),
+    network: Flags.string({
+      char: "n",
+      description: "Network name to connect to",
     }),
   };
 
@@ -54,7 +62,7 @@ export class DeployContract extends Command {
     }, "Getting WASM")) as { abi: Abi; wasm: Buffer };
 
     const api = (await spinner.runCommand(async () => {
-      const api = new DeployApi(config.node.nodeAddress);
+      const api = new DeployApi(resolveNetworkUrl(config, flags.network ?? ""));
       await api.start();
       return api;
     }, "Connecting to node")) as DeployApi;

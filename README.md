@@ -45,12 +45,14 @@ Call a method on a smart contract
 
 ```
 USAGE
-  $ swanky call -m <value> [-a <value>] [-d]
+  $ swanky call -m <value> [-a <value>] [-d] [-g <value>] [-n <value>]
 
 FLAGS
   -a, --args=<value>
   -d, --dry
+  -g, --gas=<value>
   -m, --message=<value>  (required)
+  -n, --network=<value>  Network name to connect to
 
 DESCRIPTION
   Call a method on a smart contract
@@ -95,16 +97,14 @@ Deploy contract to a running node
 
 ```
 USAGE
-  $ swanky deploy --account <value> -c <value> -g <value> -a <value>
+  $ swanky deploy --account <value> -c <value> -g <value> [-a <value>] [-n <value>]
 
 FLAGS
-  -a, --args=<value>...   (required)
+  -a, --args=<value>...
   -c, --contract=<value>  (required)
   -g, --gas=<value>       (required)
+  -n, --network=<value>   Network name to connect to
   --account=<value>       (required) Alias of account to be used
-
-DESCRIPTION
-  Deploy contract to a running node
 ```
 
 _See code: [dist/commands/deploy/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.6/dist/commands/deploy/index.ts)_
@@ -192,16 +192,10 @@ A newly generated project will have a `swanky.config.json` file.
 
 ```json
 {
-  "platform": "darwin",
-  "project_name": "temp_project",
-  "language": "ink",
-  "contractTemplate": "flipper",
   "node": {
-    "type": "swanky",
-    "url": "https://github.com/AstarNetwork/swanky-node/releases/download/v0.10.0/swanky-node-v0.10.0-macOS-x86_64.tar.gz",
-    "supportedInk": "v3.3.1",
-    "localPath": "~/temp_project/bin/swanky-node",
-    "nodeAddress": "ws://127.0.0.1:9944"
+    "localPath": "/path/to/swanky-node",
+    "polkadotPalletVersions": "polkadot-v0.9.27",
+    "supportedInk": "v3.3.1"
   },
   "accounts": [
     {
@@ -213,21 +207,41 @@ A newly generated project will have a `swanky.config.json` file.
       "mnemonic": "//Bob"
     }
   ],
-  "author": {
-    "name": "myName",
-    "email": "my@e.mail"
-  },
-  "contractName": "flipper",
-  "contracts": [
-    {
-      "name": "flipper",
-      "address": ""
+  "networks": {
+    "local": {
+      "url": "ws://127.0.0.1:9944"
     },
-    {
-      "name": "flipper",
-      "address": "5DwMrWz6sv2d5haLdURq8NkHpHg8WrkiEpqjDzN24AYBkW3X"
+    "astar": {
+      "url": "wss://rpc.astar.network"
+    },
+    "shiden": {
+      "url": "wss://rpc.shiden.astar.network"
+    },
+    "shibuya": {
+      "url": "wss://rpc.shibuya.astar.network"
     }
-  ]
+  }
+}
+
+```
+
+## Network Management
+You can deploy/call wasm smart contracts on any chains supporting the substrate contracts module ([`pallet-contracts`](https://github.com/paritytech/substrate/tree/master/frame/contracts)) by swanky-cli.
+`--network` flag is available for `deploy` and `call` commands. For example,
+```
+swanky deploy --account alice --gas 100000000000 --contract flipper --args true --network shibuya
+```
+
+By default, `swanky init` prepares local/astar/shiden/shibuya endpoint for you.
+To add networks or change endpoint to interact with, you need to update `swanky.config.json` `networks` section.
+```
+"networks": {
+  "local": {
+    "url": "ws://127.0.0.1:9944"
+  },
+  "your_network": {
+    "url": "wss://your.network"
+  }
 }
 ```
 

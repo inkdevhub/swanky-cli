@@ -2,6 +2,8 @@ import { Command, Flags } from "@oclif/core";
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path = require("node:path");
+import { getSwankyConfig, resolveNetworkUrl } from "../../lib/command-utils";
+
 export class CallContract extends Command {
   static description = "Call a method on a smart contract";
 
@@ -20,6 +22,10 @@ export class CallContract extends Command {
     gas: Flags.string({
       char: "g",
     }),
+    network: Flags.string({
+      char: "n",
+      description: "Network name to connect to",
+    }),
   };
 
   static args = [];
@@ -36,12 +42,16 @@ export class CallContract extends Command {
       throw new Error("No 'swanky.config.json' detected in current folder!");
     }
 
+    const swankyConfig = await getSwankyConfig();
+
     execSync(
       `cargo contract call --contract ${
         config.contracts[0].address
       } --message ${flags.message} --suri //Alice --gas ${
         flags.gas ?? "100000000000"
-      } ${flags.dry ? "--dry-run" : ""}`,
+      } --url ${resolveNetworkUrl(swankyConfig, flags.network ?? "")} ${
+        flags.dry ? "--dry-run" : ""
+      }`,
       {
         stdio: "inherit",
         cwd: path.resolve(
