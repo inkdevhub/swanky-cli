@@ -23,6 +23,14 @@ export class CreateAccount extends Command {
     let tmpMnemonic = "";
     if (flags.generate) {
       tmpMnemonic = ChainAccount.generate();
+      console.log(
+        `${chalk.yellowBright(
+          "This is your mnemonic. Copy it to a secure place, as it will be encrypted and not accessible anymore."
+        )}
+        ${"-".repeat(tmpMnemonic.length)}
+        ${tmpMnemonic}
+        ${"-".repeat(tmpMnemonic.length)}`
+      );
     } else {
       const answers: { mnemonic: string } = await inquirer.prompt([
         { type: "input", message: "Enter mnemonic: ", name: "mnemonic" },
