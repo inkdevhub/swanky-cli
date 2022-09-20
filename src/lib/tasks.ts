@@ -42,6 +42,14 @@ export async function copyTemplateFiles(
   await copy(contractTemplatePath, path.resolve(projectPath, "contracts", contractName));
 }
 
+export async function copyContractTemplateFiles(
+  contractTemplatePath: string,
+  contractName: string,
+  projectPath: string
+) {
+  await copy(contractTemplatePath, path.resolve(projectPath, "contracts", contractName));
+}
+
 export async function processTemplates(projectPath: string, templateData: Record<string, string>) {
   const templateFiles = await globby(projectPath, {
     expandDirectories: { extensions: ["tpl"] },
