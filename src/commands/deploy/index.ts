@@ -8,6 +8,10 @@ import { KeyringPair } from "@polkadot/keyring/types";
 import { ensureSwankyProject, getSwankyConfig } from "../../lib/command-utils";
 import { ChainAccount } from "../../lib/account";
 import { Spinner } from "../../lib/spinner";
+import inquirer from "inquirer";
+import { decrypt } from "../../lib/crypto";
+import chalk = require("chalk");
+
 export class DeployContract extends Command {
   static description = "Deploy contract to a running node";
 
@@ -37,13 +41,22 @@ export class DeployContract extends Command {
 
     const spinner = new Spinner();
 
+    const accountData = config.accounts.find((account) => account.alias === flags.account);
+    if (!accountData) {
+      this.error("Provided account alias not found in swanky.config.json");
+    }
+    const answers: { password: string } = await inquirer.prompt([
+      {
+        type: "password",
+        message: `Enter password for ${chalk.yellowBright(accountData.alias)}: `,
+        name: "password",
+      },
+    ]);
+    const mnemonic = decrypt(accountData.mnemonic, answers.password);
+
     const account = (await spinner.runCommand(async () => {
       await cryptoWaitReady();
-      const account = config.accounts.find((account) => account.alias === flags.account);
-      if (!account) {
-        this.error("Provided account alias not found in swanky.config.json");
-      }
-      return new ChainAccount(account.mnemonic);
+      return new ChainAccount(mnemonic);
     }, "Initialising")) as ChainAccount;
 
     const { abi, wasm } = (await spinner.runCommand(async () => {
