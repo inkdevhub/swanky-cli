@@ -46,7 +46,7 @@ export class CallContract extends Command {
     execSync(
       `cargo contract call --contract ${
         contractInfo?.address
-      } --message ${flags.message} --suri //Alice --gas ${
+      } --message ${flags.message} ${flags.args ? "--args " + flags.args : ""} --suri //Alice --gas ${
         flags.gas ?? "100000000000"
       } --url ${resolveNetworkUrl(config, flags.network ?? "")} ${
         flags.dry ? "--dry-run" : ""

@@ -83,6 +83,6 @@ export class Scaffold extends Command {
         "Processing contract templates"
       );
 
-    this.log("🎉 😎 New contract successfully scaffolded! 😎 🎉");
+    this.log("😎 New contract successfully scaffolded! 😎");
   }
 }
