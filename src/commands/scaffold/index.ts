@@ -39,7 +39,7 @@ export class Scaffold extends Command {
     const { args, flags } = await this.parse(Scaffold);
 
     if (fs.existsSync(path.join(projectPath, "contracts", args.contractName))) {
-      throw Error(`Folder '${args.name}' already exists under path '${args.contractName}'.\nTip: Use another path or contract name`);
+      throw Error(`Contract folder '${args.contractName}' already exists`);
     }
 
     const templates = getTemplates();

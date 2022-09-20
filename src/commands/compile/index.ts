@@ -8,6 +8,7 @@ export class Compile extends Command {
   static description = "Compile the smart contract(s) in your contracts directory";
 
   static flags = {
+    contract: Flags.string({ char: "c", required: true }),
     verbose: Flags.boolean({
       default: false,
       char: "v",
@@ -27,8 +28,12 @@ export class Compile extends Command {
       spinner.start("Compiling contract");
       const contractList = readdirSync(path.resolve("contracts"));
 
+      if (!contractList.includes(flags.contract)) {
+        throw Error(`Contract name ${flags.contract} is invalid`)
+      }
+
       const build = spawn("cargo", ["+nightly", "contract", "build"], {
-        cwd: path.resolve("contracts", contractList[0]),
+        cwd: path.resolve("contracts", flags.contract),
       });
 
       build.stdout.on("data", () => spinner.ora.clear());

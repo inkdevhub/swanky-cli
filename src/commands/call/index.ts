@@ -12,6 +12,10 @@ export class CallContract extends Command {
       required: false,
       char: "a",
     }),
+    contractAddress: Flags.string({
+      required: true,
+      char: "c",
+    }),
     message: Flags.string({
       required: true,
       char: "m",
@@ -32,33 +36,26 @@ export class CallContract extends Command {
 
   async run(): Promise<void> {
     const { flags } = await this.parse(CallContract);
-    let config: { contracts: string[] | Record<string, string> } = {
-      contracts: [""],
-    };
-    try {
-      const file = readFileSync("swanky.config.json", { encoding: "utf8" });
-      config = JSON.parse(file);
-    } catch {
-      throw new Error("No 'swanky.config.json' detected in current folder!");
+
+    const config = await getSwankyConfig();
+
+    const contractInfo = config.contracts?.find(item => item.address == flags.contractAddress);
+    if (contractInfo == undefined) {
+      throw Error("contract address not found")
     }
-
-    const swankyConfig = await getSwankyConfig();
-
     execSync(
       `cargo contract call --contract ${
-        config.contracts[0].address
+        contractInfo?.address
       } --message ${flags.message} --suri //Alice --gas ${
         flags.gas ?? "100000000000"
-      } --url ${resolveNetworkUrl(swankyConfig, flags.network ?? "")} ${
+      } --url ${resolveNetworkUrl(config, flags.network ?? "")} ${
         flags.dry ? "--dry-run" : ""
       }`,
       {
         stdio: "inherit",
         cwd: path.resolve(
           "contracts",
-          typeof config.contracts[0] === "string"
-            ? config.contracts[0]
-            : config.contracts[0].name
+          contractInfo?.name ?? ""
         ),
       }
     );
