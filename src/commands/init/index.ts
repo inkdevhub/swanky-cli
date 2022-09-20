@@ -14,6 +14,7 @@ import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer = require("inquirer");
 import { choice, email, name, pickTemplate } from "../../lib/prompts";
 import { Spinner } from "../../lib/spinner";
+import { Encrypted } from "../../lib/crypto";
 
 export interface SwankyConfig {
   node: {
@@ -22,7 +23,7 @@ export interface SwankyConfig {
     supportedInk: string;
     nodeAddress: string;
   };
-  accounts: { alias: string; mnemonic: string }[];
+  accounts: { isDev: boolean; alias: string; mnemonic: Encrypted }[];
   contracts?: { name: string; address: string }[];
 }
 
@@ -138,11 +139,13 @@ export class Init extends Command {
       accounts: [
         {
           alias: "alice",
-          mnemonic: "//Alice",
+          mnemonic: { data: "//Alice", iv: "" },
+          isDev: true,
         },
         {
           alias: "bob",
-          mnemonic: "//Bob",
+          mnemonic: { data: "//Bob", iv: "" },
+          isDev: true,
         },
       ],
     };

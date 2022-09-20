@@ -3,15 +3,12 @@ import chalk = require("chalk");
 import { writeJSON } from "fs-extra";
 import { ChainAccount } from "../../lib/account";
 import { ensureSwankyProject, getSwankyConfig } from "../../lib/command-utils";
-import { choice } from "../../lib/prompts";
+import { encrypt } from "../../lib/crypto";
 import inquirer from "inquirer";
 export class CreateAccount extends Command {
   static description = "Create a new dev account in config";
 
   static flags = {
-    force: Flags.boolean({
-      char: "f",
-    }),
     generate: Flags.boolean({
       char: "g",
     }),
@@ -23,38 +20,27 @@ export class CreateAccount extends Command {
     await ensureSwankyProject();
     const { flags } = await this.parse(CreateAccount);
 
-    if (!(flags.force || flags.generate)) {
-      const answers = await inquirer.prompt([
-        choice(
-          "confirmDevAcc",
-          `${chalk.yellowBright(
-            "WARNING: Only store test accounts this way. Mnemonic will be stored in the config file."
-          )}
-    Are you sure you want to proceed?`
-        ),
+    let tmpMnemonic = "";
+    if (flags.generate) {
+      tmpMnemonic = ChainAccount.generate();
+    } else {
+      const answers: { mnemonic: string } = await inquirer.prompt([
+        { type: "input", message: "Enter mnemonic: ", name: "mnemonic" },
       ]);
-      if (!answers.confirmDevAcc) this.exit();
+
+      tmpMnemonic = answers.mnemonic;
     }
+
+    const answers: { alias: string; password: string } = await inquirer.prompt([
+      { type: "input", message: "Enter alias: ", name: "alias" },
+      { type: "password", message: "Enter encryption password: ", name: "password" },
+    ]);
 
     const accountData = {
-      mnemonic: "",
-      alias: "",
+      mnemonic: encrypt(tmpMnemonic, answers.password),
+      alias: answers.alias,
+      isDev: false,
     };
-
-    if (flags.generate) {
-      const mnemonic = ChainAccount.generate();
-      const alias = mnemonic.replace(/ .*/, "");
-      accountData.mnemonic = mnemonic;
-      accountData.alias = alias;
-    } else {
-      const answers: { alias: string; mnemonic: string } = await inquirer.prompt([
-        { type: "input", message: "Enter mnemonic: ", name: "mnemonic" },
-        { type: "input", message: "Enter alias: ", name: "alias" },
-      ]);
-      accountData.alias = answers.alias;
-      accountData.mnemonic = answers.mnemonic;
-    }
-
     const config = await getSwankyConfig();
 
     config.accounts.push(accountData);
