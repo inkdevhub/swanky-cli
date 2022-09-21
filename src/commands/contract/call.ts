@@ -11,9 +11,8 @@ export class CallContract extends Command {
       required: false,
       char: "a",
     }),
-    contractAddress: Flags.string({
+    address: Flags.string({
       required: true,
-      char: "c",
     }),
     message: Flags.string({
       required: true,
@@ -38,9 +37,9 @@ export class CallContract extends Command {
 
     const config = await getSwankyConfig();
 
-    const contractInfo = config.contracts?.find(item => item.address == flags.contractAddress);
+    const contractInfo = config.contracts?.find(item => item.address == flags.address);
     if (!contractInfo) {
-      throw Error("contract address not found")
+      throw Error("contract address not found in swanky config")
     }
     execSync(
       `cargo contract call --contract ${

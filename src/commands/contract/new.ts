@@ -15,7 +15,7 @@ import execa = require("execa");
 import inquirer = require("inquirer");
 
 export class NewContract extends Command {
-  static description = "Generate a new smart contract template";
+  static description = "Generate a new smart contract template inside a project";
 
   static flags = {
     template: Flags.string({
