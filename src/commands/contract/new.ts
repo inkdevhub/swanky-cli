@@ -14,8 +14,8 @@ import { paramCase, pascalCase, snakeCase } from "change-case";
 import execa = require("execa");
 import inquirer = require("inquirer");
 
-export class Scaffold extends Command {
-  static description = "Scaffold a new smart contract template";
+export class NewContract extends Command {
+  static description = "Generate a new smart contract template";
 
   static flags = {
     template: Flags.string({
@@ -36,7 +36,7 @@ export class Scaffold extends Command {
     await ensureSwankyProject();
 
     const projectPath = path.resolve();
-    const { args, flags } = await this.parse(Scaffold);
+    const { args, flags } = await this.parse(NewContract);
 
     if (fs.existsSync(path.join(projectPath, "contracts", args.contractName))) {
       throw Error(`Contract folder '${args.contractName}' already exists`);

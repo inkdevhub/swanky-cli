@@ -1,6 +1,5 @@
 import { Command, Flags } from "@oclif/core";
 import { execSync } from "node:child_process";
-import { readFileSync } from "node:fs";
 import path = require("node:path");
 import { getSwankyConfig, resolveNetworkUrl } from "../../lib/command-utils";
 
@@ -40,7 +39,7 @@ export class CallContract extends Command {
     const config = await getSwankyConfig();
 
     const contractInfo = config.contracts?.find(item => item.address == flags.contractAddress);
-    if (contractInfo == undefined) {
+    if (!contractInfo) {
       throw Error("contract address not found")
     }
     execSync(

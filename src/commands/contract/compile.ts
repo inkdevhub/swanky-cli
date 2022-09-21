@@ -4,7 +4,7 @@ import path = require("node:path");
 import { readdirSync } from "node:fs";
 import { ensureSwankyProject } from "../../lib/command-utils";
 import { Spinner } from "../../lib/spinner";
-export class Compile extends Command {
+export class CompileContract extends Command {
   static description = "Compile the smart contract(s) in your contracts directory";
 
   static flags = {
@@ -19,7 +19,7 @@ export class Compile extends Command {
   static args = [];
 
   async run(): Promise<void> {
-    const { flags } = await this.parse(Compile);
+    const { flags } = await this.parse(CompileContract);
 
     await ensureSwankyProject();
 
