@@ -20,7 +20,6 @@ export class DeployContract extends Command {
       required: true,
       description: "Alias of account to be used",
     }),
-    contract: Flags.string({ char: "c", required: true }),
     gas: Flags.integer({
       required: true,
       char: "g",
@@ -35,11 +34,17 @@ export class DeployContract extends Command {
     }),
   };
 
-  static args = [];
+  static args = [
+    {
+      name: "contractName",
+      required: true,
+      description: "contract name to deploy",
+    },
+  ];
 
   async run(): Promise<void> {
     await ensureSwankyProject();
-    const { flags } = await this.parse(DeployContract);
+    const { args, flags } = await this.parse(DeployContract);
 
     const config = await getSwankyConfig();
 
@@ -55,9 +60,9 @@ export class DeployContract extends Command {
     }, "Initialising")) as ChainAccount;
 
     const { abi, wasm } = (await spinner.runCommand(async () => {
-      const buildPath = path.resolve("contracts", flags.contract, "target", "ink");
+      const buildPath = path.resolve("contracts", args.contractName, "target", "ink");
       const abi = (await readJSON(path.resolve(buildPath, "metadata.json"))) as Abi;
-      const wasm = await readFile(path.resolve(buildPath, `${flags.contract}.wasm`));
+      const wasm = await readFile(path.resolve(buildPath, `${args.contractName}.wasm`));
       return { abi, wasm };
     }, "Getting WASM")) as { abi: Abi; wasm: Buffer };
 
@@ -84,7 +89,7 @@ export class DeployContract extends Command {
       }
 
       config.contracts.push({
-        name: flags.contract,
+        name: args.contractName,
         address: contractAddress,
       });
 

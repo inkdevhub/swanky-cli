@@ -32,8 +32,8 @@ USAGE
 
 - [`swanky check`](#swanky-check)
 - [`swanky contract call`](#swanky-contract-call)
-- [`swanky contract compile`](#swanky-contract-compile)
-- [`swanky contract deploy`](#swanky-contract-deploy)
+- [`swanky contract compile CONTRACT_NAME`](#swanky-contract-compile-contract_name)
+- [`swanky contract deploy CONTRACT_NAME`](#swanky-contract-deploy-contract_name)
 - [`swanky contract new CONTRACT_NAME`](#swanky-contract-new-contract_name)
 - [`swanky help [COMMAND]`](#swanky-help-command)
 - [`swanky init PROJECT_NAME`](#swanky-init-project_name)
@@ -77,17 +77,19 @@ DESCRIPTION
 
 _See code: [dist/commands/call/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.6/dist/commands/call/index.ts)_
 
-## `swanky contract compile`
+## `swanky contract compile CONTRACT_NAME`
 
 Compile the smart contract(s) in your contracts directory
 
 ```
 USAGE
-  $ swanky contract compile -c <value> [-v]
+  $ swanky contract compile [CONTRACTNAME] [-v]
+
+ARGUMENTS
+  CONTRACTNAME  contract name to compile
 
 FLAGS
-  -c, --contract=<value>  (required)
-  -v, --verbose           Display additional compilation output
+  -v, --verbose  Display additional compilation output
 
 DESCRIPTION
   Compile the smart contract(s) in your contracts directory
@@ -95,20 +97,22 @@ DESCRIPTION
 
 _See code: [dist/commands/compile/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.6/dist/commands/compile/index.ts)_
 
-## `swanky contract deploy`
+## `swanky contract deploy CONTRACT_NAME`
 
 Deploy contract to a running node
 
 ```
 USAGE
-  $ swanky contract deploy --account <value> -c <value> -g <value> [-a <value>] [-n <value>]
+  $ swanky contract deploy [CONTRACTNAME] --account <value> -g <value> [-a <value>] [-n <value>]
+
+ARGUMENTS
+  CONTRACTNAME  contract name to deploy
 
 FLAGS
   -a, --args=<value>...
-  -c, --contract=<value>  (required)
-  -g, --gas=<value>       (required)
-  -n, --network=<value>   Network name to connect to
-  --account=<value>       (required) Alias of account to be used
+  -g, --gas=<value>      (required)
+  -n, --network=<value>  Network name to connect to
+  --account=<value>      (required) Alias of account to be used
 
 DESCRIPTION
   Deploy contract to a running node

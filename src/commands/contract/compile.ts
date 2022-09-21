@@ -4,11 +4,11 @@ import path = require("node:path");
 import { readdirSync } from "node:fs";
 import { ensureSwankyProject } from "../../lib/command-utils";
 import { Spinner } from "../../lib/spinner";
+import { args } from "@oclif/core/lib/parser";
 export class CompileContract extends Command {
   static description = "Compile the smart contract(s) in your contracts directory";
 
   static flags = {
-    contract: Flags.string({ char: "c", required: true }),
     verbose: Flags.boolean({
       default: false,
       char: "v",
@@ -16,10 +16,16 @@ export class CompileContract extends Command {
     }),
   };
 
-  static args = [];
+  static args = [
+    {
+      name: "contractName",
+      required: true,
+      description: "contract name to compile",
+    },
+  ];
 
   async run(): Promise<void> {
-    const { flags } = await this.parse(CompileContract);
+    const { args, flags } = await this.parse(CompileContract);
 
     await ensureSwankyProject();
 
@@ -28,12 +34,12 @@ export class CompileContract extends Command {
       spinner.start("Compiling contract");
       const contractList = readdirSync(path.resolve("contracts"));
 
-      if (!contractList.includes(flags.contract)) {
-        throw Error(`Contract name ${flags.contract} is invalid`)
+      if (!contractList.includes(args.contractName)) {
+        throw Error(`Contract name ${args.contractName} is invalid`)
       }
 
       const build = spawn("cargo", ["+nightly", "contract", "build"], {
-        cwd: path.resolve("contracts", flags.contract),
+        cwd: path.resolve("contracts", args.contractName),
       });
 
       build.stdout.on("data", () => spinner.ora.clear());
