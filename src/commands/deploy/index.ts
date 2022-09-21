@@ -9,7 +9,7 @@ import { ensureSwankyProject, getSwankyConfig } from "../../lib/command-utils";
 import { ChainAccount } from "../../lib/account";
 import { Spinner } from "../../lib/spinner";
 import inquirer from "inquirer";
-import { decrypt } from "../../lib/crypto";
+import { decrypt, Encrypted } from "../../lib/crypto";
 import chalk = require("chalk");
 
 export class DeployContract extends Command {
@@ -45,14 +45,21 @@ export class DeployContract extends Command {
     if (!accountData) {
       this.error("Provided account alias not found in swanky.config.json");
     }
-    const answers: { password: string } = await inquirer.prompt([
-      {
-        type: "password",
-        message: `Enter password for ${chalk.yellowBright(accountData.alias)}: `,
-        name: "password",
-      },
-    ]);
-    const mnemonic = decrypt(accountData.mnemonic, answers.password);
+
+    const mnemonic = accountData.isDev
+      ? (accountData.mnemonic as string)
+      : decrypt(
+          accountData.mnemonic as Encrypted,
+          (
+            await inquirer.prompt([
+              {
+                type: "password",
+                message: `Enter password for ${chalk.yellowBright(accountData.alias)}: `,
+                name: "password",
+              },
+            ])
+          ).password
+        );
 
     const account = (await spinner.runCommand(async () => {
       await cryptoWaitReady();

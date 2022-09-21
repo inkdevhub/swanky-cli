@@ -5,12 +5,16 @@ import { ChainAccount } from "../../lib/account";
 import { ensureSwankyProject, getSwankyConfig } from "../../lib/command-utils";
 import { encrypt } from "../../lib/crypto";
 import inquirer from "inquirer";
+import { AccountData } from "../init";
 export class CreateAccount extends Command {
   static description = "Create a new dev account in config";
 
   static flags = {
     generate: Flags.boolean({
       char: "g",
+    }),
+    dev: Flags.boolean({
+      char: "d",
     }),
   };
 
@@ -20,35 +24,62 @@ export class CreateAccount extends Command {
     await ensureSwankyProject();
     const { flags } = await this.parse(CreateAccount);
 
+    const isDev =
+      flags.dev ??
+      (
+        await inquirer.prompt([
+          { type: "confirm", message: "Is this a DEV account? ", name: "isDev", default: false },
+        ])
+      ).isDev;
+
+    if (isDev) {
+      console.log(
+        `${chalk.redBright(
+          "DEV account mnemonic will be stored in plain text. DO NOT USE IN PROD!"
+        )}`
+      );
+    }
+
     let tmpMnemonic = "";
     if (flags.generate) {
       tmpMnemonic = ChainAccount.generate();
       console.log(
-        `${chalk.yellowBright(
-          "This is your mnemonic. Copy it to a secure place, as it will be encrypted and not accessible anymore."
-        )}
+        `${
+          isDev
+            ? ""
+            : chalk.yellowBright(
+                "This is your mnemonic. Copy it to a secure place, as it will be encrypted and not accessible anymore."
+              )
+        }
         ${"-".repeat(tmpMnemonic.length)}
         ${tmpMnemonic}
         ${"-".repeat(tmpMnemonic.length)}`
       );
     } else {
-      const answers: { mnemonic: string } = await inquirer.prompt([
-        { type: "input", message: "Enter mnemonic: ", name: "mnemonic" },
-      ]);
-
-      tmpMnemonic = answers.mnemonic;
+      tmpMnemonic = (
+        await inquirer.prompt([{ type: "input", message: "Enter mnemonic: ", name: "mnemonic" }])
+      ).mnemonic;
     }
 
-    const answers: { alias: string; password: string } = await inquirer.prompt([
-      { type: "input", message: "Enter alias: ", name: "alias" },
-      { type: "password", message: "Enter encryption password: ", name: "password" },
-    ]);
-
-    const accountData = {
-      mnemonic: encrypt(tmpMnemonic, answers.password),
-      alias: answers.alias,
-      isDev: false,
+    const accountData: AccountData = {
+      mnemonic: "",
+      isDev,
+      alias: (await inquirer.prompt([{ type: "input", message: "Enter alias: ", name: "alias" }]))
+        .alias,
+      address: new ChainAccount(tmpMnemonic).pair.address,
     };
+
+    if (!isDev) {
+      const password = (
+        await inquirer.prompt([
+          { type: "password", message: "Enter encryption password: ", name: "password" },
+        ])
+      ).password;
+      accountData.mnemonic = encrypt(tmpMnemonic, password);
+    } else {
+      accountData.mnemonic = tmpMnemonic;
+    }
+
     const config = await getSwankyConfig();
 
     config.accounts.push(accountData);

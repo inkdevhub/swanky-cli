@@ -15,7 +15,14 @@ import inquirer = require("inquirer");
 import { choice, email, name, pickTemplate } from "../../lib/prompts";
 import { Spinner } from "../../lib/spinner";
 import { Encrypted } from "../../lib/crypto";
+import { ChainAccount } from "../../lib/account";
 
+export interface AccountData {
+  isDev: boolean;
+  alias: string;
+  mnemonic: string | Encrypted;
+  address: string;
+}
 export interface SwankyConfig {
   node: {
     polkadotPalletVersions: string;
@@ -23,7 +30,7 @@ export interface SwankyConfig {
     supportedInk: string;
     nodeAddress: string;
   };
-  accounts: { isDev: boolean; alias: string; mnemonic: Encrypted }[];
+  accounts: AccountData[];
   contracts?: { name: string; address: string }[];
 }
 
@@ -139,13 +146,15 @@ export class Init extends Command {
       accounts: [
         {
           alias: "alice",
-          mnemonic: { data: "//Alice", iv: "" },
+          mnemonic: "//Alice",
           isDev: true,
+          address: new ChainAccount("//Alice").pair.address,
         },
         {
           alias: "bob",
-          mnemonic: { data: "//Bob", iv: "" },
+          mnemonic: "//Bob",
           isDev: true,
+          address: new ChainAccount("//Bob").pair.address,
         },
       ],
     };
