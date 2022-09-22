@@ -86,7 +86,7 @@ USAGE
   $ swanky contract compile [CONTRACTNAME] [-v]
 
 ARGUMENTS
-  CONTRACTNAME  contract name to compile
+  CONTRACTNAME  Name of the contract to compile
 
 FLAGS
   -v, --verbose  Display additional compilation output
@@ -106,7 +106,7 @@ USAGE
   $ swanky contract deploy [CONTRACTNAME] --account <value> -g <value> [-a <value>] [-n <value>]
 
 ARGUMENTS
-  CONTRACTNAME  contract name to deploy
+  CONTRACTNAME  Name of the contract to deploy
 
 FLAGS
   -a, --args=<value>...

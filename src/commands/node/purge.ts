@@ -1,7 +1,6 @@
 import { Command } from "@oclif/core";
 import execa from "execa";
-import { readJSON } from "fs-extra";
-import { ensureSwankyProject } from "../../lib/command-utils";
+import { ensureSwankyProject, getSwankyConfig } from "../../lib/command-utils";
 export class PurgeNode extends Command {
   static description = "Purge local chain state";
 
@@ -12,7 +11,7 @@ export class PurgeNode extends Command {
   async run(): Promise<void> {
     ensureSwankyProject();
 
-    const config = await readJSON("swanky.config.json");
+    const config = await getSwankyConfig();
     await execa.command(`${config.node.localPath} purge-chain`, {
       stdio: "inherit",
     });

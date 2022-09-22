@@ -28,7 +28,7 @@ export class NewContract extends Command {
     {
       name: "contractName",
       required: true,
-      description: "name of new contract"
+      description: "Name of new contract"
     }
   ]
 
@@ -38,7 +38,7 @@ export class NewContract extends Command {
     const projectPath = path.resolve();
     const { args, flags } = await this.parse(NewContract);
 
-    if (fs.existsSync(path.join(projectPath, "contracts", args.contractName))) {
+    if (fs.pathExistsSync(path.join(projectPath, "contracts", args.contractName))) {
       throw Error(`Contract folder '${args.contractName}' already exists`);
     }
 

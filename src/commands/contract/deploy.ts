@@ -38,7 +38,7 @@ export class DeployContract extends Command {
     {
       name: "contractName",
       required: true,
-      description: "contract name to deploy",
+      description: "Name of the contract to deploy",
     },
   ];
 

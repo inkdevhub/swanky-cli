@@ -4,7 +4,6 @@ import path = require("node:path");
 import { readdirSync } from "node:fs";
 import { ensureSwankyProject } from "../../lib/command-utils";
 import { Spinner } from "../../lib/spinner";
-import { args } from "@oclif/core/lib/parser";
 export class CompileContract extends Command {
   static description = "Compile the smart contract(s) in your contracts directory";
 
@@ -20,7 +19,7 @@ export class CompileContract extends Command {
     {
       name: "contractName",
       required: true,
-      description: "contract name to compile",
+      description: "Name of the contract to compile",
     },
   ];
 

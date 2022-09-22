@@ -1,7 +1,6 @@
 import { Command, Flags } from "@oclif/core";
 import execa from "execa";
-import { readJSON } from "fs-extra";
-import { ensureSwankyProject } from "../../lib/command-utils";
+import { ensureSwankyProject, getSwankyConfig } from "../../lib/command-utils";
 export class StartNode extends Command {
   static description = "Start a local node";
 
@@ -19,7 +18,7 @@ export class StartNode extends Command {
 
     const { flags } = await this.parse(StartNode);
 
-    const config = await readJSON("swanky.config.json");
+    const config = await getSwankyConfig();
     // run persistent mode by default. non-persistent mode in case flag is provided.
     await execa.command(`${config.node.localPath} ${flags.tmp ? "--dev" : ""}`, {
       stdio: "inherit",
