@@ -1,45 +1,108 @@
 # Swanky CLI
 
 <!-- toc -->
-
-- [Swanky CLI](#swanky-cli)
-- [Usage](#usage)
-- [Commands](#commands)
-- [Config](#config)
+* [Swanky CLI](#swanky-cli)
+* [Usage](#usage)
+* [Commands](#commands)
+* [Config](#config)
 <!-- tocstop -->
 
 # Usage
 
 <!-- usage -->
-
 ```sh-session
 $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
 running command...
 $ swanky (--version|-V|-v)
-@astar-network/swanky-cli/0.1.6 darwin-x64 node-v18.2.0
+@astar-network/swanky-cli/0.2.0 darwin-x64 node-v18.2.0
 $ swanky --help [COMMAND]
 USAGE
   $ swanky COMMAND
 ...
 ```
-
 <!-- usagestop -->
 
 # Commands
 
 <!-- commands -->
+* [`swanky account create`](#swanky-account-create)
+* [`swanky account list`](#swanky-account-list)
+* [`swanky account ls`](#swanky-account-ls)
+* [`swanky call`](#swanky-call)
+* [`swanky check`](#swanky-check)
+* [`swanky compile`](#swanky-compile)
+* [`swanky deploy`](#swanky-deploy)
+* [`swanky help [COMMAND]`](#swanky-help-command)
+* [`swanky init PROJECTNAME`](#swanky-init-projectname)
+* [`swanky node start`](#swanky-node-start)
+* [`swanky version`](#swanky-version)
 
-- [`swanky check`](#swanky-check)
-- [`swanky contract call`](#swanky-contract-call)
-- [`swanky contract compile CONTRACT_NAME`](#swanky-contract-compile-contract_name)
-- [`swanky contract deploy CONTRACT_NAME`](#swanky-contract-deploy-contract_name)
-- [`swanky contract new CONTRACT_NAME`](#swanky-contract-new-contract_name)
-- [`swanky help [COMMAND]`](#swanky-help-command)
-- [`swanky init PROJECT_NAME`](#swanky-init-project_name)
-- [`swanky node purge`](#swanky-node-purge)
-- [`swanky node start`](#swanky-node-start)
-- [`swanky version`](#swanky-version)
+## `swanky account create`
+
+Create a new dev account in config
+
+```
+USAGE
+  $ swanky account create [-g] [-d]
+
+FLAGS
+  -d, --dev
+  -g, --generate
+
+DESCRIPTION
+  Create a new dev account in config
+```
+
+## `swanky account list`
+
+List dev accounts stored in config
+
+```
+USAGE
+  $ swanky account list
+
+DESCRIPTION
+  List dev accounts stored in config
+
+ALIASES
+  $ swanky account ls
+```
+
+## `swanky account ls`
+
+List dev accounts stored in config
+
+```
+USAGE
+  $ swanky account ls
+
+DESCRIPTION
+  List dev accounts stored in config
+
+ALIASES
+  $ swanky account ls
+```
+
+## `swanky call`
+
+Call a method on a smart contract
+
+```
+USAGE
+  $ swanky call -m <value> [-a <value>] [-d] [-g <value>]
+
+FLAGS
+  -a, --args=<value>
+  -d, --dry
+  -g, --gas=<value>
+  -m, --message=<value>  (required)
+
+DESCRIPTION
+  Call a method on a smart contract
+```
+
+_See code: [dist/commands/call/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.2.0/dist/commands/call/index.ts)_
 
 ## `swanky check`
 
@@ -53,40 +116,15 @@ DESCRIPTION
   Check installed package versions and compatibility
 ```
 
-_See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.6/dist/commands/check/index.ts)_
+_See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.2.0/dist/commands/check/index.ts)_
 
-## `swanky contract call`
-
-Call a method on a smart contract
-
-```
-USAGE
-  $ swanky contract call --address <value> -m <value> [-a <value>] [-d] [-g <value>] [-n <value>]
-
-FLAGS
-  -a, --args=<value>
-  -d, --dry
-  -g, --gas=<value>
-  -m, --message=<value>  (required)
-  -n, --network=<value>  Network name to connect to
-  --address=<value>      (required)
-
-DESCRIPTION
-  Call a method on a smart contract
-```
-
-_See code: [dist/commands/call/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.6/dist/commands/call/index.ts)_
-
-## `swanky contract compile CONTRACT_NAME`
+## `swanky compile`
 
 Compile the smart contract(s) in your contracts directory
 
 ```
 USAGE
-  $ swanky contract compile [CONTRACTNAME] [-v]
-
-ARGUMENTS
-  CONTRACTNAME  Name of the contract to compile
+  $ swanky compile [-v]
 
 FLAGS
   -v, --verbose  Display additional compilation output
@@ -95,53 +133,31 @@ DESCRIPTION
   Compile the smart contract(s) in your contracts directory
 ```
 
-_See code: [dist/commands/compile/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.6/dist/commands/compile/index.ts)_
+_See code: [dist/commands/compile/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.2.0/dist/commands/compile/index.ts)_
 
-## `swanky contract deploy CONTRACT_NAME`
+## `swanky deploy`
 
 Deploy contract to a running node
 
 ```
 USAGE
-  $ swanky contract deploy [CONTRACTNAME] --account <value> -g <value> [-a <value>] [-n <value>]
-
-ARGUMENTS
-  CONTRACTNAME  Name of the contract to deploy
+  $ swanky deploy --account <value> -c <value> -g <value> [-a <value>]
 
 FLAGS
   -a, --args=<value>...
-  -g, --gas=<value>      (required)
-  -n, --network=<value>  Network name to connect to
-  --account=<value>      (required) Alias of account to be used
+  -c, --contract=<value>  (required)
+  -g, --gas=<value>       (required)
+  --account=<value>       (required) Alias of account to be used
 
 DESCRIPTION
   Deploy contract to a running node
 ```
 
-_See code: [dist/commands/deploy/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.6/dist/commands/deploy/index.ts)_
-
-## `swanky contract new CONTRACT_NAME`
-
-Generate a new smart contract template inside a project
-
-```
-USAGE
-  $ swanky contract new [CONTRACTNAME] [--template blank|flipper|psp22] [-v]
-
-ARGUMENTS
-  CONTRACTNAME  name of new contract
-
-FLAGS
-  -v, --verbose
-  --template=<option>  <options: blank|flipper|psp22>
-
-DESCRIPTION
-  Generate a new smart contract template inside a project
-```
+_See code: [dist/commands/deploy/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.2.0/dist/commands/deploy/index.ts)_
 
 ## `swanky help [COMMAND]`
 
-Display help for swanky
+Display help for swanky.
 
 ```
 USAGE
@@ -159,18 +175,19 @@ DESCRIPTION
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.1.12/src/commands/help.ts)_
 
-## `swanky init PROJECT_NAME`
+## `swanky init PROJECTNAME`
 
 Generate a new smart contract environment
 
 ```
 USAGE
-  $ swanky init [PROJECT_NAME] [--swanky-node] [--template blank|flipper|psp22]
+  $ swanky init [PROJECTNAME] [--swanky-node] [--template blank|flipper|psp22] [-v]
 
 ARGUMENTS
-  PROJECT_NAME  directory name of new project
+  PROJECTNAME  directory name of new project
 
 FLAGS
+  -v, --verbose
   --swanky-node
   --template=<option>  <options: blank|flipper|psp22>
 
@@ -178,18 +195,7 @@ DESCRIPTION
   Generate a new smart contract environment
 ```
 
-_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.1.6/dist/commands/init/index.ts)_
-
-## `swanky node purge`
-Purge local chain state
-
-```
-USAGE
-  $ swanky node purge
-
-DESCRIPTION
-  Purge local chain state
-```
+_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.2.0/dist/commands/init/index.ts)_
 
 ## `swanky node start`
 
@@ -221,8 +227,7 @@ FLAG DESCRIPTIONS
     Additionally shows the architecture, node version, operating system, and versions of plugins that the CLI is using.
 ```
 
-_See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.1.1/src/commands/version.ts)_
-
+_See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.1.2/src/commands/version.ts)_
 <!-- commandsstop -->
 
 # Config
