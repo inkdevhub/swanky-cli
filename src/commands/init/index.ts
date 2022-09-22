@@ -43,7 +43,7 @@ export const DEFAULT_ASTAR_NETWORK_URL = "wss://rpc.astar.network";
 export const DEFAULT_SHIDEN_NETWORK_URL = "wss://rpc.shiden.astar.network";
 export const DEFAULT_SHIBUYA_NETWORK_URL = "wss://rpc.shibuya.astar.network";
 
-function getTemplates(language = "ink") {
+export function getTemplates(language = "ink") {
   const templatesPath = path.resolve(__dirname, "../..", "templates");
   const contractTemplatesPath = path.resolve(templatesPath, "contracts", language);
   const fileList = readdirSync(contractTemplatesPath, {

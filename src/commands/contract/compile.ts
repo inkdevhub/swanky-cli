@@ -4,7 +4,7 @@ import path = require("node:path");
 import { readdirSync } from "node:fs";
 import { ensureSwankyProject } from "../../lib/command-utils";
 import { Spinner } from "../../lib/spinner";
-export class Compile extends Command {
+export class CompileContract extends Command {
   static description = "Compile the smart contract(s) in your contracts directory";
 
   static flags = {
@@ -15,10 +15,16 @@ export class Compile extends Command {
     }),
   };
 
-  static args = [];
+  static args = [
+    {
+      name: "contractName",
+      required: true,
+      description: "Name of the contract to compile",
+    },
+  ];
 
   async run(): Promise<void> {
-    const { flags } = await this.parse(Compile);
+    const { args, flags } = await this.parse(CompileContract);
 
     await ensureSwankyProject();
 
@@ -27,8 +33,12 @@ export class Compile extends Command {
       spinner.start("Compiling contract");
       const contractList = readdirSync(path.resolve("contracts"));
 
+      if (!contractList.includes(args.contractName)) {
+        throw Error(`Contract name ${args.contractName} is invalid`)
+      }
+
       const build = spawn("cargo", ["+nightly", "contract", "build"], {
-        cwd: path.resolve("contracts", contractList[0]),
+        cwd: path.resolve("contracts", args.contractName),
       });
 
       build.stdout.on("data", () => spinner.ora.clear());
