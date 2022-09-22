@@ -1,19 +1,20 @@
 import { Command, Flags } from "@oclif/core";
 import chalk = require("chalk");
-import { prompt } from "enquirer";
-import { writeFileSync } from "fs-extra";
+import { writeJSON } from "fs-extra";
 import { ChainAccount } from "../../lib/account";
 import { ensureSwankyProject, getSwankyConfig } from "../../lib/command-utils";
-
+import { encrypt } from "../../lib/crypto";
+import inquirer from "inquirer";
+import { AccountData } from "../init";
 export class CreateAccount extends Command {
   static description = "Create a new dev account in config";
 
   static flags = {
-    force: Flags.boolean({
-      char: "f",
-    }),
     generate: Flags.boolean({
       char: "g",
+    }),
+    dev: Flags.boolean({
+      char: "d",
     }),
   };
 
@@ -21,47 +22,69 @@ export class CreateAccount extends Command {
 
   async run(): Promise<void> {
     await ensureSwankyProject();
-
     const { flags } = await this.parse(CreateAccount);
-    const confirmation: { confirmed: boolean } = await prompt([
-      {
-        type: "confirm",
-        message: `${chalk.yellowBright(
-          "WARNING: Only store test accounts this way. Mnemonic will be stored in the config file."
-        )}
-      Are you sure you want to proceed?`,
-        name: "confirmed",
-        skip: flags.force || flags.generate,
-      },
-    ]);
 
-    if (!confirmation.confirmed && !(flags.force || flags.generate))
-      this.exit();
+    const isDev =
+      flags.dev ??
+      (
+        await inquirer.prompt([
+          { type: "confirm", message: "Is this a DEV account? ", name: "isDev", default: false },
+        ])
+      ).isDev;
 
-    const accountData = {
+    if (isDev) {
+      console.log(
+        `${chalk.redBright(
+          "DEV account mnemonic will be stored in plain text. DO NOT USE IN PROD!"
+        )}`
+      );
+    }
+
+    let tmpMnemonic = "";
+    if (flags.generate) {
+      tmpMnemonic = ChainAccount.generate();
+      console.log(
+        `${
+          isDev
+            ? ""
+            : chalk.yellowBright(
+                "This is your mnemonic. Copy it to a secure place, as it will be encrypted and not accessible anymore."
+              )
+        }
+        ${"-".repeat(tmpMnemonic.length)}
+        ${tmpMnemonic}
+        ${"-".repeat(tmpMnemonic.length)}`
+      );
+    } else {
+      tmpMnemonic = (
+        await inquirer.prompt([{ type: "input", message: "Enter mnemonic: ", name: "mnemonic" }])
+      ).mnemonic;
+    }
+
+    const accountData: AccountData = {
       mnemonic: "",
-      alias: "",
+      isDev,
+      alias: (await inquirer.prompt([{ type: "input", message: "Enter alias: ", name: "alias" }]))
+        .alias,
+      address: new ChainAccount(tmpMnemonic).pair.address,
     };
 
-    if (flags.generate) {
-      const mnemonic = ChainAccount.generate();
-      const alias = mnemonic.replace(/ .*/, "");
-      accountData.mnemonic = mnemonic;
-      accountData.alias = alias;
+    if (!isDev) {
+      const password = (
+        await inquirer.prompt([
+          { type: "password", message: "Enter encryption password: ", name: "password" },
+        ])
+      ).password;
+      accountData.mnemonic = encrypt(tmpMnemonic, password);
     } else {
-      const answers: { alias: string; mnemonic: string } = await prompt([
-        { type: "input", message: "Enter mnemonic: ", name: "mnemonic" },
-        { type: "input", message: "Enter alias: ", name: "alias" },
-      ]);
-      accountData.alias = answers.alias;
-      accountData.mnemonic = answers.mnemonic;
+      accountData.mnemonic = tmpMnemonic;
     }
 
     const config = await getSwankyConfig();
 
     config.accounts.push(accountData);
 
-    writeFileSync("swanky.config.json", JSON.stringify(config, null, 2));
+    await writeJSON("swanky.config.json", config, { spaces: 2 });
 
     this.log(
       `${chalk.greenBright("✔")} Account with alias ${chalk.yellowBright(

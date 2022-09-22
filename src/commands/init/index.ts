@@ -14,14 +14,22 @@ import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer = require("inquirer");
 import { choice, email, name, pickTemplate } from "../../lib/prompts";
 import { Spinner } from "../../lib/spinner";
+import { Encrypted } from "../../lib/crypto";
+import { ChainAccount } from "../../lib/account";
 
+export interface AccountData {
+  isDev: boolean;
+  alias: string;
+  mnemonic: string | Encrypted;
+  address: string;
+}
 export interface SwankyConfig {
   node: {
     polkadotPalletVersions: string;
     localPath: string;
     supportedInk: string;
   };
-  accounts: { alias: string; mnemonic: string }[];
+  accounts: AccountData[];
   contracts?: { name: string; address: string }[];
   networks: {
     [network: string]: {
@@ -147,10 +155,14 @@ export class Init extends Command {
         {
           alias: "alice",
           mnemonic: "//Alice",
+          isDev: true,
+          address: new ChainAccount("//Alice").pair.address,
         },
         {
           alias: "bob",
           mnemonic: "//Bob",
+          isDev: true,
+          address: new ChainAccount("//Bob").pair.address,
         },
       ],
       networks: {

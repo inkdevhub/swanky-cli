@@ -1,6 +1,8 @@
 import { Answers, ListQuestion, Question } from "inquirer";
 
-export function pickTemplate(templateList: { message: string; value: string }[]): ListQuestion<Answers> {
+export function pickTemplate(
+  templateList: { message: string; value: string }[]
+): ListQuestion<Answers> {
   if (!templateList || !templateList.length) throw new Error("Template list is empty!");
   return {
     name: "contractTemplate",
