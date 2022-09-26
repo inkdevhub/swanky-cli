@@ -29,12 +29,14 @@ USAGE
 * [`swanky account create`](#swanky-account-create)
 * [`swanky account list`](#swanky-account-list)
 * [`swanky account ls`](#swanky-account-ls)
-* [`swanky call`](#swanky-call)
 * [`swanky check`](#swanky-check)
-* [`swanky compile`](#swanky-compile)
-* [`swanky deploy`](#swanky-deploy)
+* [`swanky contract call`](#swanky-contract-call)
+* [`swanky contract compile CONTRACTNAME`](#swanky-contract-compile-contractname)
+* [`swanky contract deploy CONTRACTNAME`](#swanky-contract-deploy-contractname)
+* [`swanky contract new CONTRACTNAME`](#swanky-contract-new-contractname)
 * [`swanky help [COMMAND]`](#swanky-help-command)
 * [`swanky init PROJECTNAME`](#swanky-init-projectname)
+* [`swanky node purge`](#swanky-node-purge)
 * [`swanky node start`](#swanky-node-start)
 * [`swanky version`](#swanky-version)
 
@@ -84,26 +86,6 @@ ALIASES
   $ swanky account ls
 ```
 
-## `swanky call`
-
-Call a method on a smart contract
-
-```
-USAGE
-  $ swanky call -m <value> [-a <value>] [-d] [-g <value>]
-
-FLAGS
-  -a, --args=<value>
-  -d, --dry
-  -g, --gas=<value>
-  -m, --message=<value>  (required)
-
-DESCRIPTION
-  Call a method on a smart contract
-```
-
-_See code: [dist/commands/call/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.2.0/dist/commands/call/index.ts)_
-
 ## `swanky check`
 
 Check installed package versions and compatibility
@@ -118,13 +100,36 @@ DESCRIPTION
 
 _See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.2.0/dist/commands/check/index.ts)_
 
-## `swanky compile`
+## `swanky contract call`
+
+Call a method on a smart contract
+
+```
+USAGE
+  $ swanky contract call --address <value> -m <value> [-a <value>] [-d] [-g <value>] [-n <value>]
+
+FLAGS
+  -a, --args=<value>
+  -d, --dry
+  -g, --gas=<value>
+  -m, --message=<value>  (required)
+  -n, --network=<value>  Network name to connect to
+  --address=<value>      (required)
+
+DESCRIPTION
+  Call a method on a smart contract
+```
+
+## `swanky contract compile CONTRACTNAME`
 
 Compile the smart contract(s) in your contracts directory
 
 ```
 USAGE
-  $ swanky compile [-v]
+  $ swanky contract compile [CONTRACTNAME] [-v]
+
+ARGUMENTS
+  CONTRACTNAME  Name of the contract to compile
 
 FLAGS
   -v, --verbose  Display additional compilation output
@@ -133,27 +138,45 @@ DESCRIPTION
   Compile the smart contract(s) in your contracts directory
 ```
 
-_See code: [dist/commands/compile/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.2.0/dist/commands/compile/index.ts)_
-
-## `swanky deploy`
+## `swanky contract deploy CONTRACTNAME`
 
 Deploy contract to a running node
 
 ```
 USAGE
-  $ swanky deploy --account <value> -c <value> -g <value> [-a <value>]
+  $ swanky contract deploy [CONTRACTNAME] --account <value> -g <value> [-a <value>] [-n <value>]
+
+ARGUMENTS
+  CONTRACTNAME  Name of the contract to deploy
 
 FLAGS
   -a, --args=<value>...
-  -c, --contract=<value>  (required)
-  -g, --gas=<value>       (required)
-  --account=<value>       (required) Alias of account to be used
+  -g, --gas=<value>      (required)
+  -n, --network=<value>  Network name to connect to
+  --account=<value>      (required) Alias of account to be used
 
 DESCRIPTION
   Deploy contract to a running node
 ```
 
-_See code: [dist/commands/deploy/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.2.0/dist/commands/deploy/index.ts)_
+## `swanky contract new CONTRACTNAME`
+
+Generate a new smart contract template inside a project
+
+```
+USAGE
+  $ swanky contract new [CONTRACTNAME] [--template blank|flipper|psp22] [-v]
+
+ARGUMENTS
+  CONTRACTNAME  Name of new contract
+
+FLAGS
+  -v, --verbose
+  --template=<option>  <options: blank|flipper|psp22>
+
+DESCRIPTION
+  Generate a new smart contract template inside a project
+```
 
 ## `swanky help [COMMAND]`
 
@@ -197,13 +220,28 @@ DESCRIPTION
 
 _See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.2.0/dist/commands/init/index.ts)_
 
+## `swanky node purge`
+
+Purge local chain state
+
+```
+USAGE
+  $ swanky node purge
+
+DESCRIPTION
+  Purge local chain state
+```
+
 ## `swanky node start`
 
 Start a local node
 
 ```
 USAGE
-  $ swanky node start
+  $ swanky node start [-t]
+
+FLAGS
+  -t, --tmp  Run node with non-persistent mode
 
 DESCRIPTION
   Start a local node
