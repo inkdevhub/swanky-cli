@@ -109,7 +109,7 @@
     "copy-template": "cp -R ./src/templates ./dist/"
   },
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=18.0.0"
   },
   "bugs": "https://github.com/AstarNetwork/swanky-cli/issues",
   "keywords": [

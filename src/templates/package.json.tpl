@@ -12,6 +12,9 @@
     "compile": "swanky compile",
     "deploy": "swanky deploy"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "@astar-network/swanky-cli": "{{swanky_version}}"
   }
