@@ -3,20 +3,23 @@
 
 #[brush::contract]
 pub mod {{contract_name_snake}} {
-    use brush::contracts::psp22::*;
     use ink_prelude::string::String;
     use ink_storage::traits::SpreadAllocate;
+    use openbrush::{
+        contracts::psp22::*,
+        traits::Storage,
+    };
 
     #[ink(storage)]
-    #[derive(Default, SpreadAllocate, PSP22Storage)]
-    pub struct {{contract_name_pascal}} {
-        #[PSP22StorageField]
-        psp22: PSP22Data,
+    #[derive(Default, SpreadAllocate, Storage)]
+    pub struct Contract {
+        #[storage_field]
+        psp22: psp22::Data,
         // fields for hater logic
         hated_account: AccountId,
     }
 
-    impl PSP22Transfer for {{contract_name_pascal}} {
+    impl Transfer for {{contract_name_pascal}} {
         // Let's override method to reject transactions to bad account
         fn _before_token_transfer(
             &mut self,
