@@ -1,3 +1,10 @@
+## v0.2.0 (2022-10-19)
+
+### Trivial changes
+
+- add node version requirements to package.json and template
+- update ink! to 3.3.0
+
 ## v0.2.0 (2022-09-22)
 
 ---
