@@ -1,6 +1,6 @@
 {
   "name": "@astar-network/swanky-cli",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Astar network WASM contract CLI tool",
   "author": "Astar network",
   "bin": {
