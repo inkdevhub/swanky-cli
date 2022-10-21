@@ -8,6 +8,7 @@ import process from "node:process";
 import { nodeInfo } from "./nodeInfo";
 import decompress from "decompress";
 import { Spinner } from "./spinner";
+import { bool } from "@polkadot/types";
 
 export async function checkCliDependencies(spinner: Spinner) {
   const dependencyList = [
@@ -54,6 +55,18 @@ export async function processTemplates(projectPath: string, templateData: Record
   const templateFiles = await globby(projectPath, {
     expandDirectories: { extensions: ["tpl"] },
   });
+
+  handlebars.registerHelper("if_eq", function (a, b, options): boolean {
+    console.log("AAAA", a, b, options);
+    if (a === b) {
+      // @ts-ignore
+      return options.fn(this);
+    } else {
+      // @ts-ignore
+      return options.inverse(this);
+    }
+  });
+
   await Promise.all(
     templateFiles.map(async (tplFilePath) => {
       const rawTemplate = await readFile(tplFilePath, "utf8");

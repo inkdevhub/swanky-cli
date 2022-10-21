@@ -8,7 +8,7 @@ export function pickTemplate(
     name: "contractTemplate",
     type: "list",
     choices: templateList,
-    message: "Which template should we use?",
+    message: "Which contract template should we use?",
   };
 }
 

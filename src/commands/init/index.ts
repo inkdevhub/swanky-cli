@@ -30,7 +30,7 @@ export interface SwankyConfig {
     supportedInk: string;
   };
   accounts: AccountData[];
-  contracts?: { name: string; address: string }[];
+  contracts?: { id: string; language: "ask" | "ink"; name: string; address: string }[];
   networks: {
     [network: string]: {
       url: string;
@@ -82,11 +82,21 @@ export class Init extends Command {
     const { args, flags } = await this.parse(Init);
 
     const projectPath = path.resolve(args.projectName);
-    const templates = getTemplates();
+
+    const { contractLanguage } = await inquirer.prompt([
+      {
+        name: "contractLanguage",
+        type: "list",
+        choices: ["ink", "ask"],
+        message: "Which language should we start with?",
+      },
+    ]);
+
+    const templates = getTemplates(contractLanguage);
 
     const questions = [
       pickTemplate(templates.contractTemplatesList),
-      name("contract", (ans) => ans.contractTemplate, "What should we name your contract?"),
+      name("contract", (ans) => ans.contractTemplate, "What should we name your initial contract?"),
       name(
         "author",
         () => execa.commandSync("git config --get user.name").stdout,
@@ -125,6 +135,7 @@ export class Init extends Command {
           swanky_version: this.config.pjson.version,
           contract_name_snake: snakeCase(answers.contractName),
           contract_name_pascal: pascalCase(answers.contractName),
+          contract_language: contractLanguage,
         }),
       "Processing templates"
     );
