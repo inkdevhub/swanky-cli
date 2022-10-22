@@ -19,7 +19,8 @@
   "dependencies": {
     "@oclif/core": "1.16.0",
     "@oclif/plugin-help": "^5",
-    "@oclif/plugin-plugins": "^2.0.1",
+    "@oclif/plugin-not-found": "^2.3.5",
+    "@oclif/plugin-plugins": "^2.1.4",
     "@oclif/plugin-version": "^1.1.1",
     "@polkadot/api": "^9.0.1",
     "@polkadot/api-contract": "^9.0.1",
@@ -95,7 +96,8 @@
     },
     "plugins": [
       "@oclif/plugin-help",
-      "@oclif/plugin-version"
+      "@oclif/plugin-version",
+      "@oclif/plugin-plugins"
     ]
   },
   "scripts": {
