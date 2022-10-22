@@ -97,6 +97,7 @@
     "plugins": [
       "@oclif/plugin-help",
       "@oclif/plugin-version",
+      "@oclif/plugin-not-found",
       "@oclif/plugin-plugins"
     ]
   },
