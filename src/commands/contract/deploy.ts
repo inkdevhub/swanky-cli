@@ -5,15 +5,12 @@ import { readJSON, readFile, writeJSON } from "fs-extra";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { ChainApi } from "../../lib/substrate-api";
 import { KeyringPair } from "@polkadot/keyring/types";
-import {
-  ensureSwankyProject,
-  getSwankyConfig,
-  resolveNetworkUrl,
-} from "../../lib/command-utils";
+import { ensureSwankyProject, getSwankyConfig, resolveNetworkUrl } from "../../lib/command-utils";
 import { ChainAccount } from "../../lib/account";
 import { Spinner } from "../../lib/spinner";
 import inquirer from "inquirer";
-import { decrypt, Encrypted } from "../../lib/crypto";
+import { decrypt } from "../../lib/crypto";
+import { AccountData, Encrypted } from "../../types";
 import chalk = require("chalk");
 
 export class DeployContract extends Command {
@@ -54,7 +51,9 @@ export class DeployContract extends Command {
 
     const spinner = new Spinner();
 
-    const accountData = config.accounts.find((account) => account.alias === flags.account);
+    const accountData = config.accounts.find(
+      (account: AccountData) => account.alias === flags.account
+    );
     if (!accountData) {
       this.error("Provided account alias not found in swanky.config.json");
     }

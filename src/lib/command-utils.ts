@@ -1,10 +1,9 @@
 import execa = require("execa");
 import fs = require("fs-extra");
-import { SwankyConfig, DEFAULT_NETWORK_URL } from "../commands/init";
+import { DEFAULT_NETWORK_URL } from "../commands/init";
+import { SwankyConfig } from "../types";
 
-export async function commandStdoutOrNull(
-  command: string
-): Promise<string | null> {
+export async function commandStdoutOrNull(command: string): Promise<string | null> {
   try {
     const result = await execa.command(command);
     return result.stdout;
@@ -29,10 +28,7 @@ export async function getSwankyConfig(): Promise<SwankyConfig> {
   }
 }
 
-export function resolveNetworkUrl(
-  config: SwankyConfig,
-  networkName: string
-): string {
+export function resolveNetworkUrl(config: SwankyConfig, networkName: string): string {
   if (networkName === "") {
     return DEFAULT_NETWORK_URL;
   }

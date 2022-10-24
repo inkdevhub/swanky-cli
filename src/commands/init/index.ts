@@ -15,7 +15,7 @@ import inquirer = require("inquirer");
 import { choice, email, name, pickTemplate } from "../../lib/prompts";
 import { Spinner } from "../../lib/spinner";
 import { ChainAccount } from "../../lib/account";
-import { SwankyConfig } from "../../types";
+import type { SwankyConfig } from "../../types";
 
 export const DEFAULT_NETWORK_URL = "ws://127.0.0.1:9944";
 export const DEFAULT_ASTAR_NETWORK_URL = "wss://rpc.astar.network";
