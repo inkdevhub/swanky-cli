@@ -14,29 +14,8 @@ import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer = require("inquirer");
 import { choice, email, name, pickTemplate } from "../../lib/prompts";
 import { Spinner } from "../../lib/spinner";
-import { Encrypted } from "../../lib/crypto";
 import { ChainAccount } from "../../lib/account";
-
-export interface AccountData {
-  isDev: boolean;
-  alias: string;
-  mnemonic: string | Encrypted;
-  address: string;
-}
-export interface SwankyConfig {
-  node: {
-    polkadotPalletVersions: string;
-    localPath: string;
-    supportedInk: string;
-  };
-  accounts: AccountData[];
-  contracts?: { id: string; language: "ask" | "ink"; name: string; address: string }[];
-  networks: {
-    [network: string]: {
-      url: string;
-    };
-  };
-}
+import { SwankyConfig } from "../../types";
 
 export const DEFAULT_NETWORK_URL = "ws://127.0.0.1:9944";
 export const DEFAULT_ASTAR_NETWORK_URL = "wss://rpc.astar.network";
