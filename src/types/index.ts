@@ -19,6 +19,20 @@ export interface AccountData {
   mnemonic: string | Encrypted;
   address: string;
 }
+
+export interface ContractData {
+  id: string;
+  language: "ask" | "ink";
+  name: string;
+  deployments: DeploymentData[] | [];
+  address: string;
+}
+
+export interface DeploymentData {
+  artefactsPath: string;
+  timestamp: number;
+  address: string;
+}
 export interface SwankyConfig {
   node: {
     polkadotPalletVersions: string;
@@ -26,13 +40,7 @@ export interface SwankyConfig {
     supportedInk: string;
   };
   accounts: AccountData[];
-  contracts?: {
-    id: string;
-    language: "ask" | "ink";
-    name: string;
-    deployments: { artefactsPath: string; timestamp: number; address: string }[];
-    address: string;
-  }[];
+  contracts: { [alias: string]: ContractData };
   networks: {
     [network: string]: {
       url: string;
