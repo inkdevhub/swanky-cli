@@ -1,6 +1,6 @@
 import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
-import { readdirSync, writeJSON } from "fs-extra";
+import { ensureDir, readdirSync, writeJSON } from "fs-extra";
 import { swankyNode } from "../../lib/nodeInfo";
 import {
   checkCliDependencies,
@@ -133,6 +133,7 @@ export class Init extends Command {
       nodePath = taskResult;
     }
 
+    await ensureDir(path.resolve(projectPath, "artefacts", answers.contractName));
     await spinner.runCommand(() => installDeps(projectPath), "Installing dependencies");
 
     const config: SwankyConfig = {
@@ -155,6 +156,13 @@ export class Init extends Command {
           address: new ChainAccount("//Bob").pair.address,
         },
       ],
+      contracts: {
+        [answers.contractName as string]: {
+          name: answers.contractName as string,
+          deployments: [],
+          language: contractLanguage,
+        },
+      },
       networks: {
         local: { url: DEFAULT_NETWORK_URL },
         astar: { url: DEFAULT_ASTAR_NETWORK_URL },
