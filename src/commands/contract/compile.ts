@@ -1,8 +1,15 @@
 import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
 import { readdirSync } from "node:fs";
-import { ensureSwankyProject, getBuildCommandFor, getSwankyConfig } from "../../lib/command-utils";
+import {
+  copyArtefactsFor,
+  ensureSwankyProject,
+  getBuildCommandFor,
+  getSwankyConfig,
+} from "../../lib/command-utils";
 import { Spinner } from "../../lib/spinner";
+import { BuildData } from "../../types";
+import { writeJSON } from "fs-extra";
 export class CompileContract extends Command {
   static description = "Compile the smart contract(s) in your contracts directory";
 
@@ -35,35 +42,49 @@ export class CompileContract extends Command {
     }
 
     const spinner = new Spinner();
-    await new Promise<void>((resolve, reject) => {
-      spinner.start("Compiling contract");
-      const contractList = readdirSync(path.resolve("contracts"));
 
-      const contractPath = path.resolve("contracts", args.contractName);
-      if (!contractList.includes(args.contractName)) {
-        this.error(`Path to contract ${args.contractName} does not exist: ${contractPath}`);
-      }
+    const contractList = readdirSync(path.resolve("contracts"));
 
-      const build = getBuildCommandFor(contractInfo.language, contractPath);
+    const contractPath = path.resolve("contracts", args.contractName);
+    if (!contractList.includes(args.contractName)) {
+      this.error(`Path to contract ${args.contractName} does not exist: ${contractPath}`);
+    }
 
-      build.stdout.on("data", () => spinner.ora.clear());
-      build.stdout.pipe(process.stdout);
-      if (flags.verbose) {
-        build.stderr.on("data", () => spinner.ora.clear());
-        build.stderr.pipe(process.stdout);
-      }
+    await spinner.runCommand(
+      async () => {
+        return new Promise<void>((resolve, reject) => {
+          const build = getBuildCommandFor(contractInfo.language, contractPath);
 
-      build.on("error", (error) => {
-        reject(error);
+          build.stdout.on("data", () => spinner.ora.clear());
+          build.stdout.pipe(process.stdout);
+          if (flags.verbose) {
+            build.stderr.on("data", () => spinner.ora.clear());
+            build.stderr.pipe(process.stdout);
+          }
+
+          build.on("error", (error) => {
+            reject(error);
+          });
+
+          build.on("exit", () => {
+            resolve();
+          });
+        });
+      },
+      "Compiling contract",
+      "Contract compiled successfully"
+    );
+
+    const buildData = (await spinner.runCommand(async () => {
+      return copyArtefactsFor(contractInfo.language, contractInfo.name, contractPath);
+    }, "Copying artefacts")) as BuildData;
+
+    await spinner.runCommand(async () => {
+      contractInfo.build = buildData;
+
+      await writeJSON(path.resolve("swanky.config.json"), config, {
+        spaces: 2,
       });
-
-      build.on("exit", () => {
-        resolve();
-      });
-    });
-    spinner.succeed("Contract compiled successfully");
-    // copy artefacts
-
-    // write config
+    }, "Writing config");
   }
 }

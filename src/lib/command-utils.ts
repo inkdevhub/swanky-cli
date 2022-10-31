@@ -1,8 +1,9 @@
 import execa = require("execa");
 import fs = require("fs-extra");
-import { ChildProcess, ChildProcessWithoutNullStreams, spawn } from "node:child_process";
+import { ChildProcessWithoutNullStreams, spawn } from "node:child_process";
+import path = require("node:path");
 import { DEFAULT_NETWORK_URL } from "../commands/init";
-import { ContractData, SwankyConfig } from "../types";
+import { BuildData, ContractData, SwankyConfig } from "../types";
 
 export async function commandStdoutOrNull(command: string): Promise<string | null> {
   try {
@@ -59,4 +60,36 @@ export function getBuildCommandFor(
   }
 
   throw new Error("Unsupported language!");
+}
+
+export async function copyArtefactsFor(
+  language: ContractData["language"],
+  contractName: string,
+  contractPath: string
+): Promise<BuildData> {
+  const ts = Date.now();
+  const buildData = {
+    timestamp: ts,
+    artefactsPath: path.resolve("artefacts", contractName, ts.toString()),
+  };
+
+  fs.ensureDir(buildData.artefactsPath);
+
+  const buildPaths = {
+    ask: path.resolve(contractPath, "build"),
+    ink: path.resolve(contractPath, "target", "ink"),
+  };
+
+  await Promise.all([
+    fs.copyFile(
+      `${buildPaths[language]}/${contractName}.wasm`,
+      `${buildData.artefactsPath}/${contractName}.wasm`
+    ),
+    fs.copyFile(
+      `${buildPaths[language]}/metadata.json`,
+      `${buildData.artefactsPath}/metadata.json`
+    ),
+  ]);
+
+  return buildData;
 }
