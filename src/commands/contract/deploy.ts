@@ -155,7 +155,10 @@ class DeployApi extends ChainApi {
   ) {
     const code = new CodePromise(this._api, abi, wasm);
     const storageDepositLimit = null;
-    // TODO: check if there's a constructor named 'new'
+    // TODO: make other constructor names passable by flag
+    if (typeof code.tx.new !== "function") {
+      throw new Error("Contract has no constructor called 'New'");
+    }
     const tx = code.tx.new({ gasLimit, storageDepositLimit }, ...args);
     return new Promise((resolve, reject) => {
       this.signAndSend(signerPair, tx, {}, ({ status, events }) => {
