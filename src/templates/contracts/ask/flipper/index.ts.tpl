@@ -12,7 +12,7 @@ export class FlipEvent {
 
 @spreadLayout
 @packedLayout
-export class Flipper {
+export class {{contract_name_pascal}} {
   flag: bool;
   constructor(flag: bool = false) {
     this.flag = flag;
@@ -21,22 +21,22 @@ export class Flipper {
 
 @contract
 export class Contract {
-  _data: Pack<Flipper>;
+  _data: Pack<{{contract_name_pascal}}>;
 
   constructor() {
-    this._data = instantiate<Pack<Flipper>>(new Flipper(false));
+    this._data = instantiate<Pack<{{contract_name_pascal}}>>(new {{contract_name_pascal}}(false));
   }
 
-  get data(): Flipper {
+  get data(): {{contract_name_pascal}} {
     return this._data.unwrap();
   }
 
-  set data(data: Flipper) {
+  set data(data: {{contract_name_pascal}}) {
     this._data = new Pack(data);
   }
 
   @constructor()
-  default(flag: bool): void {
+  new(flag: bool): void {
     this.data.flag = flag;
   }
 
