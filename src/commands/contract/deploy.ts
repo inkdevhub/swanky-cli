@@ -103,14 +103,19 @@ export class DeployContract extends Command {
     }, "Connecting to node")) as DeployApi;
 
     const contractAddress = (await spinner.runCommand(async () => {
-      const contractAddress = await api.deploy(
-        abi,
-        wasm,
-        account.pair,
-        flags.gas,
-        flags.args as string[]
-      );
-      return contractAddress;
+      try {
+        const contractAddress = await api.deploy(
+          abi,
+          wasm,
+          account.pair,
+          flags.gas,
+          flags.args as string[]
+        );
+        return contractAddress;
+      } catch (e) {
+        console.error(e);
+        throw new Error("Error deploying!");
+      }
     }, "Deploying")) as string;
 
     await spinner.runCommand(async () => {
@@ -150,6 +155,7 @@ class DeployApi extends ChainApi {
   ) {
     const code = new CodePromise(this._api, abi, wasm);
     const storageDepositLimit = null;
+    // TODO: check if there's a constructor named 'new'
     const tx = code.tx.new({ gasLimit, storageDepositLimit }, ...args);
     return new Promise((resolve, reject) => {
       this.signAndSend(signerPair, tx, {}, ({ status, events }) => {
