@@ -1,6 +1,6 @@
 import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
-import { ensureDir, readdirSync, writeJSON } from "fs-extra";
+import { ensureDir, writeJSON } from "fs-extra";
 import { swankyNode } from "../../lib/nodeInfo";
 import {
   checkCliDependencies,
@@ -12,31 +12,17 @@ import {
 import execa = require("execa");
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer = require("inquirer");
-import { choice, email, name, pickTemplate } from "../../lib/prompts";
+import { choice, email, name, pickLanguage, pickTemplate } from "../../lib/prompts";
 import { Spinner } from "../../lib/spinner";
 import { ChainAccount } from "../../lib/account";
 import type { SwankyConfig } from "../../types";
-
-export const DEFAULT_NETWORK_URL = "ws://127.0.0.1:9944";
-export const DEFAULT_ASTAR_NETWORK_URL = "wss://rpc.astar.network";
-export const DEFAULT_SHIDEN_NETWORK_URL = "wss://rpc.shiden.astar.network";
-export const DEFAULT_SHIBUYA_NETWORK_URL = "wss://rpc.shibuya.astar.network";
-
-export function getTemplates(language = "ink") {
-  const templatesPath = path.resolve(__dirname, "../..", "templates");
-  const contractTemplatesPath = path.resolve(templatesPath, "contracts", language);
-  const fileList = readdirSync(contractTemplatesPath, {
-    withFileTypes: true,
-  });
-  const contractTemplatesList = fileList
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => ({
-      message: entry.name,
-      value: entry.name,
-    }));
-
-  return { templatesPath, contractTemplatesPath, contractTemplatesList };
-}
+import { getAllTemplateNames, getTemplates } from "../../lib/command-utils";
+import {
+  DEFAULT_ASTAR_NETWORK_URL,
+  DEFAULT_NETWORK_URL,
+  DEFAULT_SHIBUYA_NETWORK_URL,
+  DEFAULT_SHIDEN_NETWORK_URL,
+} from "../../lib/consts";
 
 export class Init extends Command {
   static description = "Generate a new smart contract environment";
@@ -44,8 +30,10 @@ export class Init extends Command {
   static flags = {
     "swanky-node": Flags.boolean(),
     template: Flags.string({
-      options: getTemplates().contractTemplatesList.map((template) => template.value),
+      options: getAllTemplateNames(),
+      char: "t",
     }),
+    language: Flags.string({ options: ["ask", "ink"], char: "l" }),
     verbose: Flags.boolean({ char: "v" }),
   };
 
@@ -62,14 +50,7 @@ export class Init extends Command {
 
     const projectPath = path.resolve(args.projectName);
 
-    const { contractLanguage } = await inquirer.prompt([
-      {
-        name: "contractLanguage",
-        type: "list",
-        choices: ["ink", "ask"],
-        message: "Which language should we start with?",
-      },
-    ]);
+    const { contractLanguage } = await inquirer.prompt([pickLanguage()]);
 
     const templates = getTemplates(contractLanguage);
 

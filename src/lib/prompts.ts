@@ -43,3 +43,12 @@ export function choice(subject: string, questionText: string): Question<Answers>
     message: questionText,
   };
 }
+
+export function pickLanguage(): ListQuestion<Answers> {
+  return {
+    name: "contractLanguage",
+    type: "list",
+    choices: ["ink", "ask"],
+    message: "Which contract template should we use?",
+  };
+}

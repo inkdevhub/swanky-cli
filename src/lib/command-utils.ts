@@ -1,8 +1,9 @@
 import execa = require("execa");
+import { readdirSync } from "fs-extra";
 import fs = require("fs-extra");
 import { ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import path = require("node:path");
-import { DEFAULT_NETWORK_URL } from "../commands/init";
+import { DEFAULT_NETWORK_URL } from "./consts";
 import { BuildData, ContractData, SwankyConfig } from "../types";
 
 export async function commandStdoutOrNull(command: string): Promise<string | null> {
@@ -92,4 +93,27 @@ export async function copyArtefactsFor(
   ]);
 
   return buildData;
+}
+
+export function getTemplates(language: ContractData["language"]) {
+  const templatesPath = path.resolve(__dirname, "../..", "templates");
+  const contractTemplatesPath = path.resolve(templatesPath, "contracts", language);
+  const fileList = readdirSync(contractTemplatesPath, {
+    withFileTypes: true,
+  });
+  const contractTemplatesList = fileList
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => ({
+      message: entry.name,
+      value: entry.name,
+    }));
+
+  return { templatesPath, contractTemplatesPath, contractTemplatesList };
+}
+
+export function getAllTemplateNames() {
+  return [
+    ...getTemplates("ask").contractTemplatesList.map((template) => template.value),
+    ...getTemplates("ink").contractTemplatesList.map((template) => template.value),
+  ];
 }
