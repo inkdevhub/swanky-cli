@@ -21,15 +21,18 @@ export interface AccountData {
 }
 
 export interface ContractData {
-  id: string;
   language: "ask" | "ink";
   name: string;
+  build?: BuildData;
   deployments: DeploymentData[] | [];
-  address: string;
+}
+
+export interface BuildData {
+  timestamp: number;
+  artefactsPath: string;
 }
 
 export interface DeploymentData {
-  artefactsPath: string;
   timestamp: number;
   address: string;
 }
@@ -40,7 +43,7 @@ export interface SwankyConfig {
     supportedInk: string;
   };
   accounts: AccountData[];
-  contracts: { [alias: string]: ContractData };
+  contracts: Record<string, ContractData> | Record<string, never>;
   networks: {
     [network: string]: {
       url: string;

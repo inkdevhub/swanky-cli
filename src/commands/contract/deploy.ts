@@ -51,6 +51,11 @@ export class DeployContract extends Command {
 
     const spinner = new Spinner();
 
+    const contractInfo = config.contracts[args.contractName];
+    if (!contractInfo) {
+      this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
+    }
+
     const accountData = config.accounts.find(
       (account: AccountData) => account.alias === flags.account
     );
@@ -79,9 +84,15 @@ export class DeployContract extends Command {
     }, "Initialising")) as ChainAccount;
 
     const { abi, wasm } = (await spinner.runCommand(async () => {
-      const buildPath = path.resolve("contracts", args.contractName, "target", "ink");
-      const abi = (await readJSON(path.resolve(buildPath, "metadata.json"))) as Abi;
-      const wasm = await readFile(path.resolve(buildPath, `${args.contractName}.wasm`));
+      if (!contractInfo.build) {
+        this.error(`No build info found for contract named ${args.contractName}`);
+      }
+      const abi = (await readJSON(
+        path.resolve(contractInfo.build.artefactsPath, "metadata.json")
+      )) as Abi;
+      const wasm = await readFile(
+        path.resolve(contractInfo.build.artefactsPath, `${args.contractName}.wasm`)
+      );
       return { abi, wasm };
     }, "Getting WASM")) as { abi: Abi; wasm: Buffer };
 
@@ -103,14 +114,13 @@ export class DeployContract extends Command {
     }, "Deploying")) as string;
 
     await spinner.runCommand(async () => {
-      if (!config.contracts) {
-        config.contracts = [];
-      }
-
-      config.contracts.push({
-        name: args.contractName,
-        address: contractAddress,
-      });
+      contractInfo.deployments = [
+        ...contractInfo.deployments,
+        {
+          timestamp: Date.now(),
+          address: contractAddress,
+        },
+      ];
 
       await writeJSON(path.resolve("swanky.config.json"), config, {
         spaces: 2,
