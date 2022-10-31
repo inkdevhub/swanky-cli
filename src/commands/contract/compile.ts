@@ -1,8 +1,7 @@
 import { Command, Flags } from "@oclif/core";
-import { spawn } from "node:child_process";
 import path = require("node:path");
 import { readdirSync } from "node:fs";
-import { ensureSwankyProject } from "../../lib/command-utils";
+import { ensureSwankyProject, getBuildCommandFor, getSwankyConfig } from "../../lib/command-utils";
 import { Spinner } from "../../lib/spinner";
 export class CompileContract extends Command {
   static description = "Compile the smart contract(s) in your contracts directory";
@@ -28,18 +27,24 @@ export class CompileContract extends Command {
 
     await ensureSwankyProject();
 
+    const config = await getSwankyConfig();
+
+    const contractInfo = config.contracts[args.contractName];
+    if (!contractInfo) {
+      this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
+    }
+
     const spinner = new Spinner();
     await new Promise<void>((resolve, reject) => {
       spinner.start("Compiling contract");
       const contractList = readdirSync(path.resolve("contracts"));
 
+      const contractPath = path.resolve("contracts", args.contractName);
       if (!contractList.includes(args.contractName)) {
-        throw Error(`Contract name ${args.contractName} is invalid`)
+        this.error(`Path to contract ${args.contractName} does not exist: ${contractPath}`);
       }
 
-      const build = spawn("cargo", ["+nightly", "contract", "build"], {
-        cwd: path.resolve("contracts", args.contractName),
-      });
+      const build = getBuildCommandFor(contractInfo.language, contractPath);
 
       build.stdout.on("data", () => spinner.ora.clear());
       build.stdout.pipe(process.stdout);
@@ -57,5 +62,8 @@ export class CompileContract extends Command {
       });
     });
     spinner.succeed("Contract compiled successfully");
+    // copy artefacts
+
+    // write config
   }
 }

@@ -1,7 +1,8 @@
 import execa = require("execa");
 import fs = require("fs-extra");
+import { ChildProcess, ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import { DEFAULT_NETWORK_URL } from "../commands/init";
-import { SwankyConfig } from "../types";
+import { ContractData, SwankyConfig } from "../types";
 
 export async function commandStdoutOrNull(command: string): Promise<string | null> {
   try {
@@ -38,4 +39,24 @@ export function resolveNetworkUrl(config: SwankyConfig, networkName: string): st
   } catch {
     throw new Error("Network name not found in SwankyConfig");
   }
+}
+
+export function getBuildCommandFor(
+  language: ContractData["language"],
+  contractPath: string
+): ChildProcessWithoutNullStreams {
+  if (language === "ink") {
+    return spawn("cargo", ["+nightly", "contract", "build"], {
+      cwd: contractPath,
+    });
+  }
+  if (language === "ask") {
+    return spawn(
+      "yarn",
+      ["asc", "--config", `${contractPath}/asconfig.json`, `${contractPath}/index.ts`],
+      { env: { ...process.env, ASK_CONFIG: `${contractPath}/askconfig.json` } }
+    );
+  }
+
+  throw new Error("Unsupported language!");
 }
