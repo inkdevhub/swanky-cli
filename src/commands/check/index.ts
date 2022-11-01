@@ -8,7 +8,7 @@ import path = require("node:path");
 import toml = require("toml");
 import semver = require("semver");
 import { SwankyConfig, ensureSwankyProject, getSwankyConfig } from "../../lib/config";
-import { contracts } from "@polkadot/types/interfaces/definitions";
+
 interface Ctx {
   versions: {
     tools: {
