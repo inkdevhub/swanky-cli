@@ -45,7 +45,7 @@ export class Spinner {
     } catch (error) {
       this.fail(failMessage || `Error ${runningMessage}`);
       if (this.verbose) console.error(error);
-      throw Error("runCommand failed")
+      process.exit(1);
     }
   }
 
