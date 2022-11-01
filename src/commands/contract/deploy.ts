@@ -96,8 +96,10 @@ export class DeployContract extends Command {
       return { abi, wasm };
     }, "Getting WASM")) as { abi: Abi; wasm: Buffer };
 
+    const networkUrl = resolveNetworkUrl(config, flags.network ?? "");
+
     const api = (await spinner.runCommand(async () => {
-      const api = new DeployApi(resolveNetworkUrl(config, flags.network ?? ""));
+      const api = new DeployApi(networkUrl);
       await api.start();
       return api;
     }, "Connecting to node")) as DeployApi;
@@ -124,6 +126,8 @@ export class DeployContract extends Command {
         {
           timestamp: Date.now(),
           address: contractAddress,
+          networkUrl,
+          deployerAlias: flags.account,
         },
       ];
 

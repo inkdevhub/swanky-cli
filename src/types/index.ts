@@ -34,6 +34,8 @@ export interface BuildData {
 
 export interface DeploymentData {
   timestamp: number;
+  networkUrl: string;
+  deployerAlias: string;
   address: string;
 }
 export interface SwankyConfig {
