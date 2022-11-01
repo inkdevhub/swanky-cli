@@ -108,7 +108,8 @@ export default class Check extends Command {
           Object.entries(ctx.versions.contracts).forEach(
             ([contract, inkPackages]) => {
               Object.entries(inkPackages).forEach(([inkPackage, version]) => {
-                // version potentially includes letters such as "~". 
+                // version potentially includes letters "~" which is imcompatible with semver package.
+                // need to remove it before comparison. 
                 if (semver.gt(version.replace("~", ""), supportedInk as string)) {
                   mismatched[
                     `${contract}-${inkPackage}`
