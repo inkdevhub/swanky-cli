@@ -45,6 +45,7 @@ export class Spinner {
     } catch (error) {
       this.fail(failMessage || `Error ${runningMessage}`);
       if (this.verbose) console.error(error);
+      process.exit(1);
     }
   }
 
