@@ -2,14 +2,13 @@ import { Command } from "@oclif/core";
 import { Listr } from "listr2";
 import {
   commandStdoutOrNull,
-  ensureSwankyProject,
 } from "../../lib/command-utils";
 import fs = require("fs-extra");
 import path = require("node:path");
 import toml = require("toml");
 import semver = require("semver");
-import { SwankyConfig } from "../init";
-
+import { SwankyConfig, ensureSwankyProject, getSwankyConfig } from "../../lib/config";
+import { contracts } from "@polkadot/types/interfaces/definitions";
 interface Ctx {
   versions: {
     tools: {
@@ -27,14 +26,10 @@ interface Ctx {
   };
   looseDefinitionDetected: boolean;
 }
-
 export default class Check extends Command {
   static description = "Check installed package versions and compatibility";
-
   static flags = {};
-
   static args = [];
-
   public async run(): Promise<void> {
     await ensureSwankyProject();
     const tasks = new Listr<Ctx>([
@@ -79,30 +74,28 @@ export default class Check extends Command {
       {
         title: "Read ink dependencies",
         task: async (ctx) => {
-          const swankyConfig = await fs.readJSON("swanky.config.json");
+          const swankyConfig = await getSwankyConfig();
           ctx.swankyConfig = swankyConfig;
-          const contractInkVersions = {};
-          for (const contract of swankyConfig.contracts) {
-            const tomlPath = path.resolve(`contracts/${contract}/Cargo.toml`);
-            const doesCargoTomlExist = fs.pathExistsSync(tomlPath);
-            if (!doesCargoTomlExist) {
-              contractInkVersions[contract] = null;
+          for (const contract of swankyConfig.contracts || []) {
+            if (ctx.versions.contracts[contract.name]) {
               continue;
             }
-
+            const tomlPath = path.resolve(`contracts/${contract.name}/Cargo.toml`);
+            const doesCargoTomlExist = fs.pathExistsSync(tomlPath);
+            if (!doesCargoTomlExist) {
+              continue;
+            }
             const cargoTomlString = fs.readFileSync(tomlPath, {
               encoding: "utf8",
             });
-
             const cargoToml = toml.parse(cargoTomlString);
-
             const inkDependencies = Object.entries(cargoToml.dependencies)
               .filter((dependency) => dependency[0].includes("ink_"))
               .map(([depName, depInfo]) => {
                 const dependency = <Dependency>depInfo;
                 return [depName, dependency.version || dependency.tag];
               });
-            ctx.versions.contracts[contract] =
+            ctx.versions.contracts[contract.name] =
               Object.fromEntries(inkDependencies);
           }
         },
@@ -111,24 +104,22 @@ export default class Check extends Command {
         title: "Verify ink version",
         task: async (ctx) => {
           const supportedInk = ctx.swankyConfig?.node.supportedInk;
-
           const mismatched = {};
           Object.entries(ctx.versions.contracts).forEach(
             ([contract, inkPackages]) => {
               Object.entries(inkPackages).forEach(([inkPackage, version]) => {
-                if (semver.gt(version, supportedInk as string)) {
+                // version potentially includes letters such as "~". 
+                if (semver.gt(version.replace("~", ""), supportedInk as string)) {
                   mismatched[
                     `${contract}-${inkPackage}`
                   ] = `Version of ${inkPackage} (${version}) in ${contract} is higher than supported ink version (${supportedInk})`;
                 }
-
                 if (!(version.charAt(0) === "=" || version.charAt(0) === "v")) {
                   ctx.looseDefinitionDetected = true;
                 }
               });
             }
           );
-
           ctx.mismatchedVersions = mismatched;
         },
       },
@@ -149,7 +140,6 @@ export default class Check extends Command {
     }
   }
 }
-
 interface Dependency {
   version?: string;
   tag?: string;

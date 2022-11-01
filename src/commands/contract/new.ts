@@ -1,8 +1,8 @@
 import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
 import * as fs from 'fs-extra';
-import { getTemplates } from "../init";
-import { ensureSwankyProject } from "../../lib/command-utils";
+import { getTemplates } from "../../lib/template";
+import { ensureSwankyProject } from "../../lib/config";
 import { email, name, pickTemplate } from "../../lib/prompts";
 import { Spinner } from "../../lib/spinner";
 import {

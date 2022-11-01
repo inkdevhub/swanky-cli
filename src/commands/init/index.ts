@@ -1,6 +1,6 @@
 import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
-import { readdirSync, writeJSON } from "fs-extra";
+import { writeJSON } from "fs-extra";
 import { swankyNode } from "../../lib/nodeInfo";
 import {
   checkCliDependencies,
@@ -14,50 +14,15 @@ import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer = require("inquirer");
 import { choice, email, name, pickTemplate } from "../../lib/prompts";
 import { Spinner } from "../../lib/spinner";
-import { Encrypted } from "../../lib/crypto";
 import { ChainAccount } from "../../lib/account";
-
-export interface AccountData {
-  isDev: boolean;
-  alias: string;
-  mnemonic: string | Encrypted;
-  address: string;
-}
-export interface SwankyConfig {
-  node: {
-    polkadotPalletVersions: string;
-    localPath: string;
-    supportedInk: string;
-  };
-  accounts: AccountData[];
-  contracts?: { name: string; address: string }[];
-  networks: {
-    [network: string]: {
-      url: string;
-    };
-  };
-}
-
-export const DEFAULT_NETWORK_URL = "ws://127.0.0.1:9944";
-export const DEFAULT_ASTAR_NETWORK_URL = "wss://rpc.astar.network";
-export const DEFAULT_SHIDEN_NETWORK_URL = "wss://rpc.shiden.astar.network";
-export const DEFAULT_SHIBUYA_NETWORK_URL = "wss://rpc.shibuya.astar.network";
-
-export function getTemplates(language = "ink") {
-  const templatesPath = path.resolve(__dirname, "../..", "templates");
-  const contractTemplatesPath = path.resolve(templatesPath, "contracts", language);
-  const fileList = readdirSync(contractTemplatesPath, {
-    withFileTypes: true,
-  });
-  const contractTemplatesList = fileList
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => ({
-      message: entry.name,
-      value: entry.name,
-    }));
-
-  return { templatesPath, contractTemplatesPath, contractTemplatesList };
-}
+import { SwankyConfig } from "../../lib/config";
+import {
+  DEFAULT_ASTAR_NETWORK_URL,
+  DEFAULT_SHIDEN_NETWORK_URL,
+  DEFAULT_SHIBUYA_NETWORK_URL,
+  DEFAULT_LOCAL_NETWORK_URL,
+} from "../../lib/network";
+import { getTemplates } from "../../lib/template";
 
 export class Init extends Command {
   static description = "Generate a new smart contract environment";
@@ -166,7 +131,7 @@ export class Init extends Command {
         },
       ],
       networks: {
-        local: { url: DEFAULT_NETWORK_URL },
+        local: { url: DEFAULT_LOCAL_NETWORK_URL },
         astar: { url: DEFAULT_ASTAR_NETWORK_URL },
         shiden: { url: DEFAULT_SHIDEN_NETWORK_URL },
         shibuya: { url: DEFAULT_SHIBUYA_NETWORK_URL },

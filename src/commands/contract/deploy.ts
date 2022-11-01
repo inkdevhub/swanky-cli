@@ -8,8 +8,8 @@ import { KeyringPair } from "@polkadot/keyring/types";
 import {
   ensureSwankyProject,
   getSwankyConfig,
-  resolveNetworkUrl,
-} from "../../lib/command-utils";
+} from "../../lib/config";
+import { resolveNetworkUrl } from "../../lib/network";
 import { ChainAccount } from "../../lib/account";
 import { Spinner } from "../../lib/spinner";
 import inquirer from "inquirer";
@@ -36,6 +36,7 @@ export class DeployContract extends Command {
       char: "n",
       description: "Network name to connect to",
     }),
+    verbose: Flags.boolean({ char: "v" }),
   };
 
   static args = [
@@ -52,7 +53,7 @@ export class DeployContract extends Command {
 
     const config = await getSwankyConfig();
 
-    const spinner = new Spinner();
+    const spinner = new Spinner(flags.verbose);
 
     const accountData = config.accounts.find((account) => account.alias === flags.account);
     if (!accountData) {

@@ -2,10 +2,18 @@ import { mnemonicGenerate } from "@polkadot/util-crypto";
 import { Keyring } from "@polkadot/keyring";
 import { KeyringPair } from "@polkadot/keyring/types";
 import { ChainProperty, KeypairType } from "../types";
+import { Encrypted } from "./crypto";
 
 interface IChainAccount {
   pair: KeyringPair;
   keyring: Keyring;
+}
+
+export interface AccountData {
+  isDev: boolean;
+  alias: string;
+  mnemonic: string | Encrypted;
+  address: string;
 }
 
 export class ChainAccount implements IChainAccount {

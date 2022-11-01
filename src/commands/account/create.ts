@@ -1,11 +1,11 @@
 import { Command, Flags } from "@oclif/core";
 import chalk = require("chalk");
 import { writeJSON } from "fs-extra";
-import { ChainAccount } from "../../lib/account";
-import { ensureSwankyProject, getSwankyConfig } from "../../lib/command-utils";
+import { ChainAccount, AccountData } from "../../lib/account";
+import { ensureSwankyProject, getSwankyConfig } from "../../lib/config";
 import { encrypt } from "../../lib/crypto";
 import inquirer from "inquirer";
-import { AccountData } from "../init";
+
 export class CreateAccount extends Command {
   static description = "Create a new dev account in config";
 
