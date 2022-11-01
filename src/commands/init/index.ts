@@ -93,6 +93,7 @@ export class Init extends Command {
           author_name: answers.authorName,
           author_email: answers.email,
           swanky_version: this.config.pjson.version,
+          contract_name: answers.contractName,
           contract_name_snake: snakeCase(answers.contractName),
           contract_name_pascal: pascalCase(answers.contractName),
           contract_language: contractLanguage,
