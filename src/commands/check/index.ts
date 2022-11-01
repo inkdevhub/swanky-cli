@@ -9,6 +9,7 @@ import path = require("node:path");
 import toml = require("toml");
 import semver = require("semver");
 import { SwankyConfig } from "../init";
+import { getSwankyConfig } from "../../lib/command-utils";
 
 interface Ctx {
   versions: {
@@ -79,14 +80,16 @@ export default class Check extends Command {
       {
         title: "Read ink dependencies",
         task: async (ctx) => {
-          const swankyConfig = await fs.readJSON("swanky.config.json");
+          const swankyConfig = await getSwankyConfig();
           ctx.swankyConfig = swankyConfig;
-          const contractInkVersions = {};
-          for (const contract of swankyConfig.contracts) {
-            const tomlPath = path.resolve(`contracts/${contract}/Cargo.toml`);
+          for (const contract of swankyConfig.contracts || []) {
+            if (ctx.versions.contracts[contract.name]) {
+              continue;
+            }
+
+            const tomlPath = path.resolve(`contracts/${contract.name}/Cargo.toml`);
             const doesCargoTomlExist = fs.pathExistsSync(tomlPath);
             if (!doesCargoTomlExist) {
-              contractInkVersions[contract] = null;
               continue;
             }
 
@@ -102,7 +105,7 @@ export default class Check extends Command {
                 const dependency = <Dependency>depInfo;
                 return [depName, dependency.version || dependency.tag];
               });
-            ctx.versions.contracts[contract] =
+            ctx.versions.contracts[contract.name] =
               Object.fromEntries(inkDependencies);
           }
         },
@@ -116,7 +119,9 @@ export default class Check extends Command {
           Object.entries(ctx.versions.contracts).forEach(
             ([contract, inkPackages]) => {
               Object.entries(inkPackages).forEach(([inkPackage, version]) => {
-                if (semver.gt(version, supportedInk as string)) {
+                // version potentially includes letters "~" which is imcompatible with semver package.
+                // need to remove it before comparison. 
+                if (semver.gt(version.replace("~", ""), supportedInk as string)) {
                   mismatched[
                     `${contract}-${inkPackage}`
                   ] = `Version of ${inkPackage} (${version}) in ${contract} is higher than supported ink version (${supportedInk})`;
