@@ -171,6 +171,7 @@ export class Init extends Command {
         shiden: { url: DEFAULT_SHIDEN_NETWORK_URL },
         shibuya: { url: DEFAULT_SHIBUYA_NETWORK_URL },
       },
+      contracts: [],
     };
     await spinner.runCommand(
       () => writeJSON(path.resolve(projectPath, "swanky.config.json"), config, { spaces: 2 }),
