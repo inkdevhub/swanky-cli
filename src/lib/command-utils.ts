@@ -1,6 +1,6 @@
 import execa = require("execa");
 import fs = require("fs-extra");
-import { SwankyConfig, DEFAULT_NETWORK_URL } from "../commands/init";
+import { SwankyConfig, DEFAULT_NETWORK_URL } from "./config";
 
 export async function commandStdoutOrNull(
   command: string

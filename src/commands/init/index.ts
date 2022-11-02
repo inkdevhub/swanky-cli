@@ -1,7 +1,6 @@
 import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
-import { readdirSync, writeJSON } from "fs-extra";
-import { swankyNode } from "../../lib/nodeInfo";
+import { writeJSON } from "fs-extra";
 import {
   checkCliDependencies,
   copyTemplateFiles,
@@ -9,54 +8,31 @@ import {
   installDeps,
   processTemplates,
 } from "../../lib/tasks";
+import { NodeInfo } from "../../lib/nodeInfo";
 import execa = require("execa");
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer = require("inquirer");
 import { choice, email, name, pickTemplate } from "../../lib/prompts";
 import { Spinner } from "../../lib/spinner";
-import { Encrypted } from "../../lib/crypto";
 import { ChainAccount } from "../../lib/account";
+import { DEFAULT_NETWORK_URL, SwankyConfig } from "../../lib/config";
+import { getTemplates } from "../../lib/template";
 
-export interface AccountData {
-  isDev: boolean;
-  alias: string;
-  mnemonic: string | Encrypted;
-  address: string;
-}
-export interface SwankyConfig {
-  node: {
-    polkadotPalletVersions: string;
-    localPath: string;
-    supportedInk: string;
-  };
-  accounts: AccountData[];
-  contracts?: { name: string; address: string }[];
-  networks: {
-    [network: string]: {
-      url: string;
-    };
-  };
-}
-
-export const DEFAULT_NETWORK_URL = "ws://127.0.0.1:9944";
 export const DEFAULT_ASTAR_NETWORK_URL = "wss://rpc.astar.network";
 export const DEFAULT_SHIDEN_NETWORK_URL = "wss://rpc.shiden.astar.network";
 export const DEFAULT_SHIBUYA_NETWORK_URL = "wss://rpc.shibuya.astar.network";
 
-export function getTemplates(language = "ink") {
-  const templatesPath = path.resolve(__dirname, "../..", "templates");
-  const contractTemplatesPath = path.resolve(templatesPath, "contracts", language);
-  const fileList = readdirSync(contractTemplatesPath, {
-    withFileTypes: true,
-  });
-  const contractTemplatesList = fileList
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => ({
-      message: entry.name,
-      value: entry.name,
-    }));
-
-  return { templatesPath, contractTemplatesPath, contractTemplatesList };
+const swankyNode: NodeInfo = {
+  name: "Swanky Node",
+  version: "0.10.0",
+  polkadotPalletVersions: "polkadot-v0.9.27",
+  supportedInk: "v3.3.1",
+  downloadUrl: {
+    darwin:
+      "https://github.com/AstarNetwork/swanky-node/releases/download/v0.10.0/swanky-node-v0.10.0-macOS-x86_64.tar.gz",
+    linux:
+      "https://github.com/AstarNetwork/swanky-node/releases/download/v0.10.0/swanky-node-v0.10.0-ubuntu-x86_64.tar.gz",
+  },
 }
 
 export class Init extends Command {
@@ -65,7 +41,7 @@ export class Init extends Command {
   static flags = {
     "swanky-node": Flags.boolean(),
     template: Flags.string({
-      options: getTemplates().contractTemplatesList.map((template) => template.value),
+      options: getTemplates(path.resolve(__dirname, "../..", "templates")).contractTemplatesList.map((template) => template.value),
     }),
     verbose: Flags.boolean({ char: "v" }),
   };
@@ -82,7 +58,7 @@ export class Init extends Command {
     const { args, flags } = await this.parse(Init);
 
     const projectPath = path.resolve(args.projectName);
-    const templates = getTemplates();
+    const templates = getTemplates(path.resolve(__dirname, "../..", "templates"));
 
     const questions = [
       pickTemplate(templates.contractTemplatesList),

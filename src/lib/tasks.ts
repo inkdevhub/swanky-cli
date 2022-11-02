@@ -5,7 +5,7 @@ import globby from "globby";
 import handlebars from "handlebars";
 import { DownloadEndedStats, DownloaderHelper } from "node-downloader-helper";
 import process from "node:process";
-import { nodeInfo } from "./nodeInfo";
+import { NodeInfo } from "./nodeInfo";
 import decompress from "decompress";
 import { Spinner } from "./spinner";
 
@@ -65,18 +65,18 @@ export async function processTemplates(projectPath: string, templateData: Record
   );
 }
 
-export async function downloadNode(projectPath: string, nodeInfo: nodeInfo, spinner: Spinner) {
+export async function downloadNode(projectPath: string, nodeInfo: NodeInfo, spinner: Spinner) {
   const binPath = path.resolve(projectPath, "bin");
   await ensureDir(binPath);
   const dlUrl = nodeInfo.downloadUrl[process.platform];
 
   if (!dlUrl)
-    throw new Error(`Could not download swanky-node. Platform ${process.platform} not supported!`);
+    throw new Error(`Could not download ${nodeInfo.name}. Platform ${process.platform} not supported!`);
   const compressedFileDetails = await new Promise<DownloadEndedStats>((resolve, reject) => {
     const dl = new DownloaderHelper(dlUrl, binPath);
 
     dl.on("progress", (event) => {
-      spinner.text(`Downloading Swanky node ${event.progress}%`);
+      spinner.text(`Downloading ${nodeInfo.name} ${event.progress}%`);
     });
     dl.on("end", (event) => {
       resolve(event);

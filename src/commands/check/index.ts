@@ -8,7 +8,7 @@ import fs = require("fs-extra");
 import path = require("node:path");
 import toml = require("toml");
 import semver = require("semver");
-import { SwankyConfig } from "../init";
+import { SwankyConfig } from "../../lib/config";
 
 interface Ctx {
   versions: {

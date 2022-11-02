@@ -1,7 +1,7 @@
 import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
 import * as fs from 'fs-extra';
-import { getTemplates } from "../init";
+import { getTemplates } from "../../lib/template";
 import { ensureSwankyProject } from "../../lib/command-utils";
 import { email, name, pickTemplate } from "../../lib/prompts";
 import { Spinner } from "../../lib/spinner";
@@ -19,7 +19,7 @@ export class NewContract extends Command {
 
   static flags = {
     template: Flags.string({
-      options: getTemplates().contractTemplatesList.map((template) => template.value),
+      options: getTemplates(path.resolve(__dirname, "../..", "templates")).contractTemplatesList.map((template) => template.value),
     }),
     verbose: Flags.boolean({ char: "v" }),
   }
@@ -42,7 +42,7 @@ export class NewContract extends Command {
       throw Error(`Contract folder '${args.contractName}' already exists`);
     }
 
-    const templates = getTemplates();
+    const templates = getTemplates(path.resolve(__dirname, "../..", "templates"));
 
     const questions = [
       pickTemplate(templates.contractTemplatesList),

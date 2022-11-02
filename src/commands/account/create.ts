@@ -5,7 +5,7 @@ import { ChainAccount } from "../../lib/account";
 import { ensureSwankyProject, getSwankyConfig } from "../../lib/command-utils";
 import { encrypt } from "../../lib/crypto";
 import inquirer from "inquirer";
-import { AccountData } from "../init";
+import { AccountData } from "../../lib/account";
 export class CreateAccount extends Command {
   static description = "Create a new dev account in config";
 
