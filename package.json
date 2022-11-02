@@ -17,10 +17,9 @@
     "/oclif.manifest.json"
   ],
   "dependencies": {
-    "@oclif/core": "1.16.0",
-    "@oclif/plugin-help": "^5",
-    "@oclif/plugin-plugins": "^2.0.1",
-    "@oclif/plugin-version": "^1.1.1",
+    "@oclif/core": "1.20.2",
+    "@oclif/plugin-help": "^5.1.17",
+    "@oclif/plugin-version": "^1.1.3",
     "@polkadot/api": "^9.0.1",
     "@polkadot/api-contract": "^9.0.1",
     "@polkadot/keyring": "^10.1.2",
@@ -48,7 +47,7 @@
     "toml": "^3.0.0"
   },
   "devDependencies": {
-    "@oclif/test": "^2",
+    "@oclif/test": "^2.2.8",
     "@polkadot/api-augment": "^9.0.1",
     "@polkadot/types": "^9.0.1",
     "@types/chai": "^4",
@@ -57,24 +56,24 @@
     "@types/fs-extra": "^9.0.13",
     "@types/inquirer": "^8.0.0",
     "@types/mocha": "^9.0.0",
-    "@types/node": "^18.6.3",
+    "@types/node": "^18.11.9",
     "@types/progress": "^2.0.5",
     "@types/semver": "^7.3.10",
     "@typescript-eslint/eslint-plugin": "^5.35.1",
     "@typescript-eslint/parser": "^5.35.1",
     "chai": "^4",
-    "eslint": "^8.21.0",
+    "eslint": "^8.26.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
     "globby": "11",
     "mocha": "^10.0.0",
     "mocha-suppress-logs": "^0.3.1",
-    "oclif": "^3.1.1",
+    "oclif": "^3.2.24",
     "prettier": "^2.7.1",
     "shx": "^0.3.3",
     "ts-node": "^10.9.1",
-    "tslib": "^2.3.1",
-    "typescript": "4.7.4"
+    "tslib": "^2.4.1",
+    "typescript": "4.8.4"
   },
   "oclif": {
     "bin": "swanky",
@@ -103,7 +102,7 @@
     "lint": "eslint . --ext .ts --quiet --config .eslintrc",
     "postpack": "shx rm -f oclif.manifest.json",
     "posttest": "yarn lint",
-    "prepack": "yarn build && oclif manifest && oclif readme",
+    "prepack": "yarn build && oclif readme",
     "test": "mocha --require mocha-suppress-logs --forbid-only -r ts-node/register \"test/**/*.test.ts\"",
     "version": "oclif readme && git add README.md",
     "copy-template": "cp -R ./src/templates ./dist/"
