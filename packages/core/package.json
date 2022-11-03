@@ -1,0 +1,27 @@
+{
+  "name": "@astar-network/swanky-core",
+  "version": "0.1.1",
+  "description": "swanky core utilities",
+  "main": "src/index.js",
+  "repository": "https://github.com/AstarNetwork/swanky-cli.git",
+  "author": "Astar network",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@polkadot/api": "^9.0.1",
+    "@polkadot/api-contract": "^9.0.1",
+    "@polkadot/keyring": "^10.1.2",
+    "@polkadot/util": "^10.1.2",
+    "@polkadot/util-crypto": "^10.1.2"
+  },
+  "devDependencies": {
+    "@polkadot/api-augment": "^9.0.1",
+    "@polkadot/types": "^9.0.1"
+  }
+}
