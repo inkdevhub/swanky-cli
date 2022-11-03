@@ -16,6 +16,7 @@ $ swanky COMMAND
 running command...
 $ swanky (--version|-V|-v)
 @astar-network/swanky-cli/0.3.0-beta.3 darwin-x64 node-v18.2.0
+
 $ swanky --help [COMMAND]
 USAGE
   $ swanky COMMAND
@@ -99,6 +100,7 @@ DESCRIPTION
 ```
 
 _See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.3.0-beta.3/dist/commands/check/index.ts)_
+
 
 ## `swanky contract call`
 

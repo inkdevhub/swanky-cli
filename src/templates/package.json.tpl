@@ -9,8 +9,8 @@
   "license": "MIT",
   "scripts": {
     "run-node": "swanky node start",
-    "compile": "swanky compile",
-    "deploy": "swanky deploy"
+    "compile": "swanky contract compile",
+    "deploy": "swanky contract deploy"
   },
   "engines": {
     "node": ">=18.0.0"
