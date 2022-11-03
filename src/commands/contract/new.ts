@@ -1,15 +1,15 @@
 import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
 import * as fs from 'fs-extra';
-import { getTemplates } from "../../lib/template";
-import { ensureSwankyProject } from "../../lib/command-utils";
-import { email, name, pickTemplate } from "../../lib/prompts";
-import { Spinner } from "../../lib/spinner";
+import { getTemplates } from "../init";
 import {
+  ensureSwankyProject,
+  email, name, pickTemplate,
+  Spinner,
   checkCliDependencies,
   copyContractTemplateFiles,
   processTemplates,
-} from "../../lib/tasks";
+} from "@astar-network/swanky-core";
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import execa = require("execa");
 import inquirer = require("inquirer");
@@ -19,7 +19,7 @@ export class NewContract extends Command {
 
   static flags = {
     template: Flags.string({
-      options: getTemplates(path.resolve(__dirname, "../..", "templates")).contractTemplatesList.map((template) => template.value),
+      options: getTemplates().contractTemplatesList.map((template) => template.value),
     }),
     verbose: Flags.boolean({ char: "v" }),
   }
@@ -42,7 +42,7 @@ export class NewContract extends Command {
       throw Error(`Contract folder '${args.contractName}' already exists`);
     }
 
-    const templates = getTemplates(path.resolve(__dirname, "../..", "templates"));
+    const templates = getTemplates();
 
     const questions = [
       pickTemplate(templates.contractTemplatesList),

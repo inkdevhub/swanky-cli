@@ -1,6 +1,6 @@
 {
   "name": "@astar-network/swanky-core",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "swanky core utilities",
   "main": "src/index.js",
   "repository": "https://github.com/AstarNetwork/swanky-cli.git",

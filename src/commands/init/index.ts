@@ -1,22 +1,23 @@
 import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
 import { writeJSON } from "fs-extra";
+import execa = require("execa");
+import { paramCase, pascalCase, snakeCase } from "change-case";
+import inquirer = require("inquirer");
 import {
+  DEFAULT_NETWORK_URL,
+  SwankyConfig,
   checkCliDependencies,
   copyTemplateFiles,
   downloadNode,
   installDeps,
   processTemplates,
-} from "../../lib/tasks";
-import { NodeInfo } from "../../lib/nodeInfo";
-import execa = require("execa");
-import { paramCase, pascalCase, snakeCase } from "change-case";
-import inquirer = require("inquirer");
-import { choice, email, name, pickTemplate } from "../../lib/prompts";
-import { Spinner } from "../../lib/spinner";
-import { ChainAccount } from "../../lib/account";
-import { DEFAULT_NETWORK_URL, SwankyConfig } from "../../lib/config";
-import { getTemplates } from "../../lib/template";
+  choice, email, name, pickTemplate,
+  Spinner,
+  ChainAccount,
+  NodeInfo
+ } from "@astar-network/swanky-core";
+import { readdirSync } from "node:fs";
 
 export const DEFAULT_ASTAR_NETWORK_URL = "wss://rpc.astar.network";
 export const DEFAULT_SHIDEN_NETWORK_URL = "wss://rpc.shiden.astar.network";
@@ -35,13 +36,29 @@ const swankyNode: NodeInfo = {
   },
 }
 
+export function getTemplates(language = "ink") {
+  const templatesPath = path.resolve(__dirname, "../..", "templates");
+  const contractTemplatesPath = path.resolve(templatesPath, "contracts", language);
+  const fileList = readdirSync(contractTemplatesPath, {
+    withFileTypes: true,
+  });
+  const contractTemplatesList = fileList
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => ({
+      message: entry.name,
+      value: entry.name,
+    }));
+
+  return { templatesPath, contractTemplatesPath, contractTemplatesList };
+}
+
 export class Init extends Command {
   static description = "Generate a new smart contract environment";
 
   static flags = {
     "swanky-node": Flags.boolean(),
     template: Flags.string({
-      options: getTemplates(path.resolve(__dirname, "../..", "templates")).contractTemplatesList.map((template) => template.value),
+      options: getTemplates().contractTemplatesList.map((template) => template.value),
     }),
     verbose: Flags.boolean({ char: "v" }),
   };
@@ -58,7 +75,7 @@ export class Init extends Command {
     const { args, flags } = await this.parse(Init);
 
     const projectPath = path.resolve(args.projectName);
-    const templates = getTemplates(path.resolve(__dirname, "../..", "templates"));
+    const templates = getTemplates();
 
     const questions = [
       pickTemplate(templates.contractTemplatesList),

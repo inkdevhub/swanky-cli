@@ -3,17 +3,17 @@ import path = require("node:path");
 import { CodePromise, Abi } from "@polkadot/api-contract";
 import { readJSON, readFile, writeJSON } from "fs-extra";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
-import { ChainApi } from "../../lib/substrate-api";
-import { KeyringPair } from "@polkadot/keyring/types";
 import {
+  ChainApi,
   ensureSwankyProject,
   getSwankyConfig,
   resolveNetworkUrl,
-} from "../../lib/command-utils";
-import { ChainAccount } from "../../lib/account";
-import { Spinner } from "../../lib/spinner";
+  ChainAccount,
+  Spinner,
+  decrypt, Encrypted,
+} from "@astar-network/swanky-core";
+import { KeyringPair } from "@polkadot/keyring/types";
 import inquirer from "inquirer";
-import { decrypt, Encrypted } from "../../lib/crypto";
 import chalk = require("chalk");
 
 export class DeployContract extends Command {

@@ -2,8 +2,7 @@ import { Command, Flags } from "@oclif/core";
 import { spawn } from "node:child_process";
 import path = require("node:path");
 import { readdirSync } from "node:fs";
-import { ensureSwankyProject } from "../../lib/command-utils";
-import { Spinner } from "../../lib/spinner";
+import { ensureSwankyProject, Spinner } from "@astar-network/swanky-core";
 export class CompileContract extends Command {
   static description = "Compile the smart contract(s) in your contracts directory";
 

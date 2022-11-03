@@ -1,4 +1,4 @@
-import { AccountData  } from "./account";
+import { AccountData } from "./account";
 
 export const DEFAULT_NETWORK_URL = "ws://127.0.0.1:9944";
 

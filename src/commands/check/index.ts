@@ -1,14 +1,14 @@
 import { Command } from "@oclif/core";
 import { Listr } from "listr2";
 import {
+  SwankyConfig,
   commandStdoutOrNull,
   ensureSwankyProject,
-} from "../../lib/command-utils";
+} from "@astar-network/swanky-core";
 import fs = require("fs-extra");
 import path = require("node:path");
 import toml = require("toml");
 import semver = require("semver");
-import { SwankyConfig } from "../../lib/config";
 
 interface Ctx {
   versions: {
