@@ -1,3 +1,4 @@
+
 ## v0.3.0 (2022-11-01)
 
 ### Features
@@ -12,9 +13,14 @@
 - [Populate Contracts field on init](https://github.com/AstarNetwork/swanky-cli/issues/21)
 - [Move common methods and types to lib](https://github.com/AstarNetwork/swanky-cli/issues/16)
 
-## v0.2.0 (2022-09-22)
+## v0.2.1 (2022-10-19)
 
----
+### Trivial changes
+
+- add node version requirements to package.json and template
+- update ink! to 3.3.0
+
+## v0.2.0 (2022-09-22)
 
 ### Features
 

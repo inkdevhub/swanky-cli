@@ -4,7 +4,7 @@ on:
     types: [opened, reopened, synchronize, ready_for_review]
   workflow_dispatch:
 env:
-  NODE_VER: 16.x
+  NODE_VER: 18.x
 jobs:
   test:
     if: github.event.pull_request.draft == false
