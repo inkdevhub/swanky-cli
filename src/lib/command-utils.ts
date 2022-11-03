@@ -96,7 +96,7 @@ export async function copyArtefactsFor(
 }
 
 export function getTemplates(language: ContractData["language"]) {
-  const templatesPath = path.resolve(__dirname, "../..", "templates");
+  const templatesPath = path.resolve(__dirname, "../templates");
   const contractTemplatesPath = path.resolve(templatesPath, "contracts", language);
   const fileList = readdirSync(contractTemplatesPath, {
     withFileTypes: true,
