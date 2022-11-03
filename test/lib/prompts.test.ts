@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { choice, email, name, pickTemplate } from "../../src/lib/prompts";
+import { choice, email, name, pickTemplate } from "@astar-network/swanky-core";
 
 describe("Prompts", function () {
   describe("Template", function () {
