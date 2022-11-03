@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@astar-network/swanky-core@^0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@astar-network/swanky-core/-/swanky-core-0.1.2.tgz#cf3b039fc9526886c3437ead500d2122c67f8df6"
-  integrity sha512-9ELTPYeN8QmSsOG1SP45MNXAAtcVE0feD537MmHwS4YaB6ipz4e7vb8U3+oHOfFZ9yJJT62V52DKs1SHytKgBQ==
+"@astar-network/swanky-core@^0.1.3":
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@astar-network/swanky-core/-/swanky-core-0.1.3.tgz#43ad9a0c24bfdf48609dde92b2bd414cba176d87"
+  integrity sha512-f9T+tVyQeAt5sRUdIahadvYstDBSPUAtIwVCFuxRG8QuRBqGEEGMiLi8OUmux7teu1fXryCdT1EYW10EbQaoNQ==
   dependencies:
     "@polkadot/api" "^9.0.1"
     "@polkadot/api-contract" "^9.0.1"
