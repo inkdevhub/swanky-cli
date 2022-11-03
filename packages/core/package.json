@@ -1,13 +1,13 @@
 {
   "name": "@astar-network/swanky-core",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "swanky core utilities",
-  "main": "shx rm -rf dist && rm -f tsconfig.tsbuildinfo && dist/index.js",
+  "main": "dist/index.js",
   "repository": "https://github.com/AstarNetwork/swanky-cli.git",
   "author": "Astar network",
   "license": "MIT",
   "scripts": {
-    "build": "tsc -b"
+    "build": "shx rm -rf dist && rm -f tsconfig.tsbuildinfo && tsc -b"
   },
   "private": false,
   "publishConfig": {
