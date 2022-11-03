@@ -102,7 +102,7 @@
     "lint": "eslint . --ext .ts --quiet --config .eslintrc",
     "postpack": "shx rm -f oclif.manifest.json",
     "posttest": "yarn lint",
-    "prepack": "yarn build && oclif readme",
+    "prepack": "yarn build && shx cp -R ./src/templates . && oclif manifest && shx rm -rf templates && oclif readme",
     "test": "mocha --require mocha-suppress-logs --forbid-only -r ts-node/register \"test/**/*.test.ts\"",
     "version": "oclif readme && git add README.md",
     "copy-template": "cp -R ./src/templates ./dist/"
