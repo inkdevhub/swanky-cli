@@ -52,7 +52,7 @@ export async function copyContractTemplateFiles(
 
 export async function processTemplates(projectPath: string, templateData: Record<string, string>) {
   const templateFiles = await globby(projectPath, {
-    expandDirectories: { extensions: ["tpl"] },
+    expandDirectories: { extensions: ["hbs"] },
   });
 
   handlebars.registerHelper("if_eq", function (a, b, options): boolean {
@@ -71,7 +71,7 @@ export async function processTemplates(projectPath: string, templateData: Record
       const template = handlebars.compile(rawTemplate);
       const compiledFile = template(templateData);
       await rm(tplFilePath);
-      await writeFile(tplFilePath.split(".tpl")[0], compiledFile);
+      await writeFile(tplFilePath.split(".hbs")[0], compiledFile);
     })
   );
 }
