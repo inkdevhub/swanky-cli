@@ -46,14 +46,19 @@ export class CallContract extends Command {
       this.error(`Cannot find a contract named ${flags.contractName} in swanky.config.json`);
     }
 
-    const deploymentAddress = flags.deploymentTimestamp
+    const deploymentData = flags.deploymentTimestamp
       ? contractInfo.deployments.find(
           (deployment) => deployment.timestamp === flags.deploymentTimestamp
         )
       : contractInfo.deployments[0];
 
+    if (!deploymentData?.address)
+      throw new Error(
+        `Deployment with timestamp ${deploymentData?.timestamp} has no deployment address!`
+      );
+
     execSync(
-      `cargo contract call --contract ${deploymentAddress} --message ${flags.message} ${
+      `cargo contract call --contract ${deploymentData.address} --message ${flags.message} ${
         flags.args ? "--args " + flags.args : ""
       } --suri //Alice --gas ${flags.gas ?? "100000000000"} --url ${resolveNetworkUrl(
         config,

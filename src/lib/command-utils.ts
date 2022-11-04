@@ -74,7 +74,7 @@ export async function copyArtefactsFor(
     artefactsPath: path.resolve("artefacts", contractName, ts.toString()),
   };
 
-  fs.ensureDir(buildData.artefactsPath);
+  await fs.ensureDir(buildData.artefactsPath);
 
   const buildPaths = {
     ask: path.resolve(contractPath, "build"),
@@ -101,19 +101,25 @@ export function getTemplates(language: ContractData["language"]) {
   const fileList = readdirSync(contractTemplatesPath, {
     withFileTypes: true,
   });
-  const contractTemplatesList = fileList
+  const contractTemplatesQueryPairs = fileList
     .filter((entry) => entry.isDirectory())
     .map((entry) => ({
       message: entry.name,
       value: entry.name,
     }));
+  const contractTemplateNames = contractTemplatesQueryPairs.map((pair) => pair.value);
 
-  return { templatesPath, contractTemplatesPath, contractTemplatesList };
+  return {
+    templatesPath,
+    contractTemplatesPath,
+    contractTemplatesQueryPairs,
+    contractTemplateNames,
+  };
 }
 
 export function getAllTemplateNames() {
   return [
-    ...getTemplates("ask").contractTemplatesList.map((template) => template.value),
-    ...getTemplates("ink").contractTemplatesList.map((template) => template.value),
+    ...getTemplates("ask").contractTemplateNames,
+    ...getTemplates("ink").contractTemplateNames,
   ];
 }

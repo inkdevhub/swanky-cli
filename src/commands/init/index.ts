@@ -55,7 +55,7 @@ export class Init extends Command {
     const templates = getTemplates(contractLanguage);
 
     const questions = [
-      pickTemplate(templates.contractTemplatesList),
+      pickTemplate(templates.contractTemplatesQueryPairs),
       name("contract", (ans) => ans.contractTemplate, "What should we name your initial contract?"),
       name(
         "author",

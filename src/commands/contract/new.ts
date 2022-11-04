@@ -43,7 +43,7 @@ export class NewContract extends Command {
 
     if (
       pathExistsSync(path.join(projectPath, "contracts", args.contractName)) ||
-      config.contracts[args.name]
+      config.contracts[args.contractName]
     ) {
       throw new Error(`Contract folder '${args.contractName}' already exists`);
     }
@@ -56,10 +56,10 @@ export class NewContract extends Command {
 
     const { contractTemplate } = flags.template
       ? { contractTemplate: flags.template }
-      : await inquirer.prompt([pickTemplate(templates.contractTemplatesList)]);
+      : await inquirer.prompt([pickTemplate(templates.contractTemplatesQueryPairs)]);
 
     // passing language and template by flags can result in a non-existing combination
-    if (!templates.contractTemplatesList.includes(contractTemplate)) {
+    if (!templates.contractTemplateNames.includes(contractTemplate)) {
       this.error(
         `Selected template [${contractLanguage}] does not exist for selected language [${contractLanguage}]`
       );
@@ -105,8 +105,8 @@ export class NewContract extends Command {
     );
 
     await spinner.runCommand(async () => {
-      config.contracts[args.name] = {
-        name: args.name,
+      config.contracts[args.contractName] = {
+        name: args.contractName,
         language: contractLanguage,
         deployments: [],
       };
