@@ -1,6 +1,6 @@
 import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
-import { readdirSync, writeJSON } from "fs-extra";
+import { ensureDir, writeJSON } from "fs-extra";
 import { swankyNode } from "../../lib/nodeInfo";
 import {
   checkCliDependencies,
@@ -12,52 +12,17 @@ import {
 import execa = require("execa");
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer = require("inquirer");
-import { choice, email, name, pickTemplate } from "../../lib/prompts";
+import { choice, email, name, pickLanguage, pickTemplate } from "../../lib/prompts";
 import { Spinner } from "../../lib/spinner";
-import { Encrypted } from "../../lib/crypto";
 import { ChainAccount } from "../../lib/account";
-
-export interface AccountData {
-  isDev: boolean;
-  alias: string;
-  mnemonic: string | Encrypted;
-  address: string;
-}
-export interface SwankyConfig {
-  node: {
-    polkadotPalletVersions: string;
-    localPath: string;
-    supportedInk: string;
-  };
-  accounts: AccountData[];
-  contracts?: { name: string; address: string }[];
-  networks: {
-    [network: string]: {
-      url: string;
-    };
-  };
-}
-
-export const DEFAULT_NETWORK_URL = "ws://127.0.0.1:9944";
-export const DEFAULT_ASTAR_NETWORK_URL = "wss://rpc.astar.network";
-export const DEFAULT_SHIDEN_NETWORK_URL = "wss://rpc.shiden.astar.network";
-export const DEFAULT_SHIBUYA_NETWORK_URL = "wss://rpc.shibuya.astar.network";
-
-export function getTemplates(language = "ink") {
-  const templatesPath = path.resolve(__dirname, "../..", "templates");
-  const contractTemplatesPath = path.resolve(templatesPath, "contracts", language);
-  const fileList = readdirSync(contractTemplatesPath, {
-    withFileTypes: true,
-  });
-  const contractTemplatesList = fileList
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => ({
-      message: entry.name,
-      value: entry.name,
-    }));
-
-  return { templatesPath, contractTemplatesPath, contractTemplatesList };
-}
+import type { SwankyConfig } from "../../types";
+import { getAllTemplateNames, getTemplates } from "../../lib/command-utils";
+import {
+  DEFAULT_ASTAR_NETWORK_URL,
+  DEFAULT_NETWORK_URL,
+  DEFAULT_SHIBUYA_NETWORK_URL,
+  DEFAULT_SHIDEN_NETWORK_URL,
+} from "../../lib/consts";
 
 export class Init extends Command {
   static description = "Generate a new smart contract environment";
@@ -65,8 +30,10 @@ export class Init extends Command {
   static flags = {
     "swanky-node": Flags.boolean(),
     template: Flags.string({
-      options: getTemplates().contractTemplatesList.map((template) => template.value),
+      options: getAllTemplateNames(),
+      char: "t",
     }),
+    language: Flags.string({ options: ["ask", "ink"], char: "l" }),
     verbose: Flags.boolean({ char: "v" }),
   };
 
@@ -82,11 +49,14 @@ export class Init extends Command {
     const { args, flags } = await this.parse(Init);
 
     const projectPath = path.resolve(args.projectName);
-    const templates = getTemplates();
+
+    const { contractLanguage } = await inquirer.prompt([pickLanguage()]);
+
+    const templates = getTemplates(contractLanguage);
 
     const questions = [
-      pickTemplate(templates.contractTemplatesList),
-      name("contract", (ans) => ans.contractTemplate, "What should we name your contract?"),
+      pickTemplate(templates.contractTemplatesQueryPairs),
+      name("contract", (ans) => ans.contractTemplate, "What should we name your initial contract?"),
       name(
         "author",
         () => execa.commandSync("git config --get user.name").stdout,
@@ -123,8 +93,10 @@ export class Init extends Command {
           author_name: answers.authorName,
           author_email: answers.email,
           swanky_version: this.config.pjson.version,
+          contract_name: answers.contractName,
           contract_name_snake: snakeCase(answers.contractName),
           contract_name_pascal: pascalCase(answers.contractName),
+          contract_language: contractLanguage,
         }),
       "Processing templates"
     );
@@ -143,6 +115,7 @@ export class Init extends Command {
       nodePath = taskResult;
     }
 
+    await ensureDir(path.resolve(projectPath, "artefacts", answers.contractName));
     await spinner.runCommand(() => installDeps(projectPath), "Installing dependencies");
 
     const config: SwankyConfig = {
@@ -165,6 +138,13 @@ export class Init extends Command {
           address: new ChainAccount("//Bob").pair.address,
         },
       ],
+      contracts: {
+        [answers.contractName as string]: {
+          name: answers.contractName as string,
+          deployments: [],
+          language: contractLanguage,
+        },
+      },
       networks: {
         local: { url: DEFAULT_NETWORK_URL },
         astar: { url: DEFAULT_ASTAR_NETWORK_URL },

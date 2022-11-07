@@ -5,15 +5,12 @@ import { readJSON, readFile, writeJSON } from "fs-extra";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { ChainApi } from "../../lib/substrate-api";
 import { KeyringPair } from "@polkadot/keyring/types";
-import {
-  ensureSwankyProject,
-  getSwankyConfig,
-  resolveNetworkUrl,
-} from "../../lib/command-utils";
+import { ensureSwankyProject, getSwankyConfig, resolveNetworkUrl } from "../../lib/command-utils";
 import { ChainAccount } from "../../lib/account";
 import { Spinner } from "../../lib/spinner";
 import inquirer from "inquirer";
-import { decrypt, Encrypted } from "../../lib/crypto";
+import { decrypt } from "../../lib/crypto";
+import { AccountData, Encrypted } from "../../types";
 import chalk = require("chalk");
 
 export class DeployContract extends Command {
@@ -54,7 +51,14 @@ export class DeployContract extends Command {
 
     const spinner = new Spinner();
 
-    const accountData = config.accounts.find((account) => account.alias === flags.account);
+    const contractInfo = config.contracts[args.contractName];
+    if (!contractInfo) {
+      this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
+    }
+
+    const accountData = config.accounts.find(
+      (account: AccountData) => account.alias === flags.account
+    );
     if (!accountData) {
       this.error("Provided account alias not found in swanky.config.json");
     }
@@ -80,38 +84,52 @@ export class DeployContract extends Command {
     }, "Initialising")) as ChainAccount;
 
     const { abi, wasm } = (await spinner.runCommand(async () => {
-      const buildPath = path.resolve("contracts", args.contractName, "target", "ink");
-      const abi = (await readJSON(path.resolve(buildPath, "metadata.json"))) as Abi;
-      const wasm = await readFile(path.resolve(buildPath, `${args.contractName}.wasm`));
+      if (!contractInfo.build) {
+        this.error(`No build info found for contract named ${args.contractName}`);
+      }
+      const abi = (await readJSON(
+        path.resolve(contractInfo.build.artefactsPath, "metadata.json")
+      )) as Abi;
+      const wasm = await readFile(
+        path.resolve(contractInfo.build.artefactsPath, `${args.contractName}.wasm`)
+      );
       return { abi, wasm };
     }, "Getting WASM")) as { abi: Abi; wasm: Buffer };
 
+    const networkUrl = resolveNetworkUrl(config, flags.network ?? "");
+
     const api = (await spinner.runCommand(async () => {
-      const api = new DeployApi(resolveNetworkUrl(config, flags.network ?? ""));
+      const api = new DeployApi(networkUrl);
       await api.start();
       return api;
     }, "Connecting to node")) as DeployApi;
 
     const contractAddress = (await spinner.runCommand(async () => {
-      const contractAddress = await api.deploy(
-        abi,
-        wasm,
-        account.pair,
-        flags.gas,
-        flags.args as string[]
-      );
-      return contractAddress;
+      try {
+        const contractAddress = await api.deploy(
+          abi,
+          wasm,
+          account.pair,
+          flags.gas,
+          flags.args as string[]
+        );
+        return contractAddress;
+      } catch (e) {
+        console.error(e);
+        throw new Error("Error deploying!");
+      }
     }, "Deploying")) as string;
 
     await spinner.runCommand(async () => {
-      if (!config.contracts) {
-        config.contracts = [];
-      }
-
-      config.contracts.push({
-        name: args.contractName,
-        address: contractAddress,
-      });
+      contractInfo.deployments = [
+        ...contractInfo.deployments,
+        {
+          timestamp: Date.now(),
+          address: contractAddress,
+          networkUrl,
+          deployerAlias: flags.account,
+        },
+      ];
 
       await writeJSON(path.resolve("swanky.config.json"), config, {
         spaces: 2,
@@ -141,6 +159,10 @@ class DeployApi extends ChainApi {
   ) {
     const code = new CodePromise(this._api, abi, wasm);
     const storageDepositLimit = null;
+    // TODO: make other constructor names passable by flag
+    if (typeof code.tx.new !== "function") {
+      throw new Error("Contract has no constructor called 'New'");
+    }
     const tx = code.tx.new({ gasLimit, storageDepositLimit }, ...args);
     return new Promise((resolve, reject) => {
       this.signAndSend(signerPair, tx, {}, ({ status, events }) => {

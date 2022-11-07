@@ -15,7 +15,8 @@ $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
 running command...
 $ swanky (--version|-V|-v)
-@astar-network/swanky-cli/0.2.1 darwin-x64 node-v18.2.0
+@astar-network/swanky-cli/0.3.0-beta.3 darwin-x64 node-v18.2.0
+
 $ swanky --help [COMMAND]
 USAGE
   $ swanky COMMAND
@@ -98,7 +99,8 @@ DESCRIPTION
   Check installed package versions and compatibility
 ```
 
-_See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.2.1/dist/commands/check/index.ts)_
+_See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.3.0-beta.3/dist/commands/check/index.ts)_
+
 
 ## `swanky contract call`
 
@@ -106,15 +108,16 @@ Call a method on a smart contract
 
 ```
 USAGE
-  $ swanky contract call --address <value> -m <value> [-a <value>] [-d] [-g <value>] [-n <value>]
+  $ swanky contract call --contractName <value> -m <value> [-a <value>] [-d] [-g <value>] [-n <value>] [-t <value>]
 
 FLAGS
   -a, --args=<value>
   -d, --dry
   -g, --gas=<value>
-  -m, --message=<value>  (required)
-  -n, --network=<value>  Network name to connect to
-  --address=<value>      (required)
+  -m, --message=<value>              (required)
+  -n, --network=<value>              Network name to connect to
+  -t, --deploymentTimestamp=<value>  Specific deployment to target
+  --contractName=<value>             (required)
 
 DESCRIPTION
   Call a method on a smart contract
@@ -165,14 +168,15 @@ Generate a new smart contract template inside a project
 
 ```
 USAGE
-  $ swanky contract new [CONTRACTNAME] [--template blank|flipper|psp22] [-v]
+  $ swanky contract new [CONTRACTNAME] [--template blank|erc20token|flipper|blank|flipper|psp22] [-l ink|ask] [-v]
 
 ARGUMENTS
   CONTRACTNAME  Name of new contract
 
 FLAGS
+  -l, --language=<option>  <options: ink|ask>
   -v, --verbose
-  --template=<option>  <options: blank|flipper|psp22>
+  --template=<option>      <options: blank|erc20token|flipper|blank|flipper|psp22>
 
 DESCRIPTION
   Generate a new smart contract template inside a project
@@ -196,7 +200,7 @@ DESCRIPTION
   Display help for swanky.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.1.12/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.1.17/src/commands/help.ts)_
 
 ## `swanky init PROJECTNAME`
 
@@ -204,21 +208,23 @@ Generate a new smart contract environment
 
 ```
 USAGE
-  $ swanky init [PROJECTNAME] [--swanky-node] [--template blank|flipper|psp22] [-v]
+  $ swanky init [PROJECTNAME] [--swanky-node] [-t blank|erc20token|flipper|blank|flipper|psp22] [-l
+    ask|ink] [-v]
 
 ARGUMENTS
   PROJECTNAME  directory name of new project
 
 FLAGS
+  -l, --language=<option>  <options: ask|ink>
+  -t, --template=<option>  <options: blank|erc20token|flipper|blank|flipper|psp22>
   -v, --verbose
   --swanky-node
-  --template=<option>  <options: blank|flipper|psp22>
 
 DESCRIPTION
   Generate a new smart contract environment
 ```
 
-_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.2.1/dist/commands/init/index.ts)_
+_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.3.0-beta.3/dist/commands/init/index.ts)_
 
 ## `swanky node purge`
 
@@ -265,7 +271,7 @@ FLAG DESCRIPTIONS
     Additionally shows the architecture, node version, operating system, and versions of plugins that the CLI is using.
 ```
 
-_See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.1.2/src/commands/version.ts)_
+_See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.1.3/src/commands/version.ts)_
 <!-- commandsstop -->
 
 # Config

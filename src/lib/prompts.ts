@@ -8,7 +8,7 @@ export function pickTemplate(
     name: "contractTemplate",
     type: "list",
     choices: templateList,
-    message: "Which template should we use?",
+    message: "Which contract template should we use?",
   };
 }
 
@@ -41,5 +41,14 @@ export function choice(subject: string, questionText: string): Question<Answers>
     name: subject,
     type: "confirm",
     message: questionText,
+  };
+}
+
+export function pickLanguage(): ListQuestion<Answers> {
+  return {
+    name: "contractLanguage",
+    type: "list",
+    choices: ["ink", "ask"],
+    message: "Which contract template should we use?",
   };
 }

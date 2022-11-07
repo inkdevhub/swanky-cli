@@ -16,6 +16,15 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
+    {{#if_eq contract_language "ask"}}
+    "ask-lang": "^0.4.0-rc3",
+    {{/if_eq}}
     "@astar-network/swanky-cli": "{{swanky_version}}"
+  },
+  "devDependencies": {
+    {{#if_eq contract_language "ask"}}
+    "ask-transform": "^0.4.0-rc3",
+    "assemblyscript": "^0.19"
+    {{/if_eq}}
   }
 }

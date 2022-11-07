@@ -1,14 +1,11 @@
 import { Command } from "@oclif/core";
 import { Listr } from "listr2";
-import {
-  commandStdoutOrNull,
-  ensureSwankyProject,
-} from "../../lib/command-utils";
+import { commandStdoutOrNull, ensureSwankyProject } from "../../lib/command-utils";
 import fs = require("fs-extra");
 import path = require("node:path");
 import toml = require("toml");
 import semver = require("semver");
-import { SwankyConfig } from "../init";
+import { SwankyConfig } from "../../types";
 
 interface Ctx {
   versions: {
@@ -41,9 +38,7 @@ export default class Check extends Command {
       {
         title: "Check Rust",
         task: async (ctx) => {
-          ctx.versions.tools.rust = await commandStdoutOrNull(
-            "rustc --version"
-          );
+          ctx.versions.tools.rust = await commandStdoutOrNull("rustc --version");
         },
       },
       {
@@ -55,25 +50,19 @@ export default class Check extends Command {
       {
         title: "Check cargo nightly",
         task: async (ctx) => {
-          ctx.versions.tools.cargoNightly = await commandStdoutOrNull(
-            "cargo +nightly -V"
-          );
+          ctx.versions.tools.cargoNightly = await commandStdoutOrNull("cargo +nightly -V");
         },
       },
       {
         title: "Check cargo dylint",
         task: async (ctx) => {
-          ctx.versions.tools.cargoDylint = await commandStdoutOrNull(
-            "cargo dylint -V"
-          );
+          ctx.versions.tools.cargoDylint = await commandStdoutOrNull("cargo dylint -V");
         },
       },
       {
         title: "Check cargo-contract",
         task: async (ctx) => {
-          ctx.versions.tools.cargoContract = await commandStdoutOrNull(
-            "cargo contract -V"
-          );
+          ctx.versions.tools.cargoContract = await commandStdoutOrNull("cargo contract -V");
         },
       },
       {
@@ -102,8 +91,7 @@ export default class Check extends Command {
                 const dependency = <Dependency>depInfo;
                 return [depName, dependency.version || dependency.tag];
               });
-            ctx.versions.contracts[contract] =
-              Object.fromEntries(inkDependencies);
+            ctx.versions.contracts[contract] = Object.fromEntries(inkDependencies);
           }
         },
       },
@@ -113,21 +101,19 @@ export default class Check extends Command {
           const supportedInk = ctx.swankyConfig?.node.supportedInk;
 
           const mismatched = {};
-          Object.entries(ctx.versions.contracts).forEach(
-            ([contract, inkPackages]) => {
-              Object.entries(inkPackages).forEach(([inkPackage, version]) => {
-                if (semver.gt(version, supportedInk as string)) {
-                  mismatched[
-                    `${contract}-${inkPackage}`
-                  ] = `Version of ${inkPackage} (${version}) in ${contract} is higher than supported ink version (${supportedInk})`;
-                }
+          Object.entries(ctx.versions.contracts).forEach(([contract, inkPackages]) => {
+            Object.entries(inkPackages).forEach(([inkPackage, version]) => {
+              if (semver.gt(version, supportedInk as string)) {
+                mismatched[
+                  `${contract}-${inkPackage}`
+                ] = `Version of ${inkPackage} (${version}) in ${contract} is higher than supported ink version (${supportedInk})`;
+              }
 
-                if (!(version.charAt(0) === "=" || version.charAt(0) === "v")) {
-                  ctx.looseDefinitionDetected = true;
-                }
-              });
-            }
-          );
+              if (!(version.charAt(0) === "=" || version.charAt(0) === "v")) {
+                ctx.looseDefinitionDetected = true;
+              }
+            });
+          });
 
           ctx.mismatchedVersions = mismatched;
         },

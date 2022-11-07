@@ -1,10 +1,12 @@
 import execa = require("execa");
+import { readdirSync } from "fs-extra";
 import fs = require("fs-extra");
-import { SwankyConfig, DEFAULT_NETWORK_URL } from "../commands/init";
+import { ChildProcessWithoutNullStreams, spawn } from "node:child_process";
+import path = require("node:path");
+import { DEFAULT_NETWORK_URL } from "./consts";
+import { BuildData, ContractData, SwankyConfig } from "../types";
 
-export async function commandStdoutOrNull(
-  command: string
-): Promise<string | null> {
+export async function commandStdoutOrNull(command: string): Promise<string | null> {
   try {
     const result = await execa.command(command);
     return result.stdout;
@@ -29,10 +31,7 @@ export async function getSwankyConfig(): Promise<SwankyConfig> {
   }
 }
 
-export function resolveNetworkUrl(
-  config: SwankyConfig,
-  networkName: string
-): string {
+export function resolveNetworkUrl(config: SwankyConfig, networkName: string): string {
   if (networkName === "") {
     return DEFAULT_NETWORK_URL;
   }
@@ -42,4 +41,85 @@ export function resolveNetworkUrl(
   } catch {
     throw new Error("Network name not found in SwankyConfig");
   }
+}
+
+export function getBuildCommandFor(
+  language: ContractData["language"],
+  contractPath: string
+): ChildProcessWithoutNullStreams {
+  if (language === "ink") {
+    return spawn("cargo", ["+nightly", "contract", "build"], {
+      cwd: contractPath,
+    });
+  }
+  if (language === "ask") {
+    return spawn(
+      "yarn",
+      ["asc", "--config", `${contractPath}/asconfig.json`, `${contractPath}/index.ts`],
+      { env: { ...process.env, ASK_CONFIG: `${contractPath}/askconfig.json` } }
+    );
+  }
+
+  throw new Error("Unsupported language!");
+}
+
+export async function copyArtefactsFor(
+  language: ContractData["language"],
+  contractName: string,
+  contractPath: string
+): Promise<BuildData> {
+  const ts = Date.now();
+  const buildData = {
+    timestamp: ts,
+    artefactsPath: path.resolve("artefacts", contractName, ts.toString()),
+  };
+
+  await fs.ensureDir(buildData.artefactsPath);
+
+  const buildPaths = {
+    ask: path.resolve(contractPath, "build"),
+    ink: path.resolve(contractPath, "target", "ink"),
+  };
+
+  await Promise.all([
+    fs.copyFile(
+      `${buildPaths[language]}/${contractName}.wasm`,
+      `${buildData.artefactsPath}/${contractName}.wasm`
+    ),
+    fs.copyFile(
+      `${buildPaths[language]}/metadata.json`,
+      `${buildData.artefactsPath}/metadata.json`
+    ),
+  ]);
+
+  return buildData;
+}
+
+export function getTemplates(language: ContractData["language"]) {
+  const templatesPath = path.resolve(__dirname, "../templates");
+  const contractTemplatesPath = path.resolve(templatesPath, "contracts", language);
+  const fileList = readdirSync(contractTemplatesPath, {
+    withFileTypes: true,
+  });
+  const contractTemplatesQueryPairs = fileList
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => ({
+      message: entry.name,
+      value: entry.name,
+    }));
+  const contractTemplateNames = contractTemplatesQueryPairs.map((pair) => pair.value);
+
+  return {
+    templatesPath,
+    contractTemplatesPath,
+    contractTemplatesQueryPairs,
+    contractTemplateNames,
+  };
+}
+
+export function getAllTemplateNames() {
+  return [
+    ...getTemplates("ask").contractTemplateNames,
+    ...getTemplates("ink").contractTemplateNames,
+  ];
 }

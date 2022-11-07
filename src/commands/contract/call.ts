@@ -11,7 +11,7 @@ export class CallContract extends Command {
       required: false,
       char: "a",
     }),
-    address: Flags.string({
+    contractName: Flags.string({
       required: true,
     }),
     message: Flags.string({
@@ -28,33 +28,45 @@ export class CallContract extends Command {
       char: "n",
       description: "Network name to connect to",
     }),
+    deploymentTimestamp: Flags.integer({
+      char: "t",
+      required: false,
+      description: "Specific deployment to target",
+    }),
   };
 
   static args = [];
 
   async run(): Promise<void> {
     const { flags } = await this.parse(CallContract);
-
     const config = await getSwankyConfig();
 
-    const contractInfo = config.contracts?.find(item => item.address == flags.address);
+    const contractInfo = config.contracts[flags.contractName];
     if (!contractInfo) {
-      throw Error("contract address not found in swanky config")
+      this.error(`Cannot find a contract named ${flags.contractName} in swanky.config.json`);
     }
+
+    const deploymentData = flags.deploymentTimestamp
+      ? contractInfo.deployments.find(
+          (deployment) => deployment.timestamp === flags.deploymentTimestamp
+        )
+      : contractInfo.deployments[0];
+
+    if (!deploymentData?.address)
+      throw new Error(
+        `Deployment with timestamp ${deploymentData?.timestamp} has no deployment address!`
+      );
+
     execSync(
-      `cargo contract call --contract ${
-        contractInfo?.address
-      } --message ${flags.message} ${flags.args ? "--args " + flags.args : ""} --suri //Alice --gas ${
-        flags.gas ?? "100000000000"
-      } --url ${resolveNetworkUrl(config, flags.network ?? "")} ${
-        flags.dry ? "--dry-run" : ""
-      }`,
+      `cargo contract call --contract ${deploymentData.address} --message ${flags.message} ${
+        flags.args ? "--args " + flags.args : ""
+      } --suri //Alice --gas ${flags.gas ?? "100000000000"} --url ${resolveNetworkUrl(
+        config,
+        flags.network ?? ""
+      )} ${flags.dry ? "--dry-run" : ""}`,
       {
         stdio: "inherit",
-        cwd: path.resolve(
-          "contracts",
-          contractInfo?.name ?? ""
-        ),
+        cwd: path.resolve("contracts", contractInfo?.name ?? ""),
       }
     );
   }
