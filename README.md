@@ -15,8 +15,7 @@ $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
 running command...
 $ swanky (--version|-V|-v)
-@astar-network/swanky-cli/0.3.0-beta.3 darwin-x64 node-v18.2.0
-
+@astar-network/swanky-cli/0.3.0 darwin-x64 node-v18.2.0
 $ swanky --help [COMMAND]
 USAGE
   $ swanky COMMAND
@@ -39,6 +38,15 @@ USAGE
 * [`swanky init PROJECTNAME`](#swanky-init-projectname)
 * [`swanky node purge`](#swanky-node-purge)
 * [`swanky node start`](#swanky-node-start)
+* [`swanky plugins`](#swanky-plugins)
+* [`swanky plugins:install PLUGIN...`](#swanky-pluginsinstall-plugin)
+* [`swanky plugins:inspect PLUGIN...`](#swanky-pluginsinspect-plugin)
+* [`swanky plugins:install PLUGIN...`](#swanky-pluginsinstall-plugin-1)
+* [`swanky plugins:link PLUGIN`](#swanky-pluginslink-plugin)
+* [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin)
+* [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin-1)
+* [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin-2)
+* [`swanky plugins update`](#swanky-plugins-update)
 * [`swanky version`](#swanky-version)
 
 ## `swanky account create`
@@ -99,8 +107,7 @@ DESCRIPTION
   Check installed package versions and compatibility
 ```
 
-_See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.3.0-beta.3/dist/commands/check/index.ts)_
-
+_See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.3.0/dist/commands/check/index.ts)_
 
 ## `swanky contract call`
 
@@ -108,16 +115,15 @@ Call a method on a smart contract
 
 ```
 USAGE
-  $ swanky contract call --contractName <value> -m <value> [-a <value>] [-d] [-g <value>] [-n <value>] [-t <value>]
+  $ swanky contract call --address <value> -m <value> [-a <value>] [-d] [-g <value>] [-n <value>]
 
 FLAGS
   -a, --args=<value>
   -d, --dry
   -g, --gas=<value>
-  -m, --message=<value>              (required)
-  -n, --network=<value>              Network name to connect to
-  -t, --deploymentTimestamp=<value>  Specific deployment to target
-  --contractName=<value>             (required)
+  -m, --message=<value>  (required)
+  -n, --network=<value>  Network name to connect to
+  --address=<value>      (required)
 
 DESCRIPTION
   Call a method on a smart contract
@@ -168,15 +174,14 @@ Generate a new smart contract template inside a project
 
 ```
 USAGE
-  $ swanky contract new [CONTRACTNAME] [--template blank|erc20token|flipper|blank|flipper|psp22] [-l ink|ask] [-v]
+  $ swanky contract new [CONTRACTNAME] [--template blank|flipper|psp22] [-v]
 
 ARGUMENTS
   CONTRACTNAME  Name of new contract
 
 FLAGS
-  -l, --language=<option>  <options: ink|ask>
   -v, --verbose
-  --template=<option>      <options: blank|erc20token|flipper|blank|flipper|psp22>
+  --template=<option>  <options: blank|flipper|psp22>
 
 DESCRIPTION
   Generate a new smart contract template inside a project
@@ -200,7 +205,7 @@ DESCRIPTION
   Display help for swanky.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.1.17/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.1.12/src/commands/help.ts)_
 
 ## `swanky init PROJECTNAME`
 
@@ -208,23 +213,21 @@ Generate a new smart contract environment
 
 ```
 USAGE
-  $ swanky init [PROJECTNAME] [--swanky-node] [-t blank|erc20token|flipper|blank|flipper|psp22] [-l
-    ask|ink] [-v]
+  $ swanky init [PROJECTNAME] [--swanky-node] [--template blank|flipper|psp22] [-v]
 
 ARGUMENTS
   PROJECTNAME  directory name of new project
 
 FLAGS
-  -l, --language=<option>  <options: ask|ink>
-  -t, --template=<option>  <options: blank|erc20token|flipper|blank|flipper|psp22>
   -v, --verbose
   --swanky-node
+  --template=<option>  <options: blank|flipper|psp22>
 
 DESCRIPTION
   Generate a new smart contract environment
 ```
 
-_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.3.0-beta.3/dist/commands/init/index.ts)_
+_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v0.3.0/dist/commands/init/index.ts)_
 
 ## `swanky node purge`
 
@@ -253,6 +256,236 @@ DESCRIPTION
   Start a local node
 ```
 
+## `swanky plugins`
+
+List installed plugins.
+
+```
+USAGE
+  $ swanky plugins [--core]
+
+FLAGS
+  --core  Show core plugins.
+
+DESCRIPTION
+  List installed plugins.
+
+EXAMPLES
+  $ swanky plugins
+```
+
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.1.4/src/commands/plugins/index.ts)_
+
+## `swanky plugins:install PLUGIN...`
+
+Installs a plugin into the CLI.
+
+```
+USAGE
+  $ swanky plugins:install PLUGIN...
+
+ARGUMENTS
+  PLUGIN  Plugin to install.
+
+FLAGS
+  -f, --force    Run yarn install with force flag.
+  -h, --help     Show CLI help.
+  -v, --verbose
+
+DESCRIPTION
+  Installs a plugin into the CLI.
+
+  Can be installed from npm or a git url.
+
+  Installation of a user-installed plugin will override a core plugin.
+
+  e.g. If you have a core plugin that has a 'hello' command, installing a user-installed plugin with a 'hello' command
+  will override the core plugin implementation. This is useful if a user needs to update core plugin functionality in
+  the CLI without the need to patch and update the whole CLI.
+
+ALIASES
+  $ swanky plugins add
+
+EXAMPLES
+  $ swanky plugins:install myplugin 
+
+  $ swanky plugins:install https://github.com/someuser/someplugin
+
+  $ swanky plugins:install someuser/someplugin
+```
+
+## `swanky plugins:inspect PLUGIN...`
+
+Displays installation properties of a plugin.
+
+```
+USAGE
+  $ swanky plugins:inspect PLUGIN...
+
+ARGUMENTS
+  PLUGIN  [default: .] Plugin to inspect.
+
+FLAGS
+  -h, --help     Show CLI help.
+  -v, --verbose
+
+DESCRIPTION
+  Displays installation properties of a plugin.
+
+EXAMPLES
+  $ swanky plugins:inspect myplugin
+```
+
+## `swanky plugins:install PLUGIN...`
+
+Installs a plugin into the CLI.
+
+```
+USAGE
+  $ swanky plugins:install PLUGIN...
+
+ARGUMENTS
+  PLUGIN  Plugin to install.
+
+FLAGS
+  -f, --force    Run yarn install with force flag.
+  -h, --help     Show CLI help.
+  -v, --verbose
+
+DESCRIPTION
+  Installs a plugin into the CLI.
+
+  Can be installed from npm or a git url.
+
+  Installation of a user-installed plugin will override a core plugin.
+
+  e.g. If you have a core plugin that has a 'hello' command, installing a user-installed plugin with a 'hello' command
+  will override the core plugin implementation. This is useful if a user needs to update core plugin functionality in
+  the CLI without the need to patch and update the whole CLI.
+
+ALIASES
+  $ swanky plugins add
+
+EXAMPLES
+  $ swanky plugins:install myplugin 
+
+  $ swanky plugins:install https://github.com/someuser/someplugin
+
+  $ swanky plugins:install someuser/someplugin
+```
+
+## `swanky plugins:link PLUGIN`
+
+Links a plugin into the CLI for development.
+
+```
+USAGE
+  $ swanky plugins:link PLUGIN
+
+ARGUMENTS
+  PATH  [default: .] path to plugin
+
+FLAGS
+  -h, --help     Show CLI help.
+  -v, --verbose
+
+DESCRIPTION
+  Links a plugin into the CLI for development.
+
+  Installation of a linked plugin will override a user-installed or core plugin.
+
+  e.g. If you have a user-installed or core plugin that has a 'hello' command, installing a linked plugin with a 'hello'
+  command will override the user-installed or core plugin implementation. This is useful for development work.
+
+EXAMPLES
+  $ swanky plugins:link myplugin
+```
+
+## `swanky plugins:uninstall PLUGIN...`
+
+Removes a plugin from the CLI.
+
+```
+USAGE
+  $ swanky plugins:uninstall PLUGIN...
+
+ARGUMENTS
+  PLUGIN  plugin to uninstall
+
+FLAGS
+  -h, --help     Show CLI help.
+  -v, --verbose
+
+DESCRIPTION
+  Removes a plugin from the CLI.
+
+ALIASES
+  $ swanky plugins unlink
+  $ swanky plugins remove
+```
+
+## `swanky plugins:uninstall PLUGIN...`
+
+Removes a plugin from the CLI.
+
+```
+USAGE
+  $ swanky plugins:uninstall PLUGIN...
+
+ARGUMENTS
+  PLUGIN  plugin to uninstall
+
+FLAGS
+  -h, --help     Show CLI help.
+  -v, --verbose
+
+DESCRIPTION
+  Removes a plugin from the CLI.
+
+ALIASES
+  $ swanky plugins unlink
+  $ swanky plugins remove
+```
+
+## `swanky plugins:uninstall PLUGIN...`
+
+Removes a plugin from the CLI.
+
+```
+USAGE
+  $ swanky plugins:uninstall PLUGIN...
+
+ARGUMENTS
+  PLUGIN  plugin to uninstall
+
+FLAGS
+  -h, --help     Show CLI help.
+  -v, --verbose
+
+DESCRIPTION
+  Removes a plugin from the CLI.
+
+ALIASES
+  $ swanky plugins unlink
+  $ swanky plugins remove
+```
+
+## `swanky plugins update`
+
+Update installed plugins.
+
+```
+USAGE
+  $ swanky plugins update [-h] [-v]
+
+FLAGS
+  -h, --help     Show CLI help.
+  -v, --verbose
+
+DESCRIPTION
+  Update installed plugins.
+```
+
 ## `swanky version`
 
 ```
@@ -271,7 +504,7 @@ FLAG DESCRIPTIONS
     Additionally shows the architecture, node version, operating system, and versions of plugins that the CLI is using.
 ```
 
-_See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.1.3/src/commands/version.ts)_
+_See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.1.2/src/commands/version.ts)_
 <!-- commandsstop -->
 
 # Config
