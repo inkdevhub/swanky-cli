@@ -115,15 +115,16 @@ Call a method on a smart contract
 
 ```
 USAGE
-  $ swanky contract call --address <value> -m <value> [-a <value>] [-d] [-g <value>] [-n <value>]
+  $ swanky contract call --contractName <value> -m <value> [-a <value>] [-d] [-g <value>] [-n <value>] [-t <value>]
 
 FLAGS
   -a, --args=<value>
   -d, --dry
   -g, --gas=<value>
-  -m, --message=<value>  (required)
-  -n, --network=<value>  Network name to connect to
-  --address=<value>      (required)
+  -m, --message=<value>              (required)
+  -n, --network=<value>              Network name to connect to
+  -t, --deploymentTimestamp=<value>  Specific deployment to target
+  --contractName=<value>             (required)
 
 DESCRIPTION
   Call a method on a smart contract
@@ -174,14 +175,15 @@ Generate a new smart contract template inside a project
 
 ```
 USAGE
-  $ swanky contract new [CONTRACTNAME] [--template blank|flipper|psp22] [-v]
+  $ swanky contract new [CONTRACTNAME] [--template blank|erc20token|flipper|blank|flipper|psp22] [-l ink|ask] [-v]
 
 ARGUMENTS
   CONTRACTNAME  Name of new contract
 
 FLAGS
+  -l, --language=<option>  <options: ink|ask>
   -v, --verbose
-  --template=<option>  <options: blank|flipper|psp22>
+  --template=<option>      <options: blank|erc20token|flipper|blank|flipper|psp22>
 
 DESCRIPTION
   Generate a new smart contract template inside a project
@@ -213,15 +215,17 @@ Generate a new smart contract environment
 
 ```
 USAGE
-  $ swanky init [PROJECTNAME] [--swanky-node] [--template blank|flipper|psp22] [-v]
+  $ swanky init [PROJECTNAME] [--swanky-node] [-t blank|erc20token|flipper|blank|flipper|psp22] [-l
+    ask|ink] [-v]
 
 ARGUMENTS
   PROJECTNAME  directory name of new project
 
 FLAGS
+  -l, --language=<option>  <options: ask|ink>
+  -t, --template=<option>  <options: blank|erc20token|flipper|blank|flipper|psp22>
   -v, --verbose
   --swanky-node
-  --template=<option>  <options: blank|flipper|psp22>
 
 DESCRIPTION
   Generate a new smart contract environment
