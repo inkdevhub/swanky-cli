@@ -5,6 +5,7 @@
 * [Usage](#usage)
 * [Commands](#commands)
 * [Config](#config)
+* [QuickStart](https://docs.astar.network/docs/wasm/sc-dev/swanky)
 <!-- tocstop -->
 
 # Usage
