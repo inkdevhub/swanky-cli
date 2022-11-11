@@ -1,0 +1,14 @@
+{
+  "name": "@astar-network/swanky-core",
+  "version": "1.0.0",
+  "description": "Core library of Swanky Suite",
+  "author": "Astar network",
+  "license": "MIT",
+  "repository": "https://github.com/AstarNetwork/swanky-cli",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
