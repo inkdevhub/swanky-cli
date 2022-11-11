@@ -1,15 +1,19 @@
 # Swanky CLI
 
+[How to guide on Astar docs page](https://docs.astar.network/docs/wasm/sc-dev/swanky)
+
 <!-- toc -->
-* [Swanky CLI](#swanky-cli)
-* [Usage](#usage)
-* [Commands](#commands)
-* [Config](#config)
+
+- [Swanky CLI](#swanky-cli)
+- [Usage](#usage)
+- [Commands](#commands)
+- [Config](#config)
 <!-- tocstop -->
 
 # Usage
 
 <!-- usage -->
+
 ```sh-session
 $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
@@ -21,33 +25,35 @@ USAGE
   $ swanky COMMAND
 ...
 ```
+
 <!-- usagestop -->
 
 # Commands
 
 <!-- commands -->
-* [`swanky account create`](#swanky-account-create)
-* [`swanky account list`](#swanky-account-list)
-* [`swanky account ls`](#swanky-account-ls)
-* [`swanky check`](#swanky-check)
-* [`swanky contract call`](#swanky-contract-call)
-* [`swanky contract compile CONTRACTNAME`](#swanky-contract-compile-contractname)
-* [`swanky contract deploy CONTRACTNAME`](#swanky-contract-deploy-contractname)
-* [`swanky contract new CONTRACTNAME`](#swanky-contract-new-contractname)
-* [`swanky help [COMMAND]`](#swanky-help-command)
-* [`swanky init PROJECTNAME`](#swanky-init-projectname)
-* [`swanky node purge`](#swanky-node-purge)
-* [`swanky node start`](#swanky-node-start)
-* [`swanky plugins`](#swanky-plugins)
-* [`swanky plugins:install PLUGIN...`](#swanky-pluginsinstall-plugin)
-* [`swanky plugins:inspect PLUGIN...`](#swanky-pluginsinspect-plugin)
-* [`swanky plugins:install PLUGIN...`](#swanky-pluginsinstall-plugin-1)
-* [`swanky plugins:link PLUGIN`](#swanky-pluginslink-plugin)
-* [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin)
-* [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin-1)
-* [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin-2)
-* [`swanky plugins update`](#swanky-plugins-update)
-* [`swanky version`](#swanky-version)
+
+- [`swanky account create`](#swanky-account-create)
+- [`swanky account list`](#swanky-account-list)
+- [`swanky account ls`](#swanky-account-ls)
+- [`swanky check`](#swanky-check)
+- [`swanky contract call`](#swanky-contract-call)
+- [`swanky contract compile CONTRACTNAME`](#swanky-contract-compile-contractname)
+- [`swanky contract deploy CONTRACTNAME`](#swanky-contract-deploy-contractname)
+- [`swanky contract new CONTRACTNAME`](#swanky-contract-new-contractname)
+- [`swanky help [COMMAND]`](#swanky-help-command)
+- [`swanky init PROJECTNAME`](#swanky-init-projectname)
+- [`swanky node purge`](#swanky-node-purge)
+- [`swanky node start`](#swanky-node-start)
+- [`swanky plugins`](#swanky-plugins)
+- [`swanky plugins:install PLUGIN...`](#swanky-pluginsinstall-plugin)
+- [`swanky plugins:inspect PLUGIN...`](#swanky-pluginsinspect-plugin)
+- [`swanky plugins:install PLUGIN...`](#swanky-pluginsinstall-plugin-1)
+- [`swanky plugins:link PLUGIN`](#swanky-pluginslink-plugin)
+- [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin)
+- [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin-1)
+- [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin-2)
+- [`swanky plugins update`](#swanky-plugins-update)
+- [`swanky version`](#swanky-version)
 
 ## `swanky account create`
 
@@ -311,7 +317,7 @@ ALIASES
   $ swanky plugins add
 
 EXAMPLES
-  $ swanky plugins:install myplugin 
+  $ swanky plugins:install myplugin
 
   $ swanky plugins:install https://github.com/someuser/someplugin
 
@@ -371,7 +377,7 @@ ALIASES
   $ swanky plugins add
 
 EXAMPLES
-  $ swanky plugins:install myplugin 
+  $ swanky plugins:install myplugin
 
   $ swanky plugins:install https://github.com/someuser/someplugin
 
@@ -509,6 +515,7 @@ FLAG DESCRIPTIONS
 ```
 
 _See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.1.2/src/commands/version.ts)_
+
 <!-- commandsstop -->
 
 # Config
@@ -549,18 +556,20 @@ A newly generated project will have a `swanky.config.json` file.
     }
   }
 }
-
 ```
 
 ## Network Management
+
 You can deploy/call wasm smart contracts on any chains supporting the substrate contracts module ([`pallet-contracts`](https://github.com/paritytech/substrate/tree/master/frame/contracts)) by swanky-cli.
 `--network` flag is available for `deploy` and `call` commands. For example,
+
 ```
 swanky deploy --account alice --gas 100000000000 --contract flipper --args true --network shibuya
 ```
 
 By default, `swanky init` prepares local/astar/shiden/shibuya endpoint for you.
 To add networks or change endpoint to interact with, you need to update `swanky.config.json` `networks` section.
+
 ```
 "networks": {
   "local": {
