@@ -1176,7 +1176,7 @@
   dependencies:
     "@oclif/core" "^1.20.4"
 
-"@oclif/plugin-not-found@^2.3.5", "@oclif/plugin-not-found@^2.3.7":
+"@oclif/plugin-not-found@^2.3.7":
   version "2.3.9"
   resolved "https://registry.yarnpkg.com/@oclif/plugin-not-found/-/plugin-not-found-2.3.9.tgz#045277bf04c8fd6ee25e68d5355658985c21404a"
   integrity sha512-FJXIa5KmNbCgO8kDVJ23C/SkRRuwMYaRTNs5jejwrwKAm5fPp+TnR1+4pBp64ik7FA806nioqMGlotiyEWfMJA==
