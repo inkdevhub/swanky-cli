@@ -1,0 +1,21 @@
+{
+  "name": "@astar-network/swanky-templates",
+  "version": "1.0.0-alpha.0",
+  "description": "Templates for initialising Swanky projects",
+  "author": "Astar network",
+  "license": "MIT",
+  "main": "./dist/templates.js",
+  "repository": "https://github.com/AstarNetwork/swanky-cli",
+  "dependencies": {
+    "fs-extra": "^10.1.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "build": "shx rm -rf dist && rm -f tsconfig.tsbuildinfo && tsc -b && yarn copy-templates",
+    "copy-templates": "cp -R ./src/templates ./dist"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "gitHead": "c0ddd852bf766d2e0e8de763452a759ec910aff9"
+}

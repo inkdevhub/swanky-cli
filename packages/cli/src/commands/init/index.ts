@@ -6,8 +6,6 @@ import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer = require("inquirer");
 import { choice, email, name, pickLanguage, pickTemplate } from "../../lib/prompts";
 import {
-  getAllTemplateNames,
-  getTemplates,
   checkCliDependencies,
   copyTemplateFiles,
   downloadNode,
@@ -19,7 +17,7 @@ import {
   Spinner,
   swankyNode,
 } from "@astar-network/swanky-core";
-
+import { getAllTemplateNames, getTemplates } from "@astar-network/swanky-templates";
 const {
   DEFAULT_ASTAR_NETWORK_URL,
   DEFAULT_NETWORK_URL,

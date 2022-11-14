@@ -2,15 +2,14 @@ import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
 import { pathExistsSync, writeJSON } from "fs-extra";
 import {
-  getAllTemplateNames,
   getSwankyConfig,
-  getTemplates,
   ensureSwankyProject,
   Spinner,
   checkCliDependencies,
   copyContractTemplateFiles,
   processTemplates,
 } from "@astar-network/swanky-core";
+import { getAllTemplateNames, getTemplates } from "@astar-network/swanky-templates";
 import { email, name, pickLanguage, pickTemplate } from "../../lib/prompts";
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import execa = require("execa");

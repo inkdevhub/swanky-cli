@@ -1,14 +1,13 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import { SignerOptions, SubmittableExtrinsic } from "@polkadot/api/types";
+import { SignerOptions } from "@polkadot/api/types";
 import { Codec, ISubmittableResult, ITuple } from "@polkadot/types/types";
 import { TypeRegistry } from "@polkadot/types";
 import { DispatchError, BlockHash } from "@polkadot/types/interfaces";
 import { ChainAccount } from "./account";
 import BN from "bn.js";
-import { ChainProperty } from "../types";
+import { ChainProperty, ExtrinsicPayload } from "../types";
 
 import { KeyringPair } from "@polkadot/keyring/types";
-type ExtrinsicPayload = SubmittableExtrinsic<"promise">;
 
 const AUTO_CONNECT_MS = 10_000; // [ms]
 

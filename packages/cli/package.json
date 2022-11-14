@@ -1,6 +1,6 @@
 {
   "name": "@astar-network/swanky-cli",
-  "version": "1.0.0-alpha.0+0f2e40e",
+  "version": "1.0.0-alpha.0+c0ddd85",
   "description": "Astar network WASM contract CLI tool",
   "author": "Astar network",
   "bin": {
@@ -17,7 +17,8 @@
     "/oclif.manifest.json"
   ],
   "dependencies": {
-    "@astar-network/swanky-core": "^1.0.0-alpha.0+0f2e40e",
+    "@astar-network/swanky-core": "^1.0.0-alpha.0+c0ddd85",
+    "@astar-network/swanky-templates": "^1.0.0-alpha.0",
     "@oclif/core": "1.20.2",
     "@oclif/plugin-help": "^5.1.17",
     "@oclif/plugin-not-found": "^2.3.5",
@@ -98,14 +99,13 @@
     ]
   },
   "scripts": {
-    "build": "shx rm -rf dist && rm -f tsconfig.tsbuildinfo && tsc -b && yarn copy-template",
+    "build": "shx rm -rf dist && rm -f tsconfig.tsbuildinfo && tsc -b",
     "lint": "eslint . --ext .ts --quiet --config .eslintrc",
     "postpack": "shx rm -f oclif.manifest.json",
     "posttest": "yarn lint",
     "prepack": "yarn build && oclif manifest && oclif readme",
     "test": "mocha --require mocha-suppress-logs --forbid-only -r ts-node/register \"test/**/*.test.ts\"",
-    "version": "oclif readme && git add README.md",
-    "copy-template": "cp -R ./src/templates ./dist/"
+    "version": "oclif readme && git add README.md"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -120,5 +120,5 @@
     "wasm"
   ],
   "types": "dist/index.d.ts",
-  "gitHead": "0f2e40ea319c192a9a54541203c2968bf6f5741d"
+  "gitHead": "c0ddd852bf766d2e0e8de763452a759ec910aff9"
 }
