@@ -83,7 +83,7 @@ export async function downloadNode(projectPath: string, nodeInfo: nodeInfo, spin
 
   if (!dlUrl)
     throw new Error(`Could not download swanky-node. Platform ${process.platform} not supported!`);
-  const compressedFileDetails = await new Promise<DownloadEndedStats>((resolve, reject) => {
+  const dlFileDetails = await new Promise<DownloadEndedStats>((resolve, reject) => {
     const dl = new DownloaderHelper(dlUrl, binPath);
 
     dl.on("progress", (event) => {
@@ -99,17 +99,21 @@ export async function downloadNode(projectPath: string, nodeInfo: nodeInfo, spin
     dl.start().catch((error) => reject(new Error(`Error downloading node: , ${error.message}`)));
   });
 
-  if (compressedFileDetails.incomplete) {
+  if (dlFileDetails.incomplete) {
     throw new Error("Node download incomplete");
   }
 
-  const compressedFilePath = path.resolve(binPath, compressedFileDetails.filePath);
-  const decompressed = await decompress(compressedFilePath, binPath);
-  const nodePath = path.resolve(binPath, decompressed[0].path);
-  await remove(compressedFilePath);
-  await execa.command(`chmod +x ${nodePath}`);
+  if (dlFileDetails.filePath.endsWith(".tar.gz")) {
+    const compressedFilePath = path.resolve(binPath, dlFileDetails.filePath);
+    const decompressed = await decompress(compressedFilePath, binPath);
+    const nodePath = path.resolve(binPath, decompressed[0].path);
+    await remove(compressedFilePath);
+    await execa.command(`chmod +x ${nodePath}`);
 
-  return nodePath;
+    return nodePath;
+  }
+
+  return path.resolve(binPath, dlFileDetails.filePath);
 }
 
 export async function installDeps(projectPath: string) {
