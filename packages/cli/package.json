@@ -1,6 +1,6 @@
 {
   "name": "@astar-network/swanky-cli",
-  "version": "1.0.0-alpha.0",
+  "version": "1.0.0-alpha.0+0f2e40e",
   "description": "Astar network WASM contract CLI tool",
   "author": "Astar network",
   "bin": {
@@ -17,7 +17,7 @@
     "/oclif.manifest.json"
   ],
   "dependencies": {
-    "@astar-network/swanky-core": "^1.0.0-alpha.0",
+    "@astar-network/swanky-core": "^1.0.0-alpha.0+0f2e40e",
     "@oclif/core": "1.20.2",
     "@oclif/plugin-help": "^5.1.17",
     "@oclif/plugin-not-found": "^2.3.5",
@@ -119,5 +119,6 @@
     "shiden",
     "wasm"
   ],
-  "types": "dist/index.d.ts"
+  "types": "dist/index.d.ts",
+  "gitHead": "0f2e40ea319c192a9a54541203c2968bf6f5741d"
 }
