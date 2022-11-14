@@ -2,7 +2,7 @@ import { readdirSync } from "fs-extra";
 import path = require("node:path");
 
 export function getTemplates(language: "ink" | "ask") {
-  const templatesPath = path.resolve(__dirname, "../templates");
+  const templatesPath = path.resolve(__dirname, "templates");
   const contractTemplatesPath = path.resolve(templatesPath, "contracts", language);
   const fileList = readdirSync(contractTemplatesPath, {
     withFileTypes: true,
