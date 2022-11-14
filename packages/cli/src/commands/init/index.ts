@@ -15,14 +15,14 @@ import inquirer = require("inquirer");
 import { choice, email, name, pickLanguage, pickTemplate } from "../../lib/prompts";
 import { Spinner } from "../../lib/spinner";
 import { ChainAccount } from "../../lib/account";
-import type { SwankyConfig } from "../../types";
-import { getAllTemplateNames, getTemplates } from "../../lib/command-utils";
+import type { SwankyConfig } from "@astar-network/swanky-core";
+import { getAllTemplateNames, getTemplates } from "@astar-network/swanky-core";
 import {
   DEFAULT_ASTAR_NETWORK_URL,
   DEFAULT_NETWORK_URL,
   DEFAULT_SHIBUYA_NETWORK_URL,
   DEFAULT_SHIDEN_NETWORK_URL,
-} from "../../lib/consts";
+} from "@astar-network/swanky-core";
 
 export class Init extends Command {
   static description = "Generate a new smart contract environment";

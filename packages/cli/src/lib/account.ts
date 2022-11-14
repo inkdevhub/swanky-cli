@@ -1,7 +1,7 @@
 import { mnemonicGenerate } from "@polkadot/util-crypto";
 import { Keyring } from "@polkadot/keyring";
 import { KeyringPair } from "@polkadot/keyring/types";
-import { ChainProperty, KeypairType } from "../types";
+import { ChainProperty, KeypairType } from "@astar-network/swanky-core/dist";
 
 interface IChainAccount {
   pair: KeyringPair;
@@ -24,11 +24,7 @@ export class ChainAccount implements IChainAccount {
   }
 
   public get pair(): KeyringPair {
-    return this._keyring.addFromUri(
-      this._mnemonic,
-      { name: "Default" },
-      this._keyringType
-    );
+    return this._keyring.addFromUri(this._mnemonic, { name: "Default" }, this._keyringType);
   }
 
   public get keyring(): Keyring {

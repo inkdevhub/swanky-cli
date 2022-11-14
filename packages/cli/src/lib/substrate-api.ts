@@ -5,8 +5,12 @@ import { TypeRegistry } from "@polkadot/types";
 import { DispatchError, BlockHash } from "@polkadot/types/interfaces";
 import { ChainAccount } from "./account";
 import BN from "bn.js";
-import { ExtrinsicPayload, ChainProperty } from "../types";
+import { ChainProperty } from "@astar-network/swanky-core/dist/types";
+import { SubmittableExtrinsic } from "@polkadot/api/types";
+
 import { KeyringPair } from "@polkadot/keyring/types";
+type ExtrinsicPayload = SubmittableExtrinsic<"promise">;
+
 const AUTO_CONNECT_MS = 10_000; // [ms]
 
 export class ChainApi {
@@ -80,28 +84,16 @@ export class ChainApi {
     return this._api?.rpc.chain.getBlockHash(blockNumber);
   }
 
-  public buildTxCall(
-    extrinsic: string,
-    method: string,
-    ...args: any[]
-  ): ExtrinsicPayload {
+  public buildTxCall(extrinsic: string, method: string, ...args: any[]): ExtrinsicPayload {
     const ext = this._api?.tx[extrinsic][method](...args);
     if (ext) return ext;
-    throw new Error(
-      `Undefined extrinsic call ${extrinsic} with method ${method}`
-    );
+    throw new Error(`Undefined extrinsic call ${extrinsic} with method ${method}`);
   }
 
-  public buildStorageQuery(
-    extrinsic: string,
-    method: string,
-    ...args: any[]
-  ): Promise<Codec> {
+  public buildStorageQuery(extrinsic: string, method: string, ...args: any[]): Promise<Codec> {
     const ext = this._api?.query[extrinsic][method](...args);
     if (ext) return ext;
-    throw new Error(
-      `Undefined storage query ${extrinsic} for method ${method}`
-    );
+    throw new Error(`Undefined storage query ${extrinsic} for method ${method}`);
   }
 
   public wrapBatchAll(txs: ExtrinsicPayload[]): ExtrinsicPayload {
@@ -117,9 +109,7 @@ export class ChainApi {
   }
 
   public async nonce(account: ChainAccount): Promise<number | undefined> {
-    return (
-      (await this._api?.query.system.account(account.pair.address)) as any
-    )?.nonce.toNumber();
+    return ((await this._api?.query.system.account(account.pair.address)) as any)?.nonce.toNumber();
   }
 
   public async getBalance(account: ChainAccount): Promise<BN> {
@@ -138,10 +128,7 @@ export class ChainApi {
     return tx.signAndSend(signer, { nonce: -1, ...options }, (result) => {
       // handle transaction errors
       result.events
-        .filter(
-          (record): boolean =>
-            Boolean(record.event) && record.event.section !== "democracy"
-        )
+        .filter((record): boolean => Boolean(record.event) && record.event.section !== "democracy")
         .forEach(({ event: { data, method, section } }) => {
           if (section === "system" && method === "ExtrinsicFailed") {
             const [dispatchError] = data as unknown as ITuple<[DispatchError]>;
@@ -166,9 +153,7 @@ export class ChainApi {
             throw new Error(message);
           } else if (section === "utility" && method === "BatchInterrupted") {
             const anyData = data as any;
-            const error = anyData[1].registry.findMetaError(
-              anyData[1].asModule
-            );
+            const error = anyData[1].registry.findMetaError(anyData[1].asModule);
             const message = `${error.section}.${error.name}`;
             console.error(`error: ${section}.${method} ${message}`);
           }

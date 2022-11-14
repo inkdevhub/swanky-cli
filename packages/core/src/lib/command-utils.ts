@@ -1,9 +1,9 @@
-import execa = require("execa");
+import execa from "execa";
 import { readdirSync } from "fs-extra";
 import fs = require("fs-extra");
 import { ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import path = require("node:path");
-import { DEFAULT_NETWORK_URL } from "./consts";
+import { DEFAULT_NETWORK_URL } from "./consts.js";
 import { BuildData, ContractData, SwankyConfig } from "../types";
 
 export async function commandStdoutOrNull(command: string): Promise<string | null> {

@@ -1,13 +1,13 @@
 import { Command, Flags } from "@oclif/core";
 import execa from "execa";
-import { ensureSwankyProject, getSwankyConfig } from "../../lib/command-utils";
+import { ensureSwankyProject, getSwankyConfig } from "@astar-network/swanky-core";
 export class StartNode extends Command {
   static description = "Start a local node";
 
   static flags = {
     tmp: Flags.boolean({
       char: "t",
-      description: "Run node with non-persistent mode"
+      description: "Run node with non-persistent mode",
     }),
   };
 

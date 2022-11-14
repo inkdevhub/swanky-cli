@@ -17,6 +17,7 @@
     "/oclif.manifest.json"
   ],
   "dependencies": {
+    "@astar-network/swanky-core": "*",
     "@oclif/core": "1.20.2",
     "@oclif/plugin-help": "^5.1.17",
     "@oclif/plugin-not-found": "^2.3.5",

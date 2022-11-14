@@ -5,12 +5,16 @@ import { readJSON, readFile, writeJSON } from "fs-extra";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { ChainApi } from "../../lib/substrate-api";
 import { KeyringPair } from "@polkadot/keyring/types";
-import { ensureSwankyProject, getSwankyConfig, resolveNetworkUrl } from "../../lib/command-utils";
+import {
+  ensureSwankyProject,
+  getSwankyConfig,
+  resolveNetworkUrl,
+} from "@astar-network/swanky-core";
 import { ChainAccount } from "../../lib/account";
 import { Spinner } from "../../lib/spinner";
 import inquirer from "inquirer";
-import { decrypt } from "../../lib/crypto";
-import { AccountData, Encrypted } from "../../types";
+import { decrypt } from "@astar-network/swanky-core";
+import { AccountData, Encrypted } from "@astar-network/swanky-core";
 import chalk = require("chalk");
 
 export class DeployContract extends Command {

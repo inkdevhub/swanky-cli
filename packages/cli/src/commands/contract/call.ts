@@ -1,7 +1,7 @@
 import { Command, Flags } from "@oclif/core";
 import { execSync } from "node:child_process";
 import path = require("node:path");
-import { getSwankyConfig, resolveNetworkUrl } from "../../lib/command-utils";
+import { getSwankyConfig, resolveNetworkUrl } from "@astar-network/swanky-core";
 
 export class CallContract extends Command {
   static description = "Call a method on a smart contract";

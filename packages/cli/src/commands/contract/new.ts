@@ -1,8 +1,8 @@
 import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
 import { pathExistsSync, writeJSON } from "fs-extra";
-import { getAllTemplateNames, getSwankyConfig, getTemplates } from "../../lib/command-utils";
-import { ensureSwankyProject } from "../../lib/command-utils";
+import { getAllTemplateNames, getSwankyConfig, getTemplates } from "@astar-network/swanky-core";
+import { ensureSwankyProject } from "@astar-network/swanky-core";
 import { email, name, pickLanguage, pickTemplate } from "../../lib/prompts";
 import { Spinner } from "../../lib/spinner";
 import { checkCliDependencies, copyContractTemplateFiles, processTemplates } from "../../lib/tasks";
