@@ -1,12 +1,11 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import { SignerOptions } from "@polkadot/api/types";
+import { SignerOptions, SubmittableExtrinsic } from "@polkadot/api/types";
 import { Codec, ISubmittableResult, ITuple } from "@polkadot/types/types";
 import { TypeRegistry } from "@polkadot/types";
 import { DispatchError, BlockHash } from "@polkadot/types/interfaces";
 import { ChainAccount } from "./account";
 import BN from "bn.js";
-import { ChainProperty } from "@astar-network/swanky-core/dist/types";
-import { SubmittableExtrinsic } from "@polkadot/api/types";
+import { ChainProperty } from "../types";
 
 import { KeyringPair } from "@polkadot/keyring/types";
 type ExtrinsicPayload = SubmittableExtrinsic<"promise">;

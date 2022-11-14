@@ -1,9 +1,9 @@
 import { Command, Flags } from "@oclif/core";
 import chalk = require("chalk");
 import { writeJSON } from "fs-extra";
-import { ChainAccount } from "../../lib/account";
+import { ChainAccount } from "@astar-network/swanky-core";
 import { ensureSwankyProject, getSwankyConfig } from "@astar-network/swanky-core";
-import { encrypt } from "@astar-network/swanky-core";
+import { encrypt } from "@astar-network/swanky-core/dist/lib";
 import inquirer from "inquirer";
 import { AccountData } from "@astar-network/swanky-core";
 export class CreateAccount extends Command {

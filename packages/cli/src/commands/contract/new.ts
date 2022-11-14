@@ -1,11 +1,17 @@
 import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
 import { pathExistsSync, writeJSON } from "fs-extra";
-import { getAllTemplateNames, getSwankyConfig, getTemplates } from "@astar-network/swanky-core";
-import { ensureSwankyProject } from "@astar-network/swanky-core";
+import {
+  getAllTemplateNames,
+  getSwankyConfig,
+  getTemplates,
+  ensureSwankyProject,
+  Spinner,
+  checkCliDependencies,
+  copyContractTemplateFiles,
+  processTemplates,
+} from "@astar-network/swanky-core";
 import { email, name, pickLanguage, pickTemplate } from "../../lib/prompts";
-import { Spinner } from "../../lib/spinner";
-import { checkCliDependencies, copyContractTemplateFiles, processTemplates } from "../../lib/tasks";
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import execa = require("execa");
 import inquirer = require("inquirer");

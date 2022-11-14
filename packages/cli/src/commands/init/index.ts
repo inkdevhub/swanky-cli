@@ -1,29 +1,31 @@
 import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
 import { ensureDir, writeJSON } from "fs-extra";
-import { swankyNode } from "../../lib/nodeInfo";
-import {
-  checkCliDependencies,
-  copyTemplateFiles,
-  downloadNode,
-  installDeps,
-  processTemplates,
-} from "../../lib/tasks";
 import execa = require("execa");
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer = require("inquirer");
 import { choice, email, name, pickLanguage, pickTemplate } from "../../lib/prompts";
-import { Spinner } from "../../lib/spinner";
-import { ChainAccount } from "../../lib/account";
-import type { SwankyConfig } from "@astar-network/swanky-core";
-import { getAllTemplateNames, getTemplates } from "@astar-network/swanky-core";
 import {
+  getAllTemplateNames,
+  getTemplates,
+  checkCliDependencies,
+  copyTemplateFiles,
+  downloadNode,
+  installDeps,
+  ChainAccount,
+  processTemplates,
+  SwankyConfig,
+  consts,
+  Spinner,
+  swankyNode,
+} from "@astar-network/swanky-core";
+
+const {
   DEFAULT_ASTAR_NETWORK_URL,
   DEFAULT_NETWORK_URL,
   DEFAULT_SHIBUYA_NETWORK_URL,
   DEFAULT_SHIDEN_NETWORK_URL,
-} from "@astar-network/swanky-core";
-
+} = consts;
 export class Init extends Command {
   static description = "Generate a new smart contract environment";
 

@@ -1,7 +1,7 @@
 import { mnemonicGenerate } from "@polkadot/util-crypto";
 import { Keyring } from "@polkadot/keyring";
 import { KeyringPair } from "@polkadot/keyring/types";
-import { ChainProperty, KeypairType } from "@astar-network/swanky-core/dist";
+import { ChainProperty, KeypairType } from "../types";
 
 interface IChainAccount {
   pair: KeyringPair;

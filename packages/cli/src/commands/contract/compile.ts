@@ -6,9 +6,9 @@ import {
   ensureSwankyProject,
   getBuildCommandFor,
   getSwankyConfig,
+  BuildData,
+  Spinner
 } from "@astar-network/swanky-core";
-import { Spinner } from "../../lib/spinner";
-import { BuildData } from "@astar-network/swanky-core";
 import { writeJSON } from "fs-extra";
 export class CompileContract extends Command {
   static description = "Compile the smart contract(s) in your contracts directory";
