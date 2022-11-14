@@ -17,7 +17,7 @@ $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
 running command...
 $ swanky (--version|-V|-v)
-@astar-network/swanky-cli/1.0.0-alpha.0 darwin-x64 node-v18.2.0
+@astar-network/swanky-cli/1.0.0-alpha.2+cccb996 darwin-x64 node-v18.2.0
 $ swanky --help [COMMAND]
 USAGE
   $ swanky COMMAND
@@ -35,7 +35,9 @@ USAGE
 * [`swanky contract call`](#swanky-contract-call)
 * [`swanky contract compile CONTRACTNAME`](#swanky-contract-compile-contractname)
 * [`swanky contract deploy CONTRACTNAME`](#swanky-contract-deploy-contractname)
+* [`swanky contract new CONTRACTNAME`](#swanky-contract-new-contractname)
 * [`swanky help [COMMAND]`](#swanky-help-command)
+* [`swanky init PROJECTNAME`](#swanky-init-projectname)
 * [`swanky node purge`](#swanky-node-purge)
 * [`swanky node start`](#swanky-node-start)
 * [`swanky plugins`](#swanky-plugins)
@@ -107,7 +109,7 @@ DESCRIPTION
   Check installed package versions and compatibility
 ```
 
-_See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v1.0.0-alpha.0/dist/commands/check/index.ts)_
+_See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v1.0.0-alpha.2+cccb996/dist/commands/check/index.ts)_
 
 ## `swanky contract call`
 
@@ -169,6 +171,26 @@ DESCRIPTION
   Deploy contract to a running node
 ```
 
+## `swanky contract new CONTRACTNAME`
+
+Generate a new smart contract template inside a project
+
+```
+USAGE
+  $ swanky contract new [CONTRACTNAME] [--template blank|erc20token|flipper|blank|flipper|psp22] [-l ink|ask] [-v]
+
+ARGUMENTS
+  CONTRACTNAME  Name of new contract
+
+FLAGS
+  -l, --language=<option>  <options: ink|ask>
+  -v, --verbose
+  --template=<option>      <options: blank|erc20token|flipper|blank|flipper|psp22>
+
+DESCRIPTION
+  Generate a new smart contract template inside a project
+```
+
 ## `swanky help [COMMAND]`
 
 Display help for swanky.
@@ -187,7 +209,31 @@ DESCRIPTION
   Display help for swanky.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.1.17/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.1.19/src/commands/help.ts)_
+
+## `swanky init PROJECTNAME`
+
+Generate a new smart contract environment
+
+```
+USAGE
+  $ swanky init [PROJECTNAME] [--swanky-node] [-t blank|erc20token|flipper|blank|flipper|psp22] [-l
+    ask|ink] [-v]
+
+ARGUMENTS
+  PROJECTNAME  directory name of new project
+
+FLAGS
+  -l, --language=<option>  <options: ask|ink>
+  -t, --template=<option>  <options: blank|erc20token|flipper|blank|flipper|psp22>
+  -v, --verbose
+  --swanky-node
+
+DESCRIPTION
+  Generate a new smart contract environment
+```
+
+_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v1.0.0-alpha.2+cccb996/dist/commands/init/index.ts)_
 
 ## `swanky node purge`
 
@@ -234,7 +280,7 @@ EXAMPLES
   $ swanky plugins
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.1.4/src/commands/plugins/index.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.1.7/src/commands/plugins/index.ts)_
 
 ## `swanky plugins:install PLUGIN...`
 

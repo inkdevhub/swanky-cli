@@ -1,6 +1,6 @@
 {
   "name": "@astar-network/swanky-core",
-  "version": "1.0.0-alpha.0+c0ddd85",
+  "version": "1.0.0-alpha.2+cccb996",
   "description": "Core library of Swanky Suite",
   "author": "Astar network",
   "license": "MIT",
@@ -26,5 +26,8 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "gitHead": "c0ddd852bf766d2e0e8de763452a759ec910aff9"
+  "gitHead": "cccb996036cf2b6fbbe4e1f02c31079ba99fc517",
+  "publishConfig": {
+    "access": "public"
+  }
 }
