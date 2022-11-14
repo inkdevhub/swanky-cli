@@ -39,7 +39,6 @@
     "jszip": "^3.10.1",
     "listr2": "^5.0.1",
     "mock-spawn": "^0.2.6",
-    "node-downloader-helper": "^2.1.4",
     "ora": "5.4.1",
     "rimraf": "^3.0.2",
     "semver": "^7.3.7",
