@@ -16,7 +16,11 @@
     "lerna": "^6.0.3",
     "prettier": "^2.7.1"
   },
-  "scripts": {},
+  "scripts": {
+    "lint": "lerna run lint",
+    "test": "lerna run test",
+    "build": "lerna run build"
+  },
   "engines": {
     "node": ">=18.0.0"
   },
