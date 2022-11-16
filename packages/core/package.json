@@ -29,7 +29,8 @@
     "tslib": "^2.4.1"
   },
   "scripts": {
-    "build": "shx rm -rf dist && rm -f tsconfig.tsbuildinfo && tsc -b"
+    "build": "shx rm -rf dist && rm -f tsconfig.tsbuildinfo && tsc -b",
+    "lint": "eslint . --ext .ts --quiet --config .eslintrc"
   },
   "engines": {
     "node": ">=18.0.0"
