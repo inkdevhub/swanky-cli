@@ -1,115 +1,25 @@
 {
-  "name": "@astar-network/swanky-cli",
-  "version": "0.3.0",
-  "description": "Astar network WASM contract CLI tool",
+  "name": "@astar-network/swanky-suite",
+  "version": "1.0.0",
+  "private": true,
+  "description": "All in one WASM smart contract development toolset",
   "author": "Astar network",
-  "bin": {
-    "swanky": "./bin/run"
-  },
-  "homepage": "https://github.com/AstarNetwork/swanky-cli",
   "license": "MIT",
-  "main": "dist/index.js",
   "repository": "https://github.com/AstarNetwork/swanky-cli",
-  "files": [
-    "/bin",
-    "/dist",
-    "/npm-shrinkwrap.json",
-    "/oclif.manifest.json"
-  ],
-  "dependencies": {
-    "@oclif/core": "1.20.2",
-    "@oclif/plugin-help": "^5.1.17",
-    "@oclif/plugin-version": "^1.1.3",
-    "@oclif/plugin-not-found": "^2.3.5",
-    "@oclif/plugin-plugins": "^2.1.4",
-    "@polkadot/api": "^9.0.1",
-    "@polkadot/api-contract": "^9.0.1",
-    "@polkadot/keyring": "^10.1.2",
-    "@polkadot/util": "^10.1.2",
-    "@polkadot/util-crypto": "^10.1.2",
-    "bn.js": "^5.2.1",
-    "chalk": "4",
-    "change-case": "^4.1.2",
-    "command-exists": "^1.2.9",
-    "debug": "^4.3.4",
-    "decompress": "^4.2.1",
-    "enquirer": "^2.3.6",
-    "eslint-plugin-unicorn": "^43.0.2",
-    "execa": "5.1.1",
-    "fs-extra": "^10.1.0",
-    "handlebars": "^4.7.7",
-    "inquirer": "^8.0.0",
-    "jszip": "^3.10.1",
-    "listr2": "^5.0.1",
-    "mock-spawn": "^0.2.6",
-    "node-downloader-helper": "^2.1.4",
-    "ora": "5.4.1",
-    "rimraf": "^3.0.2",
-    "semver": "^7.3.7",
-    "toml": "^3.0.0"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "@oclif/test": "^2.2.8",
-    "@polkadot/api-augment": "^9.0.1",
-    "@polkadot/types": "^9.0.1",
-    "@types/chai": "^4",
-    "@types/debug": "^4.1.7",
-    "@types/download": "^8.0.1",
-    "@types/fs-extra": "^9.0.13",
-    "@types/inquirer": "^8.0.0",
-    "@types/mocha": "^9.0.0",
-    "@types/node": "^18.11.9",
-    "@types/progress": "^2.0.5",
-    "@types/semver": "^7.3.10",
-    "@typescript-eslint/eslint-plugin": "^5.35.1",
-    "@typescript-eslint/parser": "^5.35.1",
-    "chai": "^4",
+    "@typescript-eslint/eslint-plugin": "^5.43.0",
+    "@typescript-eslint/parser": "^5.43.0",
     "eslint": "^8.26.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
-    "globby": "11",
-    "mocha": "^10.0.0",
-    "mocha-suppress-logs": "^0.3.1",
-    "oclif": "^3.2.24",
-    "prettier": "^2.7.1",
-    "shx": "^0.3.3",
-    "ts-node": "^10.9.1",
-    "tslib": "^2.4.1",
-    "typescript": "4.8.4"
-  },
-  "oclif": {
-    "bin": "swanky",
-    "dirname": "swanky",
-    "commands": "./dist/commands",
-    "topicSeparator": " ",
-    "additionalHelpFlags": [
-      "-h"
-    ],
-    "additionalVersionFlags": [
-      "-v",
-      "-V"
-    ],
-    "topics": {
-      "init": {
-        "description": "Init a new WASM contract project"
-      }
-    },
-    "plugins": [
-      "@oclif/plugin-help",
-      "@oclif/plugin-version",
-      "@oclif/plugin-not-found",
-      "@oclif/plugin-plugins"
-    ]
+    "lerna": "^6.0.3",
+    "prettier": "^2.7.1"
   },
   "scripts": {
-    "build": "shx rm -rf dist && rm -f tsconfig.tsbuildinfo && tsc -b && yarn copy-template",
-    "lint": "eslint . --ext .ts --quiet --config .eslintrc",
-    "postpack": "shx rm -f oclif.manifest.json",
-    "posttest": "yarn lint",
-    "prepack": "yarn build && oclif manifest && oclif readme",
-    "test": "mocha --require mocha-suppress-logs --forbid-only -r ts-node/register \"test/**/*.test.ts\"",
-    "version": "oclif readme && git add README.md",
-    "copy-template": "cp -R ./src/templates ./dist/"
+    "lint": "lerna run lint",
+    "test": "lerna run test",
+    "build": "lerna run build"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -123,5 +33,7 @@
     "shiden",
     "wasm"
   ],
-  "types": "dist/index.d.ts"
+  "workspaces": [
+    "packages/*"
+  ]
 }

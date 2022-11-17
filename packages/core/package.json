@@ -1,0 +1,42 @@
+{
+  "name": "@astar-network/swanky-core",
+  "version": "1.0.0-alpha.2+cccb996",
+  "description": "Core library of Swanky Suite",
+  "author": "Astar network",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "repository": "https://github.com/AstarNetwork/swanky-cli",
+  "dependencies": {
+    "@polkadot/api": "^9.8.1",
+    "@polkadot/api-contract": "^9.8.1",
+    "@polkadot/keyring": "^10.1.12",
+    "@polkadot/types": "^9.8.1",
+    "@polkadot/util": "^10.1.12",
+    "@polkadot/util-crypto": "^10.1.12",
+    "bn.js": "^5.2.1",
+    "decompress": "^4.2.1",
+    "execa": "5.1.1",
+    "fs-extra": "^10.1.0",
+    "globby": "11",
+    "handlebars": "^4.7.7",
+    "node-downloader-helper": "^2.1.4",
+    "ora": "^6.1.2"
+  },
+  "devDependencies": {
+    "@polkadot/api-augment": "^9.8.1",
+    "@polkadot/types": "^9.8.1",
+    "@types/decompress": "^4.2.4",
+    "tslib": "^2.4.1"
+  },
+  "scripts": {
+    "build": "shx rm -rf dist && rm -f tsconfig.tsbuildinfo && tsc -b",
+    "lint": "eslint . --ext .ts --quiet --config .eslintrc"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "gitHead": "cccb996036cf2b6fbbe4e1f02c31079ba99fc517",
+  "publishConfig": {
+    "access": "public"
+  }
+}
