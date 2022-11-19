@@ -116,7 +116,14 @@ export class Init extends Command {
     }
 
     await ensureDir(path.resolve(projectPath, "artefacts", answers.contractName));
-    await spinner.runCommand(() => installDeps(projectPath), "Installing dependencies");
+
+    await spinner.runCommand(
+      () => installDeps(projectPath),
+      "Installing dependencies",
+      "",
+      "",
+      false
+    );
 
     const config: SwankyConfig = {
       node: {
