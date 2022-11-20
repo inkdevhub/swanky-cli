@@ -87,7 +87,7 @@ export async function copyArtefactsFor(
     ),
     fs.copyFile(
       `${buildPaths[language]}/metadata.json`,
-      `${buildData.artefactsPath}/metadata.json`
+      `${buildData.artefactsPath}/${contractName}.json`
     ),
   ]);
 
