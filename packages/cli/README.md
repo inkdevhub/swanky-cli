@@ -559,7 +559,7 @@ You can deploy/call wasm smart contracts on any chains supporting the substrate 
 `--network` flag is available for `deploy` and `call` commands. For example,
 
 ```
-swanky deploy --account alice --gas 100000000000 --contract flipper --args true --network shibuya
+swanky contract deploy flipper --account alice --gas 100000000000 --args true --network shibuya
 ```
 
 By default, `swanky init` prepares local/astar/shiden/shibuya endpoint for you.
