@@ -7,7 +7,8 @@ import {
   getBuildCommandFor,
   getSwankyConfig,
   BuildData,
-  Spinner
+  Spinner,
+  generateTypes,
 } from "@astar-network/swanky-core";
 import { writeJSON } from "fs-extra";
 export class CompileContract extends Command {
@@ -54,7 +55,6 @@ export class CompileContract extends Command {
       async () => {
         return new Promise<void>((resolve, reject) => {
           const build = getBuildCommandFor(contractInfo.language, contractPath);
-
           build.stdout.on("data", () => spinner.ora.clear());
           build.stdout.pipe(process.stdout);
           if (flags.verbose) {
@@ -78,6 +78,10 @@ export class CompileContract extends Command {
     const buildData = (await spinner.runCommand(async () => {
       return copyArtefactsFor(contractInfo.language, contractInfo.name, contractPath);
     }, "Copying artefacts")) as BuildData;
+
+    await spinner.runCommand(async () => {
+      await generateTypes(buildData.artefactsPath);
+    }, "Generating types");
 
     await spinner.runCommand(async () => {
       contractInfo.build = buildData;

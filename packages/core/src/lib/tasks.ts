@@ -126,3 +126,13 @@ export async function installDeps(projectPath: string) {
     await execa.command(installCommand, { cwd: projectPath });
   }
 }
+
+export async function generateTypes(artefactsPath: string) {
+  try {
+    await execa.command(`npx typechain-polkadot --in . --out typedContract`, {
+      cwd: artefactsPath,
+    });
+  } catch (error) {
+    console.error(error);
+  }
+}

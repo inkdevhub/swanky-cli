@@ -13,6 +13,7 @@
     "@polkadot/types": "^9.8.1",
     "@polkadot/util": "^10.1.12",
     "@polkadot/util-crypto": "^10.1.12",
+    "@supercolony/typechain-polkadot": "^0.5.0",
     "bn.js": "^5.2.1",
     "decompress": "^4.2.1",
     "execa": "5.1.1",
