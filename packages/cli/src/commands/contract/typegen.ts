@@ -1,4 +1,4 @@
-import { Command, Flags } from "@oclif/core";
+import { Command } from "@oclif/core";
 import path = require("node:path");
 import { readdirSync } from "node:fs";
 import {
@@ -8,21 +8,13 @@ import {
   generateTypes,
 } from "@astar-network/swanky-core";
 export class CompileContract extends Command {
-  static description = "Compile the smart contract(s) in your contracts directory";
-
-  static flags = {
-    verbose: Flags.boolean({
-      default: false,
-      char: "v",
-      description: "Display additional compilation output",
-    }),
-  };
+  static description = "Generate types from compiled contract metadata";
 
   static args = [
     {
       name: "contractName",
       required: true,
-      description: "Name of the contract to compile",
+      description: "Name of the contract",
     },
   ];
 
