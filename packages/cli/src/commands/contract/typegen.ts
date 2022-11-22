@@ -39,12 +39,10 @@ export class CompileContract extends Command {
       this.error(`Path to contract ${args.contractName} does not exist: ${contractPath}`);
     }
 
-    if (!contractInfo.build) {
-      this.error(`Cannot find build data for ${args.contractName} contract in swanky.config.json`);
-    }
-    const buildData = contractInfo.build;
+    const testPath = path.resolve(`test/${args.contractName}`);
+
     await spinner.runCommand(async () => {
-      await generateTypes(buildData.artefactsPath);
+      await generateTypes(testPath);
     }, "Generating types");
   }
 }

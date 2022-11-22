@@ -80,7 +80,8 @@ export class CompileContract extends Command {
     }, "Copying artefacts")) as BuildData;
 
     await spinner.runCommand(async () => {
-      await generateTypes(buildData.artefactsPath);
+      const testPath = path.resolve(`test/${args.contractName}`);
+      await generateTypes(testPath);
     }, "Generating types");
 
     await spinner.runCommand(async () => {

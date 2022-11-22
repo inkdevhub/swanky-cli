@@ -1,5 +1,5 @@
 import execa from "execa";
-import { ensureDir, rename, copy, readFile, rm, writeFile, remove } from "fs-extra";
+import { ensureDir, rename, copy, readFile, rm, writeFile, remove, pathExists } from "fs-extra";
 import path from "node:path";
 import globby from "globby";
 import handlebars from "handlebars";
@@ -127,10 +127,15 @@ export async function installDeps(projectPath: string) {
   }
 }
 
-export async function generateTypes(artefactsPath: string) {
+export async function generateTypes(destinationPath: string) {
   try {
+    const targetPath = path.resolve(destinationPath, "typedContract");
+    const targetPathExists = await pathExists(targetPath);
+    if (targetPathExists) {
+      await remove(targetPath);
+    }
     await execa.command(`npx typechain-polkadot --in . --out typedContract`, {
-      cwd: artefactsPath,
+      cwd: destinationPath,
     });
   } catch (error) {
     console.error(error);
