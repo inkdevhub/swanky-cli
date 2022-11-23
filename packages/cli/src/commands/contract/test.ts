@@ -60,7 +60,7 @@ export class CompileContract extends Command {
       },
     });
 
-    const tests = await globby(`${path.resolve("test", args.contractName)}/*.test.*`);
+    const tests = await globby(`${path.resolve("test", args.contractName)}/*.test.ts`);
 
     mocha.addFile;
     tests.forEach((test) => {

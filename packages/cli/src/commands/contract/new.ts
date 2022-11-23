@@ -1,6 +1,6 @@
 import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
-import { pathExistsSync, writeJSON } from "fs-extra";
+import { ensureDir, pathExistsSync, writeJSON } from "fs-extra";
 import {
   getSwankyConfig,
   ensureSwankyProject,
@@ -108,6 +108,9 @@ export class NewContract extends Command {
         }),
       "Processing contract templates"
     );
+
+    await ensureDir(path.resolve(projectPath, "artefacts", args.contractName));
+    await ensureDir(path.resolve(projectPath, "test", args.contractName));
 
     await spinner.runCommand(async () => {
       config.contracts[args.contractName] = {

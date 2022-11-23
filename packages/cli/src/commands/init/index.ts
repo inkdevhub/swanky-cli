@@ -116,6 +116,7 @@ export class Init extends Command {
     }
 
     await ensureDir(path.resolve(projectPath, "artefacts", answers.contractName));
+    await ensureDir(path.resolve(projectPath, "test", answers.contractName));
 
     await spinner.runCommand(
       () => installDeps(projectPath),
