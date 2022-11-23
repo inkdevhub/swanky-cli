@@ -8,6 +8,5 @@
     "noImplicitAny": false
   },
   "include": ["**/*.ts"],
-  "exclude": ["node_modules"],
-  "files": ["./swanky.config.ts"]
+  "exclude": ["node_modules"]
 }
