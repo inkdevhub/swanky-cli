@@ -1,9 +1,11 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![feature(min_specialization)]
 
-#[brush::contract]
+#[openbrush::contract]
 pub mod {{contract_name_snake}} {
     use ink_storage::traits::SpreadAllocate;
+    use ink_lang::codegen::Env;
+    use ink_lang::codegen::EmitEvent;
     use openbrush::{
         contracts::psp22::*,
         traits::{
@@ -12,34 +14,34 @@ pub mod {{contract_name_snake}} {
         },
     };
 
-        #[ink(event)]
-        pub struct Transfer {
-            #[ink(topic)]
-            from: Option<AccountId>,
-            #[ink(topic)]
-            to: Option<AccountId>,
-            value: Balance,
-        }
+    #[ink(event)]
+    pub struct Transfer {
+        #[ink(topic)]
+        from: Option<AccountId>,
+        #[ink(topic)]
+        to: Option<AccountId>,
+        value: Balance,
+    }
 
-        #[ink(event)]
-        pub struct Approval {
-            #[ink(topic)]
-            owner: AccountId,
-            #[ink(topic)]
-            spender: AccountId,
-            value: Balance,
-        }
+    #[ink(event)]
+    pub struct Approval {
+        #[ink(topic)]
+        owner: AccountId,
+        #[ink(topic)]
+        spender: AccountId,
+        value: Balance,
+    }
 
     #[ink(storage)]
     #[derive(Default, SpreadAllocate, Storage)]
-    pub struct Contract {
+    pub struct {{contract_name_pascal}} {
         #[storage_field]
         psp22: psp22::Data,
         // fields for hater logic
         hated_account: AccountId,
     }
 
-    impl Transfer for {{contract_name_pascal}} {
+    impl psp22::Transfer for {{contract_name_pascal}} {
         // Let's override method to reject transactions to bad account
         fn _before_token_transfer(
             &mut self,
