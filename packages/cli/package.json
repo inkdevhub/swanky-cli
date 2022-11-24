@@ -1,6 +1,6 @@
 {
   "name": "@astar-network/swanky-cli",
-  "version": "1.0.0-beta.3",
+  "version": "1.0.0-beta.4",
   "description": "Astar network WASM contract CLI tool",
   "author": "Astar network",
   "bin": {
@@ -31,11 +31,11 @@
     "globby": "11",
     "inquirer": "^8.0.0",
     "listr2": "^5.0.1",
-    "semver": "^7.3.7",
-    "toml": "^3.0.0",
     "mocha": "^10.0.0",
     "mocha-suppress-logs": "^0.3.1",
-    "mochawesome": "^7.1.3"
+    "mochawesome": "^7.1.3",
+    "semver": "^7.3.7",
+    "toml": "^3.0.0"
   },
   "devDependencies": {
     "@oclif/test": "^2.2.8",
