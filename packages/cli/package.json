@@ -106,5 +106,8 @@
   "gitHead": "cccb996036cf2b6fbbe4e1f02c31079ba99fc517",
   "publishConfig": {
     "access": "public"
+  },
+  "resolutions": {
+    "@polkadot/util": "10.1.13"
   }
 }
