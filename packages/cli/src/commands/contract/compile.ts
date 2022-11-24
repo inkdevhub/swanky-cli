@@ -81,7 +81,7 @@ export class CompileContract extends Command {
 
     await spinner.runCommand(async () => {
       const testPath = path.resolve(`test/${args.contractName}`);
-      await generateTypes(testPath);
+      await generateTypes(buildData.artefactsPath, testPath);
     }, "Generating types");
 
     await spinner.runCommand(async () => {

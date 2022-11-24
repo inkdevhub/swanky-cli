@@ -41,8 +41,12 @@ export class CompileContract extends Command {
 
     const testPath = path.resolve(`test/${args.contractName}`);
 
+    if (!contractInfo.build) {
+      this.error(`No build data for contract "${args.contractName}"`);
+    }
     await spinner.runCommand(async () => {
-      await generateTypes(testPath);
+      // @ts-ignore
+      await generateTypes(contractInfo.build.artefactsPath, testPath);
     }, "Generating types");
   }
 }
