@@ -94,9 +94,17 @@ export class DeployContract extends Command {
       const abi = (await readJSON(
         path.resolve(contractInfo.build.artifactsPath, `${args.contractName}.json`)
       )) as Abi;
-      const wasm = await readFile(
-        path.resolve(contractInfo.build.artifactsPath, `${args.contractName}.wasm`)
-      );
+      let wasm;
+      if (contractInfo.language === "ask") {
+        wasm = await readFile(
+          path.resolve(contractInfo.build.artifactsPath, `${args.contractName}.wasm`)
+        );
+      } else {
+        const contract = await readJSON(
+          path.resolve(contractInfo.build.artifactsPath, `${args.contractName}.wasm`)
+        );
+        wasm = contract.source.wasm;
+      }
       return { abi, wasm };
     }, "Getting WASM")) as { abi: Abi; wasm: Buffer };
 
