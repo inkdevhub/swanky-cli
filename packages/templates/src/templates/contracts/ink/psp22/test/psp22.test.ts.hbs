@@ -1,7 +1,7 @@
 import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import Psp22Factory from "./typedContract/constructors/psp22";
-import Psp22 from "./typedContract/contracts/psp22";
+import {{contract_name_pascal}}Factory from "./typedContract/constructors/{{contract_name}}";
+import {{contract_name_pascal}} from "./typedContract/contracts/{{contract_name}}";
 import { ApiPromise, WsProvider, Keyring } from "@polkadot/api";
 import { KeyringPair } from "@polkadot/keyring/types";
 
@@ -14,13 +14,13 @@ const keyring = new Keyring({ type: "sr25519" });
 
 const EMPTY_ADDRESS = "5C4hrfjw9DjXZTzV3MwzrrAr9P1MJhSrvWGWqi1eSuyUpnhM";
 const GAS_REQUIRED = 500000;
-describe("Psp22 test", () => {
-  let psp22Factory: Psp22Factory;
+describe("{{contract_name}} test", () => {
+  let {{contract_name}}Factory: {{contract_name_pascal}}Factory;
   let api: ApiPromise;
   let deployer: KeyringPair;
   let wallet1: KeyringPair;
   let wallet2: KeyringPair;
-  let contract: Psp22;
+  let contract: {{contract_name_pascal}};
   let maxSupply = 10000000000;
 
   before(async function setup(): Promise<void> {
@@ -29,10 +29,10 @@ describe("Psp22 test", () => {
     wallet1 = keyring.addFromUri("//Bob");
     wallet2 = keyring.addFromUri("//Charlie");
 
-    psp22Factory = new Psp22Factory(api, deployer);
+    {{contract_name}}Factory = new {{contract_name_pascal}}Factory(api, deployer);
 
-    contract = new Psp22(
-      (await psp22Factory.new(maxSupply)).address,
+    contract = new {{contract_name_pascal}}(
+      (await {{contract_name}}Factory.new(maxSupply)).address,
       deployer,
       api
     );

@@ -1,5 +1,15 @@
 import execa from "execa";
-import { ensureDir, rename, copy, readFile, rm, writeFile, remove, pathExists } from "fs-extra";
+import {
+  ensureDir,
+  rename,
+  copy,
+  readFile,
+  rm,
+  writeFile,
+  remove,
+  pathExists,
+  move,
+} from "fs-extra";
 import path from "node:path";
 import globby from "globby";
 import handlebars from "handlebars";
@@ -47,7 +57,14 @@ export async function copyContractTemplateFiles(
   contractName: string,
   projectPath: string
 ) {
-  await copy(contractTemplatePath, path.resolve(projectPath, "contracts", contractName));
+  await copy(
+    path.resolve(contractTemplatePath, "contract"),
+    path.resolve(projectPath, "contracts", contractName)
+  );
+  await copy(
+    path.resolve(contractTemplatePath, "test"),
+    path.resolve(projectPath, "test", contractName)
+  );
 }
 
 export async function processTemplates(projectPath: string, templateData: Record<string, string>) {
