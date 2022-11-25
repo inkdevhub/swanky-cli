@@ -29,7 +29,7 @@ export interface ContractData {
 
 export interface BuildData {
   timestamp: number;
-  artefactsPath: string;
+  artifactsPath: string;
 }
 
 export interface DeploymentData {

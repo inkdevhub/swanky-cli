@@ -2,7 +2,7 @@ import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
 import { readdirSync } from "node:fs";
 import {
-  copyArtefactsFor,
+  copyArtifactsFor,
   ensureSwankyProject,
   getBuildCommandFor,
   getSwankyConfig,
@@ -76,12 +76,12 @@ export class CompileContract extends Command {
     );
 
     const buildData = (await spinner.runCommand(async () => {
-      return copyArtefactsFor(contractInfo.language, contractInfo.name, contractPath);
-    }, "Copying artefacts")) as BuildData;
+      return copyArtifactsFor(contractInfo.language, contractInfo.name, contractPath);
+    }, "Copying artifacts")) as BuildData;
 
     await spinner.runCommand(async () => {
       const testPath = path.resolve(`test/${args.contractName}`);
-      await generateTypes(buildData.artefactsPath, testPath);
+      await generateTypes(buildData.artifactsPath, testPath);
     }, "Generating types");
 
     await spinner.runCommand(async () => {

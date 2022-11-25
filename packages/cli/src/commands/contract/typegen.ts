@@ -46,7 +46,7 @@ export class CompileContract extends Command {
     }
     await spinner.runCommand(async () => {
       // @ts-ignore
-      await generateTypes(contractInfo.build.artefactsPath, testPath);
+      await generateTypes(contractInfo.build.artifactsPath, testPath);
     }, "Generating types");
   }
 }

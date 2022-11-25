@@ -62,7 +62,7 @@ export function getBuildCommandFor(
   throw new Error("Unsupported language!");
 }
 
-export async function copyArtefactsFor(
+export async function copyArtifactsFor(
   language: ContractData["language"],
   contractName: string,
   contractPath: string
@@ -70,10 +70,10 @@ export async function copyArtefactsFor(
   const ts = Date.now();
   const buildData = {
     timestamp: ts,
-    artefactsPath: path.resolve("artefacts", contractName, ts.toString()),
+    artifactsPath: path.resolve("artifacts", contractName, ts.toString()),
   };
 
-  await fs.ensureDir(buildData.artefactsPath);
+  await fs.ensureDir(buildData.artifactsPath);
 
   const buildPaths = {
     ask: path.resolve(contractPath, "build"),
@@ -83,11 +83,11 @@ export async function copyArtefactsFor(
   await Promise.all([
     fs.copyFile(
       `${buildPaths[language]}/${contractName}.wasm`,
-      `${buildData.artefactsPath}/${contractName}.wasm`
+      `${buildData.artifactsPath}/${contractName}.wasm`
     ),
     fs.copyFile(
       `${buildPaths[language]}/metadata.json`,
-      `${buildData.artefactsPath}/${contractName}.json`
+      `${buildData.artifactsPath}/${contractName}.json`
     ),
   ]);
 

@@ -109,7 +109,7 @@ export class NewContract extends Command {
       "Processing contract templates"
     );
 
-    await ensureDir(path.resolve(projectPath, "artefacts", args.contractName));
+    await ensureDir(path.resolve(projectPath, "artifacts", args.contractName));
     await ensureDir(path.resolve(projectPath, "test", args.contractName));
 
     await spinner.runCommand(async () => {

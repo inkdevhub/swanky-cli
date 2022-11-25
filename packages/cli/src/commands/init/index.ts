@@ -115,7 +115,7 @@ export class Init extends Command {
       nodePath = taskResult;
     }
 
-    await ensureDir(path.resolve(projectPath, "artefacts", answers.contractName));
+    await ensureDir(path.resolve(projectPath, "artifacts", answers.contractName));
     await ensureDir(path.resolve(projectPath, "test", answers.contractName));
 
     await spinner.runCommand(

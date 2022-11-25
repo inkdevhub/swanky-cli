@@ -45,7 +45,7 @@ export class CompileContract extends Command {
     }
     const buildData = contractInfo.build;
 
-    const reportDir = path.resolve(buildData.artefactsPath, "testReports", Date.now().toString());
+    const reportDir = path.resolve(buildData.artifactsPath, "testReports", Date.now().toString());
     await ensureDir(reportDir);
 
     const mocha = new Mocha({
@@ -66,7 +66,7 @@ export class CompileContract extends Command {
     tests.forEach((test) => {
       mocha.addFile(test);
     });
-    global.contractTypesPath = path.resolve(buildData.artefactsPath, "typedContract");
+    global.contractTypesPath = path.resolve(buildData.artifactsPath, "typedContract");
     mocha.run((failures) => {
       if (failures) {
         this.error(`At least one of the tests failed. Check report for details: ${reportDir}`);

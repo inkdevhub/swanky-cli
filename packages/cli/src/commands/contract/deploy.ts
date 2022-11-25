@@ -92,10 +92,10 @@ export class DeployContract extends Command {
         this.error(`No build info found for contract named ${args.contractName}`);
       }
       const abi = (await readJSON(
-        path.resolve(contractInfo.build.artefactsPath, `${args.contractName}.json`)
+        path.resolve(contractInfo.build.artifactsPath, `${args.contractName}.json`)
       )) as Abi;
       const wasm = await readFile(
-        path.resolve(contractInfo.build.artefactsPath, `${args.contractName}.wasm`)
+        path.resolve(contractInfo.build.artifactsPath, `${args.contractName}.wasm`)
       );
       return { abi, wasm };
     }, "Getting WASM")) as { abi: Abi; wasm: Buffer };
