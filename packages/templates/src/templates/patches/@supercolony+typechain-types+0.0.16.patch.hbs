@@ -1,0 +1,111 @@
+diff --git a/node_modules/@supercolony/typechain-types/dist/src/query.d.ts b/node_modules/@supercolony/typechain-types/dist/src/query.d.ts
+index 48cca0b..c3acc22 100644
+--- a/node_modules/@supercolony/typechain-types/dist/src/query.d.ts
++++ b/node_modules/@supercolony/typechain-types/dist/src/query.d.ts
+@@ -4,6 +4,7 @@ import type { RequestArgumentType, GasLimitAndValue } from './types';
+ declare type QueryReturnType<T> = {
+     value: T;
+     gasConsumed: bigint;
++    gasRequired: bigint;
+ };
+ export type { QueryReturnType, };
+ export { _genValidGasLimitAndValue, };
+@@ -23,6 +24,7 @@ export declare function queryOkJSON<T>(nativeContract: ContractPromise, callerAd
+ export declare function queryOutput(nativeContract: ContractPromise, callerAddress: string, title: string, args?: readonly RequestArgumentType[], gasLimitAndValue?: GasLimitAndValue): Promise<{
+     output: import("@polkadot/types-codec/types").Codec;
+     gasConsumed: bigint;
++    gasRequired: bigint;
+ }>;
+ declare function _genValidGasLimitAndValue(gasLimitAndValue?: GasLimitAndValue): GasLimitAndValue;
+ export declare function handleReturnType(result: any, typeDescription: any): any;
+diff --git a/node_modules/@supercolony/typechain-types/dist/src/query.js b/node_modules/@supercolony/typechain-types/dist/src/query.js
+index 1f5e337..ff15c47 100644
+--- a/node_modules/@supercolony/typechain-types/dist/src/query.js
++++ b/node_modules/@supercolony/typechain-types/dist/src/query.js
+@@ -79,12 +79,12 @@ function queryJSON(nativeContract, callerAddress, title, args, gasLimitAndValue,
+         return json;
+     }; }
+     return __awaiter(this, void 0, void 0, function () {
+-        var _a, output, gasConsumed, _value, error;
++        var _a, output, gasConsumed, gasRequired, _value, error;
+         return __generator(this, function (_b) {
+             switch (_b.label) {
+                 case 0: return [4 /*yield*/, queryOutput(nativeContract, callerAddress, title, args, gasLimitAndValue)];
+                 case 1:
+-                    _a = _b.sent(), output = _a.output, gasConsumed = _a.gasConsumed;
++                    _a = _b.sent(), output = _a.output, gasConsumed = _a.gasConsumed, gasRequired = _a.gasRequired;
+                     _value = output.toJSON();
+                     if (_value && typeof _value === 'object') {
+                         if ('err' in _value) {
+@@ -100,6 +100,7 @@ function queryJSON(nativeContract, callerAddress, title, args, gasLimitAndValue,
+                     return [2 /*return*/, {
+                             value: handler(output.toJSON()),
+                             gasConsumed: gasConsumed,
++                            gasRequired: gasRequired,
+                         }];
+             }
+         });
+@@ -118,12 +119,12 @@ title, args, gasLimitAndValue, handler) {
+         return json;
+     }; }
+     return __awaiter(this, void 0, void 0, function () {
+-        var _a, output, gasConsumed, _value, error;
++        var _a, output, gasConsumed, gasRequired, _value, error;
+         return __generator(this, function (_b) {
+             switch (_b.label) {
+                 case 0: return [4 /*yield*/, queryOutput(nativeContract, callerAddress, title, args, gasLimitAndValue)];
+                 case 1:
+-                    _a = _b.sent(), output = _a.output, gasConsumed = _a.gasConsumed;
++                    _a = _b.sent(), output = _a.output, gasConsumed = _a.gasConsumed, gasRequired = _a.gasRequired;
+                     _value = output.toJSON();
+                     if (_value == null || typeof _value !== 'object') {
+                         error = {
+@@ -135,6 +136,7 @@ title, args, gasLimitAndValue, handler) {
+                     return [2 /*return*/, {
+                             value: handler(_value),
+                             gasConsumed: gasConsumed,
++                            gasRequired: gasRequired,
+                         }];
+             }
+         });
+@@ -148,7 +150,7 @@ function queryOutput(nativeContract, callerAddress,
+ //
+ title, args, gasLimitAndValue) {
+     return __awaiter(this, void 0, void 0, function () {
+-        var contractAddress, error_1, _args, _gasLimitAndValue, response, error, caughtError_1, gasConsumed, result, output, resValueStr, resValueJSON;
++        var contractAddress, error_1, _args, _gasLimitAndValue, response, error, caughtError_1, gasConsumed, gasRequired, result, output, resValueStr, resValueJSON;
+         var _a;
+         return __generator(this, function (_b) {
+             switch (_b.label) {
+@@ -180,7 +182,7 @@ title, args, gasLimitAndValue) {
+                     console.error("\nContract.queryString(".concat(title, ") error:"), "\n > error:", error, '\n');
+                     throw error;
+                 case 4:
+-                    gasConsumed = response.gasConsumed, result = response.result, output = response.output;
++                    gasConsumed = response.gasConsumed, gasRequired = response.gasRequired, result = response.result, output = response.output;
+                     resValueStr = output ? output.toString() : null;
+                     resValueJSON = output ? output.toJSON() : null;
+                     if (result.isErr)
+@@ -203,6 +205,7 @@ title, args, gasLimitAndValue) {
+                     return [2 /*return*/, {
+                             output: output,
+                             gasConsumed: gasConsumed.toBigInt(),
++                            gasRequired: gasRequired.toBigInt(),
+                         }];
+             }
+         });
+diff --git a/node_modules/@supercolony/typechain-types/dist/src/tx.js b/node_modules/@supercolony/typechain-types/dist/src/tx.js
+index e0685f6..b965262 100644
+--- a/node_modules/@supercolony/typechain-types/dist/src/tx.js
++++ b/node_modules/@supercolony/typechain-types/dist/src/tx.js
+@@ -103,7 +103,9 @@ function _signAndSend(registry, extrinsic, signer, eventHandler) {
+                         txHash: extrinsic.hash.toHex(),
+                     };
+                     extrinsic
+-                        .signAndSend(signer, function (result) {
++                        .signAndSend(signer,
++                                     { nonce: -1 },
++                                     function (result) {
+                         if (result.status.isInBlock) {
+                             actionStatus.blockHash = result.status.asInBlock.toHex();
+                         }
