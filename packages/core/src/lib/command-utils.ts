@@ -47,9 +47,7 @@ export function getBuildCommandFor(
   contractPath: string
 ): ChildProcessWithoutNullStreams {
   if (language === "ink") {
-    return spawn("cargo", ["+nightly", "contract", "build"], {
-      cwd: contractPath,
-    });
+    return spawn("npx", ["typechain-compiler"]);
   }
   if (language === "ask") {
     return spawn(
@@ -75,21 +73,55 @@ export async function copyArtifactsFor(
 
   await fs.ensureDir(buildData.artifactsPath);
 
-  const buildPaths = {
-    ask: path.resolve(contractPath, "build"),
-    ink: path.resolve(contractPath, "target", "ink"),
-  };
+  // const buildPaths = {
+  //   ask: path.resolve(contractPath, "build"),
+  //   ink: path.resolve(contractPath, "target", "ink"),
+  // };
 
-  await Promise.all([
-    fs.copyFile(
-      `${buildPaths[language]}/${contractName}.wasm`,
-      `${buildData.artifactsPath}/${contractName}.wasm`
-    ),
-    fs.copyFile(
-      `${buildPaths[language]}/metadata.json`,
-      `${buildData.artifactsPath}/${contractName}.json`
-    ),
-  ]);
+  if (language === "ink") {
+    //copy artifacts/contract_name.contract and .json to artifactsPath .wasm and .json
+    try {
+      await Promise.all([
+        fs.copyFile(
+          path.resolve("artifacts", `${contractName}.contract`),
+          `${buildData.artifactsPath}/${contractName}.wasm`
+        ),
+        fs.copyFile(
+          path.resolve("artifacts", `${contractName}.json`),
+          `${buildData.artifactsPath}/${contractName}.json`
+        ),
+      ]);
+      //copy both to test/contract_name/artifacts
+      const testArtifacts = path.resolve("test", contractName, "artifacts");
+      await fs.ensureDir(testArtifacts);
+      await Promise.all([
+        fs.copyFile(
+          path.resolve("artifacts", `${contractName}.contract`),
+          `${testArtifacts}/${contractName}.contract`
+        ),
+        fs.copyFile(
+          path.resolve("artifacts", `${contractName}.json`),
+          `${testArtifacts}/${contractName}.json`
+        ),
+        fs.move("typedContract", path.resolve("test", contractName, "typedContract"), {
+          overwrite: true,
+        }),
+      ]);
+    } catch (e) {
+      console.error(e);
+    }
+  } else {
+    await Promise.all([
+      fs.copyFile(
+        path.resolve(contractPath, "build", `${contractName}.wasm`),
+        `${buildData.artifactsPath}/${contractName}.wasm`
+      ),
+      fs.copyFile(
+        path.resolve(contractPath, "build", "metadata.json"),
+        `${buildData.artifactsPath}/${contractName}.json`
+      ),
+    ]);
+  }
 
   return buildData;
 }
