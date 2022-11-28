@@ -79,12 +79,12 @@ export class CompileContract extends Command {
       return copyArtifactsFor(contractInfo.language, contractInfo.name, contractPath);
     }, "Copying artifacts")) as BuildData;
 
-    if (contractInfo.language === "ask") {
-      await spinner.runCommand(async () => {
-        const testPath = path.resolve(`test/${args.contractName}`);
-        await generateTypes(buildData.artifactsPath, testPath);
-      }, "Generating types");
-    }
+    // if (contractInfo.language === "ask") {
+    //   await spinner.runCommand(async () => {
+    //     const testPath = path.resolve(`test/${args.contractName}`);
+    //     await generateTypes(buildData.artifactsPath, testPath);
+    //   }, "Generating types");
+    // }
 
     await spinner.runCommand(async () => {
       contractInfo.build = buildData;

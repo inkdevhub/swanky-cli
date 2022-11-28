@@ -51,7 +51,7 @@ export function getBuildCommandFor(
   }
   if (language === "ask") {
     return spawn(
-      "yarn",
+      "npx",
       ["asc", "--config", `${contractPath}/asconfig.json`, `${contractPath}/index.ts`],
       { env: { ...process.env, ASK_CONFIG: `${contractPath}/askconfig.json` } }
     );
