@@ -7,7 +7,6 @@
   "main": "./dist/index.js",
   "repository": "https://github.com/AstarNetwork/swanky-cli",
   "dependencies": {
-    "@727-ventures/typechain-polkadot": "0.1.1",
     "@polkadot/api": "9.9.1",
     "@polkadot/api-contract": "9.9.1",
     "@polkadot/keyring": "10.1.13",
