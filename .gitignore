@@ -214,3 +214,5 @@ oclif.manifest.json
 
 packages/cli/test_project/**/*
 packages/cli/temp_project/**/*
+
+packages/cli/tmp/**/*
