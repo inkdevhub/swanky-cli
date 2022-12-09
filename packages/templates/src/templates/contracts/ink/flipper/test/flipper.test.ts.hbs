@@ -18,7 +18,7 @@ describe("{{contract_name}} test", () => {
   let deployer: KeyringPair;
   
   let contract: {{contract_name_pascal}};
-  let initialState = true;
+  const initialState = true;
 
   before(async function setup(): Promise<void> {
     api = await ApiPromise.create({ provider: wsProvider });
@@ -38,25 +38,17 @@ describe("{{contract_name}} test", () => {
   });
 
   it("Sets the initial state", async () => {
-    expect(
-      (await contract.query.value()).value
-    ).to.equal(initialState);
+    expect((await contract.query.get()).value).to.equal(initialState);
   });
 
   it("Can flip the state", async () => {
-    
-    const { gasRequired } = await contract
-      .withSigner(deployer)
-      .query.flip();
+    const { gasRequired } = await contract.withSigner(deployer).query.flip();
 
-    await contract.tx.flip({
+    await contract.withSigner(deployer).tx.flip({
       gasLimit: gasRequired,
     });
 
-    await expect(
-      (await contract.query.value().value
-    ).to.be.equal(!initialState);
-    
+    await expect((await contract.query.get()).value).to.be.equal(!initialState);
   });
 
 });
