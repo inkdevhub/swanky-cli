@@ -1,6 +1,6 @@
 {
   "name": "@astar-network/swanky-templates",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Templates for initialising Swanky projects",
   "author": "Astar network",
   "license": "MIT",
