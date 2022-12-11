@@ -212,5 +212,7 @@ dist
 node_modules
 oclif.manifest.json
 
-test_project/**/*
-temp_project/**/*
+packages/cli/test_project/**/*
+packages/cli/temp_project/**/*
+
+packages/cli/tmp/**/*

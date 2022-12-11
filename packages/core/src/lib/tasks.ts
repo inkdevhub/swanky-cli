@@ -1,5 +1,15 @@
 import execa from "execa";
-import { ensureDir, rename, copy, readFile, rm, writeFile, remove } from "fs-extra";
+import {
+  ensureDir,
+  rename,
+  copy,
+  readFile,
+  rm,
+  writeFile,
+  remove,
+  pathExists,
+  move,
+} from "fs-extra";
 import path from "node:path";
 import globby from "globby";
 import handlebars from "handlebars";
@@ -38,6 +48,7 @@ export async function copyTemplateFiles(
       await copy(path.resolve(templatesPath, file), path.resolve(projectPath, file));
     })
   );
+  await copy(path.resolve(templatesPath, "patches"), path.resolve(projectPath, "patches"));
   await rename(path.resolve(projectPath, "gitignore"), path.resolve(projectPath, ".gitignore"));
   await copyContractTemplateFiles(contractTemplatePath, contractName, projectPath);
 }
@@ -47,7 +58,14 @@ export async function copyContractTemplateFiles(
   contractName: string,
   projectPath: string
 ) {
-  await copy(contractTemplatePath, path.resolve(projectPath, "contracts", contractName));
+  await copy(
+    path.resolve(contractTemplatePath, "contract"),
+    path.resolve(projectPath, "contracts", contractName)
+  );
+  await copy(
+    path.resolve(contractTemplatePath, "test"),
+    path.resolve(projectPath, "test", contractName)
+  );
 }
 
 export async function processTemplates(projectPath: string, templateData: Record<string, string>) {
@@ -124,5 +142,23 @@ export async function installDeps(projectPath: string) {
     installCommand = "yarn install";
   } finally {
     await execa.command(installCommand, { cwd: projectPath });
+  }
+}
+
+export async function generateTypes(artifactsPath: string, destinationPath: string) {
+  try {
+    const targetPath = path.resolve(destinationPath, "typedContract");
+    const targetPathExists = await pathExists(targetPath);
+    if (targetPathExists) {
+      await remove(targetPath);
+    }
+
+    await execa.command(`npx typechain-polkadot --in . --out typedContract`, {
+      cwd: artifactsPath,
+    });
+
+    await copy(path.resolve(artifactsPath, "typedContract"), targetPath);
+  } catch (error) {
+    console.error(error);
   }
 }

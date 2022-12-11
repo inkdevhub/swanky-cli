@@ -17,7 +17,7 @@ $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
 running command...
 $ swanky (--version|-V|-v)
-@astar-network/swanky-cli/1.0.0-alpha.2+cccb996 darwin-x64 node-v18.2.0
+@astar-network/swanky-cli/1.0.0-rc.5 darwin-x64 node-v18.2.0
 $ swanky --help [COMMAND]
 USAGE
   $ swanky COMMAND
@@ -36,6 +36,8 @@ USAGE
 * [`swanky contract compile CONTRACTNAME`](#swanky-contract-compile-contractname)
 * [`swanky contract deploy CONTRACTNAME`](#swanky-contract-deploy-contractname)
 * [`swanky contract new CONTRACTNAME`](#swanky-contract-new-contractname)
+* [`swanky contract test CONTRACTNAME`](#swanky-contract-test-contractname)
+* [`swanky contract typegen CONTRACTNAME`](#swanky-contract-typegen-contractname)
 * [`swanky help [COMMAND]`](#swanky-help-command)
 * [`swanky init PROJECTNAME`](#swanky-init-projectname)
 * [`swanky node purge`](#swanky-node-purge)
@@ -109,7 +111,7 @@ DESCRIPTION
   Check installed package versions and compatibility
 ```
 
-_See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v1.0.0-alpha.2+cccb996/dist/commands/check/index.ts)_
+_See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v1.0.0-rc.5/dist/commands/check/index.ts)_
 
 ## `swanky contract call`
 
@@ -191,6 +193,36 @@ DESCRIPTION
   Generate a new smart contract template inside a project
 ```
 
+## `swanky contract test CONTRACTNAME`
+
+Run tests for a given contact
+
+```
+USAGE
+  $ swanky contract test [CONTRACTNAME]
+
+ARGUMENTS
+  CONTRACTNAME  Name of the contract to compile
+
+DESCRIPTION
+  Run tests for a given contact
+```
+
+## `swanky contract typegen CONTRACTNAME`
+
+Generate types from compiled contract metadata
+
+```
+USAGE
+  $ swanky contract typegen [CONTRACTNAME]
+
+ARGUMENTS
+  CONTRACTNAME  Name of the contract
+
+DESCRIPTION
+  Generate types from compiled contract metadata
+```
+
 ## `swanky help [COMMAND]`
 
 Display help for swanky.
@@ -233,7 +265,7 @@ DESCRIPTION
   Generate a new smart contract environment
 ```
 
-_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v1.0.0-alpha.2+cccb996/dist/commands/init/index.ts)_
+_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v1.0.0-rc.5/dist/commands/init/index.ts)_
 
 ## `swanky node purge`
 

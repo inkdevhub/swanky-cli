@@ -5,9 +5,9 @@
     "strict": true,
     "esModuleInterop": true,
     "outDir": "dist",
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "resolveJsonModule": true
   },
   "include": ["**/*.ts"],
-  "exclude": ["node_modules"],
-  "files": ["./swanky.config.ts"]
+  "exclude": ["node_modules"]
 }

@@ -5,7 +5,7 @@
 
 - Add Ask! language support and templates
 - Update config schema to properly track builds/deployments
-- store builds in common `/artefacts` folder
+- store builds in common `/artifacts` folder
 
 ### Trivial changes
 

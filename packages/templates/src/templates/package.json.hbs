@@ -9,8 +9,8 @@
   "license": "MIT",
   "scripts": {
     "run-node": "swanky node start",
-    "compile": "swanky contract compile",
-    "deploy": "swanky contract deploy"
+    "test": "mocha -r ts-node/register \"test/**/*.test.ts\" --exit --timeout 20000",
+    "postinstall": "patch-package"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -19,12 +19,27 @@
     {{#if_eq contract_language "ask"}}
     "ask-lang": "^0.4.0-rc3",
     {{/if_eq}}
-    "@astar-network/swanky-cli": "{{swanky_version}}"
-  },
+    "@supercolony/typechain-compiler": "^0.5.1-beta.1",
+    "@supercolony/typechain-types": "^0.0.16",
+    "typescript": "^4.9.3",
+    "patch-package": "^6.4.7"
+},
   "devDependencies": {
     {{#if_eq contract_language "ask"}}
     "ask-transform": "^0.4.0-rc3",
-    "assemblyscript": "^0.19"
+    "assemblyscript": "^0.19",
     {{/if_eq}}
+    "@types/chai": "^4.3.0",
+    "@types/chai-as-promised": "^7.1.5",
+    "@types/mocha": "^8.0.3",
+    "chai": "^4.3.6",
+    "chai-as-promised": "^7.1.1",
+    "mocha": "10.1.0",
+    "mochawesome": "^7.1.3",
+    "ts-node": "^10.8.0"
+  },
+  "resolutions": {
+    "@polkadot/api": "^9.6.1",
+    "@polkadot/api-contract": "^9.6.1"
   }
 }

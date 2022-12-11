@@ -70,7 +70,7 @@ export default class Check extends Command {
           const swankyConfig = await fs.readJSON("swanky.config.json");
           ctx.swankyConfig = swankyConfig;
           const contractInkVersions = {};
-          for (const contract of swankyConfig.contracts) {
+          for (const contract in swankyConfig.contracts) {
             const tomlPath = path.resolve(`contracts/${contract}/Cargo.toml`);
             const doesCargoTomlExist = fs.pathExistsSync(tomlPath);
             if (!doesCargoTomlExist) {

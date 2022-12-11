@@ -1,6 +1,6 @@
 import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
-import { pathExistsSync, writeJSON } from "fs-extra";
+import { ensureDir, pathExistsSync, readJSON, writeJSON } from "fs-extra";
 import {
   getSwankyConfig,
   ensureSwankyProject,
@@ -102,6 +102,7 @@ export class NewContract extends Command {
           author_name: answers.authorName,
           author_email: answers.email,
           swanky_version: this.config.pjson.version,
+          contract_name: args.contractName,
           contract_name_snake: snakeCase(args.contractName),
           contract_name_pascal: pascalCase(args.contractName),
           contract_language: contractLanguage,
@@ -109,6 +110,18 @@ export class NewContract extends Command {
       "Processing contract templates"
     );
 
+    await ensureDir(path.resolve(projectPath, "artifacts", args.contractName));
+    await ensureDir(path.resolve(projectPath, "test", args.contractName));
+    if (contractLanguage === "ask") {
+      await spinner.runCommand(async () => {
+        const pjson = await readJSON("package.json");
+        const deps = Object.keys(pjson.dependencies || {});
+        if (!deps.includes("ask-lang")) {
+          await execa.command("yarn add ask-lang");
+          await execa.command("yarn add ask-transform assemblyscript@0.19 -D");
+        }
+      }, "Installing Ask!");
+    }
     await spinner.runCommand(async () => {
       config.contracts[args.contractName] = {
         name: args.contractName,

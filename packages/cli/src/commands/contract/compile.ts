@@ -2,14 +2,16 @@ import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
 import { readdirSync } from "node:fs";
 import {
-  copyArtefactsFor,
+  copyArtifactsFor,
   ensureSwankyProject,
   getBuildCommandFor,
   getSwankyConfig,
   BuildData,
-  Spinner
+  Spinner,
+  generateTypes,
 } from "@astar-network/swanky-core";
 import { writeJSON } from "fs-extra";
+import execa = require("execa");
 export class CompileContract extends Command {
   static description = "Compile the smart contract(s) in your contracts directory";
 
@@ -50,22 +52,20 @@ export class CompileContract extends Command {
       this.error(`Path to contract ${args.contractName} does not exist: ${contractPath}`);
     }
 
+    // await execa.command("npx typechain-compiler");
     await spinner.runCommand(
       async () => {
         return new Promise<void>((resolve, reject) => {
           const build = getBuildCommandFor(contractInfo.language, contractPath);
-
           build.stdout.on("data", () => spinner.ora.clear());
           build.stdout.pipe(process.stdout);
           if (flags.verbose) {
             build.stderr.on("data", () => spinner.ora.clear());
             build.stderr.pipe(process.stdout);
           }
-
           build.on("error", (error) => {
             reject(error);
           });
-
           build.on("exit", () => {
             resolve();
           });
@@ -76,8 +76,15 @@ export class CompileContract extends Command {
     );
 
     const buildData = (await spinner.runCommand(async () => {
-      return copyArtefactsFor(contractInfo.language, contractInfo.name, contractPath);
-    }, "Copying artefacts")) as BuildData;
+      return copyArtifactsFor(contractInfo.language, contractInfo.name, contractPath);
+    }, "Copying artifacts")) as BuildData;
+
+    // if (contractInfo.language === "ask") {
+    //   await spinner.runCommand(async () => {
+    //     const testPath = path.resolve(`test/${args.contractName}`);
+    //     await generateTypes(buildData.artifactsPath, testPath);
+    //   }, "Generating types");
+    // }
 
     await spinner.runCommand(async () => {
       contractInfo.build = buildData;
