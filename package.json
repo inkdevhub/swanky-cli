@@ -37,6 +37,8 @@
     "packages/*"
   ],
   "resolutions": {
-    "@polkadot/util": "10.1.13"
+    "@polkadot/util": "10.2.1",
+    "@polkadot/util-crypto": "10.2.1",
+    "@polkadot/keyring": "10.2.1"
   }
 }
