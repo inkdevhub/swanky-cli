@@ -17,7 +17,7 @@ $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
 running command...
 $ swanky (--version|-V|-v)
-@astar-network/swanky-cli/1.0.0 darwin-x64 node-v18.2.0
+@astar-network/swanky-cli/1.0.1 darwin-x64 node-v18.2.0
 $ swanky --help [COMMAND]
 USAGE
   $ swanky COMMAND
@@ -111,7 +111,7 @@ DESCRIPTION
   Check installed package versions and compatibility
 ```
 
-_See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v1.0.0/dist/commands/check/index.ts)_
+_See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v1.0.1/dist/commands/check/index.ts)_
 
 ## `swanky contract call`
 
@@ -241,7 +241,7 @@ DESCRIPTION
   Display help for swanky.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.1.19/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.1.20/src/commands/help.ts)_
 
 ## `swanky init PROJECTNAME`
 
@@ -265,7 +265,7 @@ DESCRIPTION
   Generate a new smart contract environment
 ```
 
-_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v1.0.0/dist/commands/init/index.ts)_
+_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v1.0.1/dist/commands/init/index.ts)_
 
 ## `swanky node purge`
 
@@ -312,7 +312,7 @@ EXAMPLES
   $ swanky plugins
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.1.7/src/commands/plugins/index.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.1.8/src/commands/plugins/index.ts)_
 
 ## `swanky plugins:install PLUGIN...`
 
