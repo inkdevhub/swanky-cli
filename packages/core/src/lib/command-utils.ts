@@ -93,7 +93,9 @@ export async function copyArtifactsFor(
       ]);
       //copy both to test/contract_name/artifacts
       const testArtifacts = path.resolve("test", contractName, "artifacts");
+      const testTypedContracts = path.resolve("test", contractName, "typedContract")
       await fs.ensureDir(testArtifacts);
+      await fs.ensureDir(testTypedContracts)
       await Promise.all([
         fs.copyFile(
           path.resolve("artifacts", `${contractName}.contract`),
@@ -103,7 +105,7 @@ export async function copyArtifactsFor(
           path.resolve("artifacts", `${contractName}.json`),
           `${testArtifacts}/${contractName}.json`
         ),
-        fs.move("typedContract", path.resolve("test", contractName, "typedContract"), {
+        fs.move("typedContract", testTypedContracts, {
           overwrite: true,
         }),
       ]);
