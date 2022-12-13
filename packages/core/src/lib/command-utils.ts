@@ -84,7 +84,7 @@ export async function copyArtifactsFor(
       await Promise.all([
         fs.copyFile(
           path.resolve("artifacts", `${contractName}.contract`),
-          `${buildData.artifactsPath}/${contractName}.wasm`
+          `${buildData.artifactsPath}/${contractName}.contract`
         ),
         fs.copyFile(
           path.resolve("artifacts", `${contractName}.json`),

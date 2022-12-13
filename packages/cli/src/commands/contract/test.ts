@@ -66,7 +66,8 @@ export class CompileContract extends Command {
     tests.forEach((test) => {
       mocha.addFile(test);
     });
-    global.contractTypesPath = path.resolve(buildData.artifactsPath, "typedContract");
+
+    global.contractTypesPath = path.resolve("test", args.contractName, "typedContract");
     mocha.run((failures) => {
       if (failures) {
         this.error(`At least one of the tests failed. Check report for details: ${reportDir}`);
