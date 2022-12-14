@@ -1,9 +1,10 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![feature(min_specialization)]
 
-#[brush::contract]
+#[openbrush::contract]
 pub mod {{contract_name_snake}} {
     use ink_storage::traits::SpreadAllocate;
+    use ink_lang::codegen::{Env, EmitEvent};
     use openbrush::{
         contracts::psp22::*,
         traits::{
@@ -12,27 +13,27 @@ pub mod {{contract_name_snake}} {
         },
     };
 
-        #[ink(event)]
-        pub struct Transfer {
-            #[ink(topic)]
-            from: Option<AccountId>,
-            #[ink(topic)]
-            to: Option<AccountId>,
-            value: Balance,
-        }
+    #[ink(event)]
+    pub struct TransferEvent {
+        #[ink(topic)]
+        from: Option<AccountId>,
+        #[ink(topic)]
+        to: Option<AccountId>,
+        value: Balance,
+    }
 
-        #[ink(event)]
-        pub struct Approval {
-            #[ink(topic)]
-            owner: AccountId,
-            #[ink(topic)]
-            spender: AccountId,
-            value: Balance,
-        }
+    #[ink(event)]
+    pub struct ApprovalEvent {
+        #[ink(topic)]
+        owner: AccountId,
+        #[ink(topic)]
+        spender: AccountId,
+        value: Balance,
+    }
 
     #[ink(storage)]
     #[derive(Default, SpreadAllocate, Storage)]
-    pub struct Contract {
+    pub struct {{contract_name_pascal}} {
         #[storage_field]
         psp22: psp22::Data,
         // fields for hater logic
@@ -61,7 +62,7 @@ pub mod {{contract_name_snake}} {
             to: Option<AccountId>,
             amount: Balance,
         ) {
-            self.env().emit_event(Transfer {
+            self.env().emit_event(TransferEvent {
                 from,
                 to,
                 value: amount,
@@ -69,7 +70,7 @@ pub mod {{contract_name_snake}} {
         }
 
         fn _emit_approval_event(&self, owner: AccountId, spender: AccountId, amount: Balance) {
-            self.env().emit_event(Approval {
+            self.env().emit_event(ApprovalEvent {
                 owner,
                 spender,
                 value: amount,
