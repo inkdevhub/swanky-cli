@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/lerna/schemas/lerna-schema.json",
   "useWorkspaces": true,
-  "version": "1.0.6-jp-workshop",
+  "version": "1.0.6-jp-workshop.2",
   "npmClient": "yarn"
 }
