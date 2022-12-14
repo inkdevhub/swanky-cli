@@ -1,3 +1,20 @@
+## v1.0.6 (2022-12-14)
+
+Deprecating the manual changelog and moving to GitHub releases.
+
+## v1.0.0 (2022-12-12)
+
+### Features
+
+- integration tests and test templates
+
+### Breaking changes
+
+- using typechain-compiler to compile ink! contracts, still unstable with multiple contracts
+
+### Trivial changes
+
+- bug fixes and dependency compatibility issues fixed
 
 ## v0.3.0 (2022-11-01)
 
