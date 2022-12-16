@@ -71,16 +71,16 @@
       "-v",
       "-V"
     ],
-    "topics": {
-      "init": {
-        "description": "Init a new WASM contract project"
-      }
-    },
     "plugins": [
       "@oclif/plugin-help",
       "@oclif/plugin-version",
       "@oclif/plugin-plugins"
-    ]
+    ],
+    "hooks": {
+      "command_not_found": [
+        "./dist/hooks/command_not_found/command_moved"
+      ]
+    }
   },
   "scripts": {
     "build": "shx rm -rf dist && rm -f tsconfig.tsbuildinfo && tsc -b",
