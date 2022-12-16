@@ -40,7 +40,6 @@ USAGE
 - [`swanky contract compile CONTRACTNAME`](#swanky-contract-compile-contractname)
 - [`swanky contract deploy CONTRACTNAME`](#swanky-contract-deploy-contractname)
 - [`swanky contract new CONTRACTNAME`](#swanky-contract-new-contractname)
-- [`swanky contract test CONTRACTNAME`](#swanky-contract-test-contractname)
 - [`swanky contract typegen CONTRACTNAME`](#swanky-contract-typegen-contractname)
 - [`swanky help [COMMAND]`](#swanky-help-command)
 - [`swanky init PROJECTNAME`](#swanky-init-projectname)
@@ -192,21 +191,6 @@ FLAGS
 
 DESCRIPTION
   Generate a new smart contract template inside a project
-```
-
-## `swanky contract test CONTRACTNAME`
-
-Run tests for a given contact
-
-```
-USAGE
-  $ swanky contract test [CONTRACTNAME]
-
-ARGUMENTS
-  CONTRACTNAME  Name of the contract to compile
-
-DESCRIPTION
-  Run tests for a given contact
 ```
 
 ## `swanky contract typegen CONTRACTNAME`
