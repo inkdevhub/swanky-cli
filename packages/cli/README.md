@@ -3,15 +3,17 @@
 [How to guide on Astar docs page](https://docs.astar.network/docs/wasm/sc-dev/swanky)
 
 <!-- toc -->
-* [Swanky CLI](#swanky-cli)
-* [Usage](#usage)
-* [Commands](#commands)
-* [Config](#config)
+
+- [Swanky CLI](#swanky-cli)
+- [Usage](#usage)
+- [Commands](#commands)
+- [Config](#config)
 <!-- tocstop -->
 
 # Usage
 
 <!-- usage -->
+
 ```sh-session
 $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
@@ -23,35 +25,33 @@ USAGE
   $ swanky COMMAND
 ...
 ```
+
 <!-- usagestop -->
 
 # Commands
 
 <!-- commands -->
-* [`swanky account create`](#swanky-account-create)
-* [`swanky account list`](#swanky-account-list)
-* [`swanky account ls`](#swanky-account-ls)
-* [`swanky check`](#swanky-check)
-* [`swanky contract call`](#swanky-contract-call)
-* [`swanky contract compile CONTRACTNAME`](#swanky-contract-compile-contractname)
-* [`swanky contract deploy CONTRACTNAME`](#swanky-contract-deploy-contractname)
-* [`swanky contract new CONTRACTNAME`](#swanky-contract-new-contractname)
-* [`swanky contract test CONTRACTNAME`](#swanky-contract-test-contractname)
-* [`swanky contract typegen CONTRACTNAME`](#swanky-contract-typegen-contractname)
-* [`swanky help [COMMAND]`](#swanky-help-command)
-* [`swanky init PROJECTNAME`](#swanky-init-projectname)
-* [`swanky node purge`](#swanky-node-purge)
-* [`swanky node start`](#swanky-node-start)
-* [`swanky plugins`](#swanky-plugins)
-* [`swanky plugins:install PLUGIN...`](#swanky-pluginsinstall-plugin)
-* [`swanky plugins:inspect PLUGIN...`](#swanky-pluginsinspect-plugin)
-* [`swanky plugins:install PLUGIN...`](#swanky-pluginsinstall-plugin-1)
-* [`swanky plugins:link PLUGIN`](#swanky-pluginslink-plugin)
-* [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin)
-* [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin-1)
-* [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin-2)
-* [`swanky plugins update`](#swanky-plugins-update)
-* [`swanky version`](#swanky-version)
+
+- [`swanky account create`](#swanky-account-create)
+- [`swanky account list`](#swanky-account-list)
+- [`swanky account ls`](#swanky-account-ls)
+- [`swanky check`](#swanky-check)
+- [`swanky contract call`](#swanky-contract-call)
+- [`swanky contract compile CONTRACTNAME`](#swanky-contract-compile-contractname)
+- [`swanky contract deploy CONTRACTNAME`](#swanky-contract-deploy-contractname)
+- [`swanky contract new CONTRACTNAME`](#swanky-contract-new-contractname)
+- [`swanky contract typegen CONTRACTNAME`](#swanky-contract-typegen-contractname)
+- [`swanky help [COMMAND]`](#swanky-help-command)
+- [`swanky init PROJECTNAME`](#swanky-init-projectname)
+- [`swanky node purge`](#swanky-node-purge)
+- [`swanky node start`](#swanky-node-start)
+- [`swanky plugins`](#swanky-plugins)
+- [`swanky plugins:install PLUGIN...`](#swanky-pluginsinstall-plugin)
+- [`swanky plugins:inspect PLUGIN...`](#swanky-pluginsinspect-plugin)
+- [`swanky plugins:link PLUGIN`](#swanky-pluginslink-plugin)
+- [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin)
+- [`swanky plugins update`](#swanky-plugins-update)
+- [`swanky version`](#swanky-version)
 
 ## `swanky account create`
 
@@ -193,21 +193,6 @@ DESCRIPTION
   Generate a new smart contract template inside a project
 ```
 
-## `swanky contract test CONTRACTNAME`
-
-Run tests for a given contact
-
-```
-USAGE
-  $ swanky contract test [CONTRACTNAME]
-
-ARGUMENTS
-  CONTRACTNAME  Name of the contract to compile
-
-DESCRIPTION
-  Run tests for a given contact
-```
-
 ## `swanky contract typegen CONTRACTNAME`
 
 Generate types from compiled contract metadata
@@ -345,7 +330,7 @@ ALIASES
   $ swanky plugins add
 
 EXAMPLES
-  $ swanky plugins:install myplugin 
+  $ swanky plugins:install myplugin
 
   $ swanky plugins:install https://github.com/someuser/someplugin
 
@@ -374,44 +359,6 @@ EXAMPLES
   $ swanky plugins:inspect myplugin
 ```
 
-## `swanky plugins:install PLUGIN...`
-
-Installs a plugin into the CLI.
-
-```
-USAGE
-  $ swanky plugins:install PLUGIN...
-
-ARGUMENTS
-  PLUGIN  Plugin to install.
-
-FLAGS
-  -f, --force    Run yarn install with force flag.
-  -h, --help     Show CLI help.
-  -v, --verbose
-
-DESCRIPTION
-  Installs a plugin into the CLI.
-  Can be installed from npm or a git url.
-
-  Installation of a user-installed plugin will override a core plugin.
-
-  e.g. If you have a core plugin that has a 'hello' command, installing a user-installed plugin with a 'hello' command
-  will override the core plugin implementation. This is useful if a user needs to update core plugin functionality in
-  the CLI without the need to patch and update the whole CLI.
-
-
-ALIASES
-  $ swanky plugins add
-
-EXAMPLES
-  $ swanky plugins:install myplugin 
-
-  $ swanky plugins:install https://github.com/someuser/someplugin
-
-  $ swanky plugins:install someuser/someplugin
-```
-
 ## `swanky plugins:link PLUGIN`
 
 Links a plugin into the CLI for development.
@@ -437,52 +384,6 @@ DESCRIPTION
 
 EXAMPLES
   $ swanky plugins:link myplugin
-```
-
-## `swanky plugins:uninstall PLUGIN...`
-
-Removes a plugin from the CLI.
-
-```
-USAGE
-  $ swanky plugins:uninstall PLUGIN...
-
-ARGUMENTS
-  PLUGIN  plugin to uninstall
-
-FLAGS
-  -h, --help     Show CLI help.
-  -v, --verbose
-
-DESCRIPTION
-  Removes a plugin from the CLI.
-
-ALIASES
-  $ swanky plugins unlink
-  $ swanky plugins remove
-```
-
-## `swanky plugins:uninstall PLUGIN...`
-
-Removes a plugin from the CLI.
-
-```
-USAGE
-  $ swanky plugins:uninstall PLUGIN...
-
-ARGUMENTS
-  PLUGIN  plugin to uninstall
-
-FLAGS
-  -h, --help     Show CLI help.
-  -v, --verbose
-
-DESCRIPTION
-  Removes a plugin from the CLI.
-
-ALIASES
-  $ swanky plugins unlink
-  $ swanky plugins remove
 ```
 
 ## `swanky plugins:uninstall PLUGIN...`
@@ -543,31 +444,63 @@ FLAG DESCRIPTIONS
 ```
 
 _See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.1.3/src/commands/version.ts)_
+
 <!-- commandsstop -->
 
 # Config
 
-A newly generated project will have a `swanky.config.json` file.
+A newly generated project will have a `swanky.config.json` file that will get populated as you interact with your contracts and accounts.
 
 ## Example:
 
 ```json
 {
   "node": {
-    "localPath": "/path/to/swanky-node",
+    "localPath": "/my_proj_path/bin/swanky-node",
     "polkadotPalletVersions": "polkadot-v0.9.27",
     "supportedInk": "v3.3.1"
   },
   "accounts": [
     {
       "alias": "alice",
-      "mnemonic": "//Alice"
+      "mnemonic": "//Alice",
+      "isDev": true,
+      "address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
     },
     {
       "alias": "bob",
-      "mnemonic": "//Bob"
+      "mnemonic": "//Bob",
+      "isDev": true,
+      "address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
     }
   ],
+  "contracts": {
+    "flipper": {
+      "name": "flipper",
+      "deployments": [
+        {
+          "timestamp": 1670919679024,
+          "address": "5FmKC2NZNChwuxCAWCHQbevi5xXn8gaSGcafbuvcxwMbpMyd",
+          "networkUrl": "ws://127.0.0.1:9944",
+          "deployerAlias": "alice"
+        }
+      ],
+      "language": "ink",
+      "build": {
+        "timestamp": 1670841378836,
+        "artifactsPath": "/my_proj_path/artifacts/flipper/1670841378836"
+      }
+    },
+    "psp22": {
+      "name": "psp22",
+      "language": "ink",
+      "deployments": [],
+      "build": {
+        "timestamp": 1670861915076,
+        "artifactsPath": "/my_proj_path/artifacts/psp22/1670861915076"
+      }
+    }
+  },
   "networks": {
     "local": {
       "url": "ws://127.0.0.1:9944"
@@ -608,9 +541,8 @@ To add networks or change endpoint to interact with, you need to update `swanky.
 }
 ```
 
-## Notes:
+## Notes and known issues:
 
-- config file format is very likely to change as the tool is under active development
-- `contracts` section keeps history of all deployments of specific contract
-- `accounts` should ONLY hold dev accounts. The more secure solution will be added in the upcoming release
-- at runtime, only `localPath` and `nodeAddress` fields of `node` object are being used.
+- `ink!` projects use `@supercolony/typechain-compiler` package for compiling. This allows for a seamless TS type generation and integration tests.
+  Unfortunately, there are issues with generated types when there's more than one contract present, as well as incorrect types for `ask!` contracts.
+  We are working on resolving both.

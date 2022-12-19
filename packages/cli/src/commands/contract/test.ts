@@ -13,6 +13,9 @@ declare global {
 export class CompileContract extends Command {
   static description = "Run tests for a given contact";
 
+  // hidden until the mocha loading issue is resolved
+  static hidden = true;
+
   static args = [
     {
       name: "contractName",
