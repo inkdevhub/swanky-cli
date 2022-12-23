@@ -19,10 +19,10 @@ export class StartNode extends Command {
     const { flags } = await this.parse(StartNode);
 
     const config = await getSwankyConfig();
+    const rpcCors = "http://localhost:*,http://127.0.0.1:*,https://localhost:*,https://127.0.0.1:*,https://polkadot.js.org,https://contracts-ui.substrate.io/";
     // run persistent mode by default. non-persistent mode in case flag is provided.
     await execa.command(`${config.node.localPath} \
-      --rpc-cors http://localhost:*,http://127.0.0.1:*,https://localhost:*,https://127.0.0.1:*,https://polkadot.js.org,https://contracts-ui.substrate.io/ \
-      ${flags.tmp ? "--dev" : ""}`, {
+      ${flags.tmp ? "--dev" : `--rpc-cors ${rpcCors}`}`, {
       stdio: "inherit",
     });
 
