@@ -7,14 +7,6 @@ assignees: ''
 
 ---
 
----
-name: Report a Bug
-about: Report a problem with this project.
-title: ''
-labels: bug
-assignees: ''
----
-
 **Description**
 
 > Tell us what happened. In particular, tell us how and why you are using this project, and describe the bug that you encountered. Please note that we are not able to support all conceivable use cases, but the more information you are able to provide the more equipped we will be to help.
