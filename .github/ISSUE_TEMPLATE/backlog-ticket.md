@@ -19,7 +19,6 @@ assignees: ''
 # Definition of Done
 {Write definition of done, how to verify}
 
-
 - [ ]  Unit test cases (delete if not applicable)
 - [ ]  Docs updated (delete if not applicable)
 - [ ]  PR approved and merged to master (delete if not applicable)
