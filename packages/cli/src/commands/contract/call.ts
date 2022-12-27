@@ -20,22 +20,35 @@ import { readJSON } from "fs-extra";
 export class CallContract extends Command {
   static description = "Call a method on a smart contract";
 
-  static flags = {
-    // args: Flags.string({
-    //   required: false,
-    //   char: "a",
-    // }),
-    contractName: Flags.string({
+  static args = [
+    {
+      name: "contractName",
       required: true,
+      description: "Name of the contract to call",
+    },
+    {
+      name: "messageType",
+      required: true,
+      description: "Is the call a query or tx type",
+      options: ["q", "query", "tx"],
+    },
+  ];
+
+  static flags = {
+    args: Flags.string({
+      required: false,
+      char: "a",
+      description: "Arguments supplied to the message",
     }),
     account: Flags.string({
-      char: "a",
       required: true,
+      description: "Account to sign the transaction with",
     }),
-    // message: Flags.string({
-    //   required: true,
-    //   char: "m",
-    // }),
+    message: Flags.string({
+      required: true,
+      char: "m",
+      description: "Message name to call",
+    }),
     dry: Flags.boolean({
       char: "d",
     }),
@@ -46,23 +59,18 @@ export class CallContract extends Command {
       char: "n",
       description: "Network name to connect to",
     }),
-    deploymentTimestamp: Flags.integer({
-      char: "t",
-      required: false,
-      description: "Specific deployment to target",
-    }),
   };
 
-  static args = [];
-
   async run(): Promise<void> {
-    const { flags } = await this.parse(CallContract);
+    const { flags, args } = await this.parse(CallContract);
+
+    if (args.messageType === "q") args.messageType = "query";
     const config = await getSwankyConfig();
     const spinner = new Spinner();
 
-    const contractInfo = config.contracts[flags.contractName];
+    const contractInfo = config.contracts[args.contractName];
     if (!contractInfo) {
-      this.error(`Cannot find a contract named ${flags.contractName} in swanky.config.json`);
+      this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
     }
 
     const deploymentData = flags.deploymentTimestamp
@@ -101,7 +109,6 @@ export class CallContract extends Command {
     const networkUrl = resolveNetworkUrl(config, flags.network ?? "");
 
     const api = new ChainApi(networkUrl);
-
     await api.start();
 
     const account = (await spinner.runCommand(async () => {
@@ -111,20 +118,19 @@ export class CallContract extends Command {
 
     const metadata = (await spinner.runCommand(async () => {
       if (!contractInfo.build) {
-        this.error(`No build info found for contract named ${flags.contractName}`);
+        this.error(`No build info found for contract named ${args.contractName}`);
       }
       const metadata = await readJSON(
-        path.resolve(contractInfo.build.artifactsPath, `${flags.contractName}.json`)
+        path.resolve(contractInfo.build.artifactsPath, `${args.contractName}.json`)
       );
       return metadata;
     }, "Getting metadata")) as Abi;
     const contract = new ContractPromise(api.apiInst, metadata, deploymentData.address);
 
-    const gasLimit = 3000n * 10000000n;
     const storageDepositLimit = null;
 
     const result = await contract.query.get(account.pair.address, {
-      gasLimit,
+      gasLimit: -1,
       storageDepositLimit,
     });
 
@@ -132,6 +138,12 @@ export class CallContract extends Command {
     console.log(result.gasRequired.toHuman());
     console.log(result.result.toHuman());
 
+    const txQuery = await contract.query.flip(account.pair.address, {
+      storageDepositLimit,
+      gasLimit: -1,
+    });
+
+    console.log(txQuery.result.toHuman(), txQuery.gasRequired.toString());
     await api.apiInst.disconnect();
   }
 }
