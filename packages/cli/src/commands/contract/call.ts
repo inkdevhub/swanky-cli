@@ -1,23 +1,41 @@
 import { Command, Flags } from "@oclif/core";
-import { execSync } from "node:child_process";
 import path = require("node:path");
-import { getSwankyConfig, resolveNetworkUrl } from "@astar-network/swanky-core";
+import { cryptoWaitReady } from "@polkadot/util-crypto";
+import { ContractPromise } from "@polkadot/api-contract";
+import {
+  AccountData,
+  ChainAccount,
+  ChainApi,
+  decrypt,
+  Encrypted,
+  getSwankyConfig,
+  resolveNetworkUrl,
+  Spinner,
+  AbiType as Abi,
+} from "@astar-network/swanky-core";
+import inquirer from "inquirer";
+import chalk = require("chalk");
+import { readJSON } from "fs-extra";
 
 export class CallContract extends Command {
   static description = "Call a method on a smart contract";
 
   static flags = {
-    args: Flags.string({
-      required: false,
-      char: "a",
-    }),
+    // args: Flags.string({
+    //   required: false,
+    //   char: "a",
+    // }),
     contractName: Flags.string({
       required: true,
     }),
-    message: Flags.string({
+    account: Flags.string({
+      char: "a",
       required: true,
-      char: "m",
     }),
+    // message: Flags.string({
+    //   required: true,
+    //   char: "m",
+    // }),
     dry: Flags.boolean({
       char: "d",
     }),
@@ -40,6 +58,7 @@ export class CallContract extends Command {
   async run(): Promise<void> {
     const { flags } = await this.parse(CallContract);
     const config = await getSwankyConfig();
+    const spinner = new Spinner();
 
     const contractInfo = config.contracts[flags.contractName];
     if (!contractInfo) {
@@ -57,17 +76,62 @@ export class CallContract extends Command {
         `Deployment with timestamp ${deploymentData?.timestamp} has no deployment address!`
       );
 
-    execSync(
-      `cargo contract call --contract ${deploymentData.address} --message ${flags.message} ${
-        flags.args ? "--args " + flags.args : ""
-      } --suri //Alice --gas ${flags.gas ?? "100000000000"} --url ${resolveNetworkUrl(
-        config,
-        flags.network ?? ""
-      )} ${flags.dry ? "--dry-run" : ""}`,
-      {
-        stdio: "inherit",
-        cwd: path.resolve("contracts", contractInfo?.name ?? ""),
-      }
+    const accountData = config.accounts.find(
+      (account: AccountData) => account.alias === flags.account
     );
+    if (!accountData) {
+      this.error("Provided account alias not found in swanky.config.json");
+    }
+
+    const mnemonic = accountData.isDev
+      ? (accountData.mnemonic as string)
+      : decrypt(
+          accountData.mnemonic as Encrypted,
+          (
+            await inquirer.prompt([
+              {
+                type: "password",
+                message: `Enter password for ${chalk.yellowBright(accountData.alias)}: `,
+                name: "password",
+              },
+            ])
+          ).password
+        );
+
+    const networkUrl = resolveNetworkUrl(config, flags.network ?? "");
+
+    const api = new ChainApi(networkUrl);
+
+    await api.start();
+
+    const account = (await spinner.runCommand(async () => {
+      await cryptoWaitReady();
+      return new ChainAccount(mnemonic);
+    }, "Initialising")) as ChainAccount;
+
+    const metadata = (await spinner.runCommand(async () => {
+      if (!contractInfo.build) {
+        this.error(`No build info found for contract named ${flags.contractName}`);
+      }
+      const metadata = await readJSON(
+        path.resolve(contractInfo.build.artifactsPath, `${flags.contractName}.json`)
+      );
+      return metadata;
+    }, "Getting metadata")) as Abi;
+    const contract = new ContractPromise(api.apiInst, metadata, deploymentData.address);
+
+    const gasLimit = 3000n * 10000000n;
+    const storageDepositLimit = null;
+
+    const result = await contract.query.get(account.pair.address, {
+      gasLimit,
+      storageDepositLimit,
+    });
+
+    console.log(result);
+    console.log(result.gasRequired.toHuman());
+    console.log(result.result.toHuman());
+
+    await api.apiInst.disconnect();
   }
 }
