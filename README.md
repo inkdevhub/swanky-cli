@@ -1,4 +1,7 @@
-# Structure
+# How to use
+swanky-cli installation and how-to-use guides are available in the official swanky suite [doc](https://docs.astar.network/docs/wasm/sc-dev/swanky).
+
+# Repository Structure
 
 Repo is split into separate packages, and uses [Lerna](https://github.com/lerna/lerna) to handle builds/versioning.
 
