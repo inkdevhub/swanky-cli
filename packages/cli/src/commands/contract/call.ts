@@ -35,9 +35,12 @@ export class CallContract extends Command {
   ];
 
   static flags = {
-    args: Flags.string({
+    params: Flags.string({
       required: false,
       description: "Arguments supplied to the message",
+      multiple: true,
+      default: [],
+      char: "p",
     }),
     account: Flags.string({
       required: true,
@@ -115,7 +118,7 @@ export class CallContract extends Command {
         );
 
     const networkUrl = resolveNetworkUrl(config, flags.network ?? "");
-
+    console.log("AAAA", flags.params);
     const api = new ChainApi(networkUrl);
     await api.start();
 
@@ -138,10 +141,14 @@ export class CallContract extends Command {
 
     const storageDepositLimit = null;
 
-    const queryResult = await contract.query[flags.message](account.pair.address, {
-      gasLimit: -1,
-      storageDepositLimit,
-    });
+    const queryResult = await contract.query[flags.message](
+      account.pair.address,
+      {
+        gasLimit: -1,
+        storageDepositLimit,
+      },
+      ...flags.params
+    );
 
     if (args.messageType === "query") {
       console.log(`Query result:`);
@@ -154,10 +161,13 @@ export class CallContract extends Command {
         await api.apiInst.disconnect();
       }
       const customGas = flags.gas ? BigInt(flags.gas) : null;
-      await contract.tx[flags.message]({
-        storageDepositLimit,
-        gasLimit: customGas || queryResult.gasRequired,
-      }).signAndSend(account.pair, async (result) => {
+      await contract.tx[flags.message](
+        {
+          storageDepositLimit,
+          gasLimit: customGas || queryResult.gasRequired,
+        },
+        ...flags.params
+      ).signAndSend(account.pair, async (result) => {
         if (result.status.isInBlock) {
           console.log("Tx result:");
           if (flags.verbose) {
