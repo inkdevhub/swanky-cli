@@ -37,11 +37,11 @@ export class CallContract extends Command {
   static flags = {
     args: Flags.string({
       required: false,
-      char: "a",
       description: "Arguments supplied to the message",
     }),
     account: Flags.string({
       required: true,
+      char: "a",
       description: "Account to sign the transaction with",
     }),
     message: Flags.string({
@@ -51,20 +51,28 @@ export class CallContract extends Command {
     }),
     dry: Flags.boolean({
       char: "d",
+      description: "Do a dry run, without signing the transaction (only for tx type of message)",
     }),
     gas: Flags.string({
       char: "g",
+      description: "Manually specify gas limit",
     }),
     network: Flags.string({
       char: "n",
       description: "Network name to connect to",
+    }),
+    verbose: Flags.boolean({
+      char: "v",
+      description: "Display more info in the result logs",
     }),
   };
 
   async run(): Promise<void> {
     const { flags, args } = await this.parse(CallContract);
 
+    // for convenience, so we don't need to check for both
     if (args.messageType === "q") args.messageType = "query";
+
     const config = await getSwankyConfig();
     const spinner = new Spinner();
 
@@ -125,25 +133,46 @@ export class CallContract extends Command {
       );
       return metadata;
     }, "Getting metadata")) as Abi;
+
     const contract = new ContractPromise(api.apiInst, metadata, deploymentData.address);
 
     const storageDepositLimit = null;
 
-    const result = await contract.query.get(account.pair.address, {
+    const queryResult = await contract.query[flags.message](account.pair.address, {
       gasLimit: -1,
       storageDepositLimit,
     });
 
-    console.log(result);
-    console.log(result.gasRequired.toHuman());
-    console.log(result.result.toHuman());
-
-    const txQuery = await contract.query.flip(account.pair.address, {
-      storageDepositLimit,
-      gasLimit: -1,
-    });
-
-    console.log(txQuery.result.toHuman(), txQuery.gasRequired.toString());
-    await api.apiInst.disconnect();
+    if (args.messageType === "query") {
+      console.log(`Query result:`);
+      console.log(queryResult.result.toHuman());
+      api.apiInst.disconnect();
+    } else {
+      this.log(`Gas required: ${queryResult.gasRequired.toHuman()}`);
+      if (flags.dry) {
+        this.log(`Dry run result: ${queryResult.result.toHuman()}`);
+        await api.apiInst.disconnect();
+      }
+      const customGas = flags.gas ? BigInt(flags.gas) : null;
+      await contract.tx[flags.message]({
+        storageDepositLimit,
+        gasLimit: customGas || queryResult.gasRequired,
+      }).signAndSend(account.pair, async (result) => {
+        if (result.status.isInBlock) {
+          console.log("Tx result:");
+          if (flags.verbose) {
+            console.log(JSON.stringify(result.toHuman(), null, 2));
+          } else {
+            console.log(result.toHuman());
+          }
+          return await api.apiInst.disconnect();
+        }
+        // needed to trigger a new event
+        await contract.query[flags.message](account.pair.address, {
+          gasLimit: -1,
+          storageDepositLimit,
+        });
+      });
+    }
   }
 }
