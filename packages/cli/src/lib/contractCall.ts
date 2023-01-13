@@ -46,10 +46,10 @@ export abstract class ContractCall<T extends typeof Command> extends BaseCommand
       char: "a",
       description: "Account to sign the transaction with",
     }),
-    deploymentTimestamp: Flags.integer({
-      char: "t",
+    address: Flags.string({
       required: false,
-      description: "Specific deployment to target",
+      description: "Target specific address, defaults to last deployed. (--addr, --add)",
+      aliases: ["addr", "add"],
     }),
   };
 
@@ -81,15 +81,13 @@ export abstract class ContractCall<T extends typeof Command> extends BaseCommand
     }
     this.contractInfo = contractInfo;
 
-    const deploymentData = flags.deploymentTimestamp
-      ? contractInfo.deployments.find(
-          (deployment) => deployment.timestamp === flags.deploymentTimestamp
-        )
+    const deploymentData = flags.address
+      ? contractInfo.deployments.find((deployment) => deployment.address === flags.address)
       : contractInfo.deployments[0];
 
     if (!deploymentData?.address)
       throw new Error(
-        `Deployment with timestamp ${deploymentData?.timestamp} has no deployment address!`
+        `Cannot find a deployment with address: ${flags.address} in swanky.config.json`
       );
     this.deploymentInfo = deploymentData;
 
