@@ -18,14 +18,14 @@ import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { readJSON } from "fs-extra";
 
 export type JoinedFlagsType<T extends typeof Command> = Interfaces.InferredFlags<
-  typeof BaseCommand["globalFlags"] & typeof ContractCall["callFlags"] & T["flags"]
+  typeof BaseCommand["globalFlags"] & typeof ContractCall["globalFlags"] & T["flags"]
 >;
 
 export abstract class ContractCall<T extends typeof Command> extends BaseCommand<
   typeof ContractCall
 > {
   // define flags that can be inherited by any command that extends BaseCommand
-  static callFlags = {
+  static globalFlags = {
     ...BaseCommand.globalFlags,
     params: Flags.string({
       required: false,
@@ -68,6 +68,7 @@ export abstract class ContractCall<T extends typeof Command> extends BaseCommand
   protected deploymentInfo!: DeploymentData;
   protected account!: ChainAccount;
   protected metadata!: AbiType;
+  protected api!: ChainApi;
 
   public async init(): Promise<void> {
     await super.init();
@@ -101,7 +102,8 @@ export abstract class ContractCall<T extends typeof Command> extends BaseCommand
 
     const networkUrl = resolveNetworkUrl(this.swankyConfig, flags.network ?? "");
     const api = new ChainApi(networkUrl);
-    await api.start();
+    this.api = api;
+    await this.api.start();
 
     const mnemonic = accountData.isDev
       ? (accountData.mnemonic as string)
