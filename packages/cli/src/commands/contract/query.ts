@@ -17,10 +17,14 @@ export class Query extends ContractCall<typeof Query> {
 
     const storageDepositLimit = null;
 
+    const gasLimit: any = this.api.apiInst.registry.createType("WeightV2", {
+      refTime: BigInt(10000000000),
+      proofSize: BigInt(10000000000),
+    });
     const queryResult = await contract.query[args.messageName](
       this.account.pair.address,
       {
-        gasLimit: -1,
+        gasLimit,
         storageDepositLimit,
       },
       ...flags.params
