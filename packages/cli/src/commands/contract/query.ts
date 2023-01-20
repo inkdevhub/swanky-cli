@@ -26,7 +26,8 @@ export class Query extends ContractCall<typeof Query> {
       ...flags.params
     );
 
-    console.log(`Query result:`);
-    console.log(queryResult.result.toHuman());
+    await this.api.apiInst.disconnect();
+    console.log(`Query result: ${queryResult.output?.toString()}`);
+    if (flags.verbose) console.log(queryResult.result.toHuman());
   }
 }

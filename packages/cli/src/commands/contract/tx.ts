@@ -58,15 +58,15 @@ export class Tx extends ContractCall<typeof Tx> {
       },
       ...flags.params
     );
-    await txResult.signAndSend(this.account.pair, (result) => {
-      if (result.status.isInBlock) {
+    await txResult.signAndSend(this.account.pair, async (result: any) => {
+      if (result.status.isFinalized || result.status.isInBlock) {
         console.log("Tx result:");
         if (flags.verbose) {
           console.log(JSON.stringify(result.toHuman(), null, 2));
         } else {
           console.log(result.toHuman());
         }
-        return this.api.apiInst.disconnect();
+        await this.api.apiInst.disconnect();
       }
     });
   }
