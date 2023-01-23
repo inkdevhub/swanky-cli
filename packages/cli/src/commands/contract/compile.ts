@@ -8,10 +8,9 @@ import {
   getSwankyConfig,
   BuildData,
   Spinner,
-  generateTypes,
 } from "@astar-network/swanky-core";
 import { writeJSON } from "fs-extra";
-import execa = require("execa");
+
 export class CompileContract extends Command {
   static description = "Compile the smart contract(s) in your contracts directory";
 
@@ -21,6 +20,11 @@ export class CompileContract extends Command {
       char: "v",
       description: "Display additional compilation output",
     }),
+    release: Flags.boolean({
+      default: false,
+      char: "r",
+      description: "A production contract should always be build in `release` mode for building optimized wasm"
+    })
   };
 
   static args = [
@@ -56,7 +60,7 @@ export class CompileContract extends Command {
     await spinner.runCommand(
       async () => {
         return new Promise<void>((resolve, reject) => {
-          const build = getBuildCommandFor(contractInfo.language, contractPath);
+          const build = getBuildCommandFor(contractInfo.language, contractPath, flags.release);
           build.stdout.on("data", () => spinner.ora.clear());
           build.stdout.pipe(process.stdout);
           if (flags.verbose) {
