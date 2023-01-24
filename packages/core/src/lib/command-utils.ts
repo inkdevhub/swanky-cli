@@ -60,7 +60,7 @@ export function getBuildCommandFor(
   throw new Error("Unsupported language!");
 }
 
-export async function copyArtifactsFor(
+export async function moveArtifactsFor(
   language: ContractData["language"],
   contractName: string,
   contractPath: string
@@ -97,13 +97,15 @@ export async function copyArtifactsFor(
       await fs.ensureDir(testArtifacts);
       await fs.ensureDir(testTypedContracts)
       await Promise.all([
-        fs.copyFile(
+        fs.move(
           path.resolve("artifacts", `${contractName}.contract`),
-          `${testArtifacts}/${contractName}.contract`
+          `${testArtifacts}/${contractName}.contract`,
+          { overwrite: true }
         ),
-        fs.copyFile(
+        fs.move(
           path.resolve("artifacts", `${contractName}.json`),
-          `${testArtifacts}/${contractName}.json`
+          `${testArtifacts}/${contractName}.json`,
+          { overwrite: true }
         ),
         fs.move("typedContract", testTypedContracts, {
           overwrite: true,
@@ -114,13 +116,15 @@ export async function copyArtifactsFor(
     }
   } else {
     await Promise.all([
-      fs.copyFile(
+      fs.move(
         path.resolve(contractPath, "build", `${contractName}.wasm`),
-        `${buildData.artifactsPath}/${contractName}.wasm`
+        `${buildData.artifactsPath}/${contractName}.wasm`,
+        { overwrite: true }
       ),
-      fs.copyFile(
+      fs.move(
         path.resolve(contractPath, "build", "metadata.json"),
-        `${buildData.artifactsPath}/${contractName}.json`
+        `${buildData.artifactsPath}/${contractName}.json`,
+        { overwrite: true }
       ),
     ]);
   }

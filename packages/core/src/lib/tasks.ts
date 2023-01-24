@@ -61,6 +61,7 @@ export async function copyContractTemplateFiles(
 export async function processTemplates(projectPath: string, templateData: Record<string, string>) {
   const templateFiles = await globby(projectPath, {
     expandDirectories: { extensions: ["hbs"] },
+    gitignore: true,
   });
 
   handlebars.registerHelper("if_eq", function (a, b, options): boolean {
