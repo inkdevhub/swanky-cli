@@ -95,7 +95,7 @@ export async function downloadNode(projectPath: string, nodeInfo: nodeInfo, spin
     const dl = new DownloaderHelper(dlUrl, binPath);
 
     dl.on("progress", (event) => {
-      spinner.text(`Downloading Swanky node ${event.progress}%`);
+      spinner.text(`Downloading Swanky node ${event.progress.toFixed(2)}%`);
     });
     dl.on("end", (event) => {
       resolve(event);
