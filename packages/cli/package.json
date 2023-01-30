@@ -1,6 +1,6 @@
 {
   "name": "@astar-network/swanky-cli",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Astar network WASM contract CLI tool",
   "author": "Astar network",
   "bin": {
@@ -17,8 +17,8 @@
     "/oclif.manifest.json"
   ],
   "dependencies": {
-    "@astar-network/swanky-core": "^1.0.8",
-    "@astar-network/swanky-templates": "^1.0.8",
+    "@astar-network/swanky-core": "^1.0.9",
+    "@astar-network/swanky-templates": "^1.0.9",
     "@oclif/core": "1.26.0",
     "@oclif/plugin-help": "5.1.17",
     "@oclif/plugin-plugins": "2.1.4",
@@ -52,14 +52,14 @@
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-prettier": "4.2.1",
     "lerna": "6.0.3",
+    "mem-fs": "2.2.1",
+    "mem-fs-editor": "9.6.0",
     "oclif": "3.4.2",
     "prettier": "2.7.1",
     "shx": "0.3.3",
     "ts-node": "10.9.1",
     "tslib": "2.4.1",
-    "typescript": "4.8.4",
-    "mem-fs": "2.2.1",
-    "mem-fs-editor": "9.6.0"
+    "typescript": "4.8.4"
   },
   "oclif": {
     "bin": "swanky",
