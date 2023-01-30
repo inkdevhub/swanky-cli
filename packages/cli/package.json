@@ -88,7 +88,10 @@
     "postpack": "shx rm -f oclif.manifest.json",
     "prepack": "yarn build && oclif manifest && oclif readme",
     "test": "mocha --require mocha-suppress-logs --forbid-only -r ts-node/register \"test/**/*.test.ts\"",
-    "version": "oclif readme && git add README.md"
+    "version": "oclif readme && git add README.md",
+    "tarball:macos": "oclif tarballs --targets=darwin-x64",
+    "tarball:linux": "oclif tarballs --targets=linux-x64",
+    "tarball:all": "oclif tarballs --targets=darwin-x64,linux-x64"
   },
   "engines": {
     "node": ">=18.0.0"
