@@ -8,10 +8,8 @@ import {
   getSwankyConfig,
   BuildData,
   Spinner,
-  generateTypes,
 } from "@astar-network/swanky-core";
 import { writeJSON } from "fs-extra";
-import execa = require("execa");
 export class CompileContract extends Command {
   static description = "Compile the smart contract(s) in your contracts directory";
 

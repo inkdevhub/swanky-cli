@@ -1,6 +1,6 @@
 {
   "name": "@astar-network/swanky-cli",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Astar network WASM contract CLI tool",
   "author": "Astar network",
   "bin": {
@@ -17,13 +17,13 @@
     "/oclif.manifest.json"
   ],
   "dependencies": {
-    "@astar-network/swanky-core": "^1.0.6",
-    "@astar-network/swanky-templates": "^1.0.6",
+    "@astar-network/swanky-core": "^1.0.8",
+    "@astar-network/swanky-templates": "^1.0.8",
     "@oclif/core": "1.20.2",
     "@oclif/plugin-help": "^5.1.17",
     "@oclif/plugin-plugins": "^2.1.4",
     "@oclif/plugin-version": "^1.1.3",
-    "@polkadot/util-crypto": "^10.1.2",
+    "@polkadot/util-crypto": "10.2.6",
     "chalk": "4",
     "change-case": "^4.1.2",
     "execa": "5.1.1",
@@ -108,8 +108,12 @@
     "access": "public"
   },
   "resolutions": {
-    "@polkadot/util": "10.2.1",
-    "@polkadot/util-crypto": "10.2.1",
-    "@polkadot/keyring": "10.2.1"
+    "@polkadot/api": "9.11.3",
+    "@polkadot/api-contract": "9.11.3",
+    "@polkadot/util": "10.2.6",
+    "@polkadot/util-crypto": "10.2.6",
+    "@polkadot/keyring": "10.2.6",
+    "@polkadot/api-augment": "9.11.3",
+    "@polkadot/types": "9.11.3"
   }
 }
