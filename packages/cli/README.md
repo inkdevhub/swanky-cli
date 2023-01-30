@@ -38,7 +38,7 @@ USAGE
 * [`swanky contract query CONTRACTNAME MESSAGENAME`](#swanky-contract-query-contractname-messagename)
 * [`swanky contract tx CONTRACTNAME MESSAGENAME`](#swanky-contract-tx-contractname-messagename)
 * [`swanky contract typegen CONTRACTNAME`](#swanky-contract-typegen-contractname)
-* [`swanky help [COMMANDS]`](#swanky-help-commands)
+* [`swanky help [COMMAND]`](#swanky-help-command)
 * [`swanky init PROJECTNAME`](#swanky-init-projectname)
 * [`swanky node purge`](#swanky-node-purge)
 * [`swanky node start`](#swanky-node-start)
@@ -232,16 +232,16 @@ DESCRIPTION
   Generate types from compiled contract metadata
 ```
 
-## `swanky help [COMMANDS]`
+## `swanky help [COMMAND]`
 
 Display help for swanky.
 
 ```
 USAGE
-  $ swanky help [COMMANDS] [-n]
+  $ swanky help [COMMAND] [-n]
 
 ARGUMENTS
-  COMMANDS  Command to show help for.
+  COMMAND  Command to show help for.
 
 FLAGS
   -n, --nested-commands  Include all nested commands in the output.
@@ -250,7 +250,7 @@ DESCRIPTION
   Display help for swanky.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.0/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.1.17/src/commands/help.ts)_
 
 ## `swanky init PROJECTNAME`
 
@@ -321,7 +321,7 @@ EXAMPLES
   $ swanky plugins
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.2.2/src/commands/plugins/index.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.1.4/src/commands/plugins/index.ts)_
 
 ## `swanky plugins:install PLUGIN...`
 
@@ -551,7 +551,7 @@ FLAG DESCRIPTIONS
     Additionally shows the architecture, node version, operating system, and versions of plugins that the CLI is using.
 ```
 
-_See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.2.0/src/commands/version.ts)_
+_See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.1.3/src/commands/version.ts)_
 <!-- commandsstop -->
 
 # Config
