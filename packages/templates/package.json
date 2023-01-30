@@ -7,7 +7,7 @@
   "main": "./dist/templates.js",
   "repository": "https://github.com/AstarNetwork/swanky-cli",
   "dependencies": {
-    "fs-extra": "^10.1.0"
+    "fs-extra": "10.1.0"
   },
   "scripts": {
     "build": "shx rm -rf dist && rm -f tsconfig.tsbuildinfo && tsc -b && yarn copy-templates",
