@@ -5,6 +5,7 @@ import { ensureSwankyProject, getSwankyConfig } from "@astar-network/swanky-core
 import globby from "globby";
 import Mocha from "mocha";
 import { ensureDir } from "fs-extra";
+import * as shell from "shelljs";
 
 declare global {
   var contractTypesPath: string; // eslint-disable-line no-var
@@ -71,6 +72,8 @@ export class CompileContract extends Command {
     });
 
     global.contractTypesPath = path.resolve("test", args.contractName, "typedContract");
+
+    shell.cd(`./test/${args.contractName}`)
     mocha.run((failures) => {
       if (failures) {
         this.error(`At least one of the tests failed. Check report for details: ${reportDir}`);

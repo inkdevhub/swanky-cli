@@ -2,14 +2,15 @@ import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
 import { readdirSync } from "node:fs";
 import {
-  copyArtifactsFor,
+  moveArtifactsFor,
   ensureSwankyProject,
   getBuildCommandFor,
   getSwankyConfig,
   BuildData,
   Spinner,
 } from "@astar-network/swanky-core";
-import { writeJSON } from "fs-extra";
+import { readJSON, writeJSON } from "fs-extra";
+
 export class CompileContract extends Command {
   static description = "Compile the smart contract(s) in your contracts directory";
 
@@ -50,7 +51,17 @@ export class CompileContract extends Command {
       this.error(`Path to contract ${args.contractName} does not exist: ${contractPath}`);
     }
 
-    // await execa.command("npx typechain-compiler");
+    // Dirty fix: This is needed until completely abolishing typechain-compiler.
+    // Modifying typechain-compiler's config.json before compiling.
+    // Due to typechain-compiler's limitation (https://github.com/Supercolony-net/typechain-polkadot#usage-of-typechain-compiler),
+    // it is currently unable to choose which contracts to compile without modifying global config.json file.
+    // This temporal fixes needed until having upstream fixes or finding alternative solution.
+    const typechainCompilerConfig: TypechainCompilerConfig = await readJSON("config.json");
+    typechainCompilerConfig.projectFiles = [`contracts/${args.contractName}/*`];
+    await writeJSON(path.resolve("config.json"), typechainCompilerConfig, {
+      spaces: 2,
+    })
+
     await spinner.runCommand(
       async () => {
         return new Promise<void>((resolve, reject) => {
@@ -74,15 +85,8 @@ export class CompileContract extends Command {
     );
 
     const buildData = (await spinner.runCommand(async () => {
-      return copyArtifactsFor(contractInfo.language, contractInfo.name, contractPath);
+      return moveArtifactsFor(contractInfo.language, contractInfo.name, contractPath);
     }, "Copying artifacts")) as BuildData;
-
-    // if (contractInfo.language === "ask") {
-    //   await spinner.runCommand(async () => {
-    //     const testPath = path.resolve(`test/${args.contractName}`);
-    //     await generateTypes(buildData.artifactsPath, testPath);
-    //   }, "Generating types");
-    // }
 
     await spinner.runCommand(async () => {
       contractInfo.build = buildData;
@@ -92,4 +96,12 @@ export class CompileContract extends Command {
       });
     }, "Writing config");
   }
+}
+
+// https://github.com/Supercolony-net/typechain-polkadot#usage-of-typechain-compiler
+interface TypechainCompilerConfig {
+  projectFiles: string[]; // Path to all project files, everystring in glob format
+  skipLinting : boolean; // Skip linting of project files
+  artifactsPath : string; // Path to artifacts folder, where artifacts will be stored it will save both .contract and .json (contract ABI)
+  typechainGeneratedPath : string; // Path to typechain generated folder
 }
