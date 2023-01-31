@@ -3,55 +3,55 @@
 [How to guide on Astar docs page](https://docs.astar.network/docs/wasm/sc-dev/swanky)
 
 <!-- toc -->
-
-- [Swanky CLI](#swanky-cli)
-- [Usage](#usage)
-- [Commands](#commands)
-- [Config](#config)
+* [Swanky CLI](#swanky-cli)
+* [Usage](#usage)
+* [Commands](#commands)
+* [Config](#config)
 <!-- tocstop -->
 
 # Usage
 
 <!-- usage -->
-
 ```sh-session
 $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
 running command...
 $ swanky (--version|-V|-v)
-@astar-network/swanky-cli/1.0.7 darwin-x64 node-v18.2.0
+@astar-network/swanky-cli/1.0.9 darwin-x64 node-v18.2.0
 $ swanky --help [COMMAND]
 USAGE
   $ swanky COMMAND
 ...
 ```
-
 <!-- usagestop -->
 
 # Commands
 
 <!-- commands -->
-
-- [`swanky account create`](#swanky-account-create)
-- [`swanky account list`](#swanky-account-list)
-- [`swanky account ls`](#swanky-account-ls)
-- [`swanky check`](#swanky-check)
-- [`swanky contract call`](#swanky-contract-call)
-- [`swanky contract compile CONTRACTNAME`](#swanky-contract-compile-contractname)
-- [`swanky contract deploy CONTRACTNAME`](#swanky-contract-deploy-contractname)
-- [`swanky contract new CONTRACTNAME`](#swanky-contract-new-contractname)
-- [`swanky contract typegen CONTRACTNAME`](#swanky-contract-typegen-contractname)
-- [`swanky help [COMMAND]`](#swanky-help-command)
-- [`swanky init PROJECTNAME`](#swanky-init-projectname)
-- [`swanky node purge`](#swanky-node-purge)
-- [`swanky node start`](#swanky-node-start)
-- [`swanky plugins`](#swanky-plugins)
-- [`swanky plugins:install PLUGIN...`](#swanky-pluginsinstall-plugin)
-- [`swanky plugins:inspect PLUGIN...`](#swanky-pluginsinspect-plugin)
-- [`swanky plugins:link PLUGIN`](#swanky-pluginslink-plugin)
-- [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin)
-- [`swanky plugins update`](#swanky-plugins-update)
-- [`swanky version`](#swanky-version)
+* [`swanky account create`](#swanky-account-create)
+* [`swanky account list`](#swanky-account-list)
+* [`swanky account ls`](#swanky-account-ls)
+* [`swanky check`](#swanky-check)
+* [`swanky contract compile CONTRACTNAME`](#swanky-contract-compile-contractname)
+* [`swanky contract deploy CONTRACTNAME`](#swanky-contract-deploy-contractname)
+* [`swanky contract new CONTRACTNAME`](#swanky-contract-new-contractname)
+* [`swanky contract query CONTRACTNAME MESSAGENAME`](#swanky-contract-query-contractname-messagename)
+* [`swanky contract tx CONTRACTNAME MESSAGENAME`](#swanky-contract-tx-contractname-messagename)
+* [`swanky contract typegen CONTRACTNAME`](#swanky-contract-typegen-contractname)
+* [`swanky help [COMMAND]`](#swanky-help-command)
+* [`swanky init PROJECTNAME`](#swanky-init-projectname)
+* [`swanky node purge`](#swanky-node-purge)
+* [`swanky node start`](#swanky-node-start)
+* [`swanky plugins`](#swanky-plugins)
+* [`swanky plugins:install PLUGIN...`](#swanky-pluginsinstall-plugin)
+* [`swanky plugins:inspect PLUGIN...`](#swanky-pluginsinspect-plugin)
+* [`swanky plugins:install PLUGIN...`](#swanky-pluginsinstall-plugin-1)
+* [`swanky plugins:link PLUGIN`](#swanky-pluginslink-plugin)
+* [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin)
+* [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin-1)
+* [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin-2)
+* [`swanky plugins update`](#swanky-plugins-update)
+* [`swanky version`](#swanky-version)
 
 ## `swanky account create`
 
@@ -111,28 +111,7 @@ DESCRIPTION
   Check installed package versions and compatibility
 ```
 
-_See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v1.0.7/dist/commands/check/index.ts)_
-
-## `swanky contract call`
-
-Call a method on a smart contract
-
-```
-USAGE
-  $ swanky contract call --contractName <value> -m <value> [-a <value>] [-d] [-g <value>] [-n <value>] [-t <value>]
-
-FLAGS
-  -a, --args=<value>
-  -d, --dry
-  -g, --gas=<value>
-  -m, --message=<value>              (required)
-  -n, --network=<value>              Network name to connect to
-  -t, --deploymentTimestamp=<value>  Specific deployment to target
-  --contractName=<value>             (required)
-
-DESCRIPTION
-  Call a method on a smart contract
-```
+_See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v1.0.9/dist/commands/check/index.ts)_
 
 ## `swanky contract compile CONTRACTNAME`
 
@@ -193,6 +172,51 @@ DESCRIPTION
   Generate a new smart contract template inside a project
 ```
 
+## `swanky contract query CONTRACTNAME MESSAGENAME`
+
+Call a query message on smart contract
+
+```
+USAGE
+  $ swanky contract query [CONTRACTNAME] [MESSAGENAME] [-v] [-p <value>] [-g <value>] [-n <value>] [-a <value>]
+    [--address <value>]
+
+ARGUMENTS
+  CONTRACTNAME  Contract to call
+  MESSAGENAME   What message to call
+
+FLAGS
+  -a, --account=<value>    Account to sign the transaction with
+  -g, --gas=<value>        Manually specify gas limit
+  -n, --network=<value>    Network name to connect to
+  -p, --params=<value>...  [default: ] Arguments supplied to the message
+  -v, --verbose            Display more info in the result logs
+  --address=<value>        Target specific address, defaults to last deployed. (--addr, --add)
+```
+
+## `swanky contract tx CONTRACTNAME MESSAGENAME`
+
+Call a Tx message on smart contract
+
+```
+USAGE
+  $ swanky contract tx [CONTRACTNAME] [MESSAGENAME] -a <value> [-v] [-p <value>] [-g <value>] [-n <value>]
+    [--address <value>] [-d]
+
+ARGUMENTS
+  CONTRACTNAME  Contract to call
+  MESSAGENAME   What message to call
+
+FLAGS
+  -a, --account=<value>    (required) Account to sign the transaction with
+  -d, --dry                Do a dry run, without signing the transaction
+  -g, --gas=<value>        Manually specify gas limit
+  -n, --network=<value>    Network name to connect to
+  -p, --params=<value>...  [default: ] Arguments supplied to the message
+  -v, --verbose            Display more info in the result logs
+  --address=<value>        Target specific address, defaults to last deployed. (--addr, --add)
+```
+
 ## `swanky contract typegen CONTRACTNAME`
 
 Generate types from compiled contract metadata
@@ -226,7 +250,7 @@ DESCRIPTION
   Display help for swanky.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.1.20/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.1.17/src/commands/help.ts)_
 
 ## `swanky init PROJECTNAME`
 
@@ -250,7 +274,7 @@ DESCRIPTION
   Generate a new smart contract environment
 ```
 
-_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v1.0.7/dist/commands/init/index.ts)_
+_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v1.0.9/dist/commands/init/index.ts)_
 
 ## `swanky node purge`
 
@@ -297,7 +321,7 @@ EXAMPLES
   $ swanky plugins
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.1.8/src/commands/plugins/index.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v2.1.4/src/commands/plugins/index.ts)_
 
 ## `swanky plugins:install PLUGIN...`
 
@@ -330,7 +354,7 @@ ALIASES
   $ swanky plugins add
 
 EXAMPLES
-  $ swanky plugins:install myplugin
+  $ swanky plugins:install myplugin 
 
   $ swanky plugins:install https://github.com/someuser/someplugin
 
@@ -359,6 +383,44 @@ EXAMPLES
   $ swanky plugins:inspect myplugin
 ```
 
+## `swanky plugins:install PLUGIN...`
+
+Installs a plugin into the CLI.
+
+```
+USAGE
+  $ swanky plugins:install PLUGIN...
+
+ARGUMENTS
+  PLUGIN  Plugin to install.
+
+FLAGS
+  -f, --force    Run yarn install with force flag.
+  -h, --help     Show CLI help.
+  -v, --verbose
+
+DESCRIPTION
+  Installs a plugin into the CLI.
+  Can be installed from npm or a git url.
+
+  Installation of a user-installed plugin will override a core plugin.
+
+  e.g. If you have a core plugin that has a 'hello' command, installing a user-installed plugin with a 'hello' command
+  will override the core plugin implementation. This is useful if a user needs to update core plugin functionality in
+  the CLI without the need to patch and update the whole CLI.
+
+
+ALIASES
+  $ swanky plugins add
+
+EXAMPLES
+  $ swanky plugins:install myplugin 
+
+  $ swanky plugins:install https://github.com/someuser/someplugin
+
+  $ swanky plugins:install someuser/someplugin
+```
+
 ## `swanky plugins:link PLUGIN`
 
 Links a plugin into the CLI for development.
@@ -384,6 +446,52 @@ DESCRIPTION
 
 EXAMPLES
   $ swanky plugins:link myplugin
+```
+
+## `swanky plugins:uninstall PLUGIN...`
+
+Removes a plugin from the CLI.
+
+```
+USAGE
+  $ swanky plugins:uninstall PLUGIN...
+
+ARGUMENTS
+  PLUGIN  plugin to uninstall
+
+FLAGS
+  -h, --help     Show CLI help.
+  -v, --verbose
+
+DESCRIPTION
+  Removes a plugin from the CLI.
+
+ALIASES
+  $ swanky plugins unlink
+  $ swanky plugins remove
+```
+
+## `swanky plugins:uninstall PLUGIN...`
+
+Removes a plugin from the CLI.
+
+```
+USAGE
+  $ swanky plugins:uninstall PLUGIN...
+
+ARGUMENTS
+  PLUGIN  plugin to uninstall
+
+FLAGS
+  -h, --help     Show CLI help.
+  -v, --verbose
+
+DESCRIPTION
+  Removes a plugin from the CLI.
+
+ALIASES
+  $ swanky plugins unlink
+  $ swanky plugins remove
 ```
 
 ## `swanky plugins:uninstall PLUGIN...`
@@ -444,7 +552,6 @@ FLAG DESCRIPTIONS
 ```
 
 _See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.1.3/src/commands/version.ts)_
-
 <!-- commandsstop -->
 
 # Config
