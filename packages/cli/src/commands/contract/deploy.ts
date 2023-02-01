@@ -33,6 +33,11 @@ export class DeployContract extends Command {
       char: "a",
       multiple: true,
     }),
+    constructorName: Flags.string({
+      default: "new",
+      char: "c",
+      description: "Constructor function name of a contract to deploy",
+    }),
     network: Flags.string({
       char: "n",
       description: "Network name to connect to",
@@ -121,6 +126,7 @@ export class DeployContract extends Command {
         const contractAddress = await api.deploy(
           abi,
           wasm,
+          flags.constructorName,
           account.pair,
           flags.gas,
           flags.args as string[]
