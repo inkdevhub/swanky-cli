@@ -7,8 +7,16 @@ export class StartNode extends Command {
   static flags = {
     tmp: Flags.boolean({
       char: "t",
+      required: false,
       description: "Run node with non-persistent mode",
     }),
+    rpcCors: Flags.string({
+      required: false,
+      default: "http://localhost:*,http://127.0.0.1:*,https://localhost:*,https://127.0.0.1:*,https://polkadot.js.org,https://contracts-ui.substrate.io/",
+      description: `RPC CORS origin swanky-node accepts. With '--tmp' flag, node accepts all origins.
+        Without it, you may need to specify by comma separated string.
+        By default, 'http://localhost:*,http://127.0.0.1:*,https://localhost:*,https://127.0.0.1:*,https://polkadot.js.org,https://contracts-ui.substrate.io/' is set.`,
+    })
   };
 
   static args = [];
@@ -19,10 +27,10 @@ export class StartNode extends Command {
     const { flags } = await this.parse(StartNode);
 
     const config = await getSwankyConfig();
-    const rpcCors = "http://localhost:*,http://127.0.0.1:*,https://localhost:*,https://127.0.0.1:*,https://polkadot.js.org,https://contracts-ui.substrate.io/";
-    // run persistent mode by default. non-persistent mode in case flag is provided.
+    // Run persistent mode by default. non-persistent mode in case flag is provided.
+    // Non-Persistent mode (`--dev`) allows all CORS origin, without `--dev`, users need to specify origins by `--rpc-cors`.
     await execa.command(`${config.node.localPath} \
-      ${flags.tmp ? "--dev" : `--rpc-cors ${rpcCors}`}`, {
+      ${flags.tmp ? "--dev" : `--rpc-cors ${flags.rpcCors}`}`, {
       stdio: "inherit",
     });
 

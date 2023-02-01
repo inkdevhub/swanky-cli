@@ -61,6 +61,7 @@ export async function copyContractTemplateFiles(
 export async function processTemplates(projectPath: string, templateData: Record<string, string>) {
   const templateFiles = await globby(projectPath, {
     expandDirectories: { extensions: ["hbs"] },
+    gitignore: true,
   });
 
   handlebars.registerHelper("if_eq", function (a, b, options): boolean {
@@ -95,7 +96,7 @@ export async function downloadNode(projectPath: string, nodeInfo: nodeInfo, spin
     const dl = new DownloaderHelper(dlUrl, binPath);
 
     dl.on("progress", (event) => {
-      spinner.text(`Downloading Swanky node ${event.progress}%`);
+      spinner.text(`Downloading Swanky node ${event.progress.toFixed(2)}%`);
     });
     dl.on("end", (event) => {
       resolve(event);
