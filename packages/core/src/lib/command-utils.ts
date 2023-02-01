@@ -44,10 +44,11 @@ export function resolveNetworkUrl(config: SwankyConfig, networkName: string): st
 
 export function getBuildCommandFor(
   language: ContractData["language"],
-  contractPath: string
+  contractPath: string,
+  release: boolean,
 ): ChildProcessWithoutNullStreams {
   if (language === "ink") {
-    return spawn("npx", ["typechain-compiler"]);
+    return spawn("npx", ["typechain-compiler", release ? "--release" : ""]);
   }
   if (language === "ask") {
     return spawn(
