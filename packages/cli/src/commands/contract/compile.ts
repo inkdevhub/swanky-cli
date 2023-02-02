@@ -77,11 +77,9 @@ export class CompileContract extends Command {
             build.stderr.on("data", () => spinner.ora.clear());
             build.stderr.pipe(process.stdout);
           }
-          build.on("error", (error) => {
-            reject(error);
-          });
-          build.on("exit", () => {
-            resolve();
+          build.on("exit", (code) => {
+            if (code === 0) resolve();
+            else reject();
           });
         });
       },
