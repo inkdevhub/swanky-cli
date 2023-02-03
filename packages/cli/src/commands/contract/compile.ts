@@ -8,7 +8,12 @@ import {
   getSwankyConfig,
   BuildData,
   Spinner,
+  consts,
 } from "@astar-network/swanky-core";
+const {
+  INK_ARTIFACTS_PATH,
+  TYPED_CONTRACT_PATH,
+} = consts;
 import { readJSON, writeJSON } from "fs-extra";
 
 export class CompileContract extends Command {
@@ -61,8 +66,14 @@ export class CompileContract extends Command {
     // Due to typechain-compiler's limitation (https://github.com/Supercolony-net/typechain-polkadot#usage-of-typechain-compiler),
     // it is currently unable to choose which contracts to compile without modifying global config.json file.
     // This temporal fixes needed until having upstream fixes or finding alternative solution.
+    //
+    // INFO: typechain-compiler and typechain-polkadot is actively developped by 727-Ventures.
+    // https://github.com/727-Ventures/typechain-polkadot
+    // Milestones accomplished there, the way to compile and manage artifacts should be improved in swanky-cli side accordingly.
     const typechainCompilerConfig: TypechainCompilerConfig = await readJSON("config.json");
     typechainCompilerConfig.projectFiles = [`contracts/${args.contractName}/*`];
+    typechainCompilerConfig.artifactsPath = INK_ARTIFACTS_PATH;
+    typechainCompilerConfig.typechainGeneratedPath = TYPED_CONTRACT_PATH;
     await writeJSON(path.resolve("config.json"), typechainCompilerConfig, {
       spaces: 2,
     })
@@ -89,7 +100,7 @@ export class CompileContract extends Command {
 
     const buildData = (await spinner.runCommand(async () => {
       return moveArtifactsFor(contractInfo.language, contractInfo.name, contractPath);
-    }, "Copying artifacts")) as BuildData;
+    }, "Moving artifacts")) as BuildData;
 
     await spinner.runCommand(async () => {
       contractInfo.build = buildData;

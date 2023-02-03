@@ -1,4 +1,5 @@
 import { Command } from "@oclif/core";
+import * as fs from "fs-extra";
 import path = require("node:path");
 import { readdirSync } from "node:fs";
 import {
@@ -6,7 +7,12 @@ import {
   getSwankyConfig,
   Spinner,
   generateTypes,
+  consts,
 } from "@astar-network/swanky-core";
+const {
+  INK_ARTIFACTS_PATH,
+  TYPED_CONTRACT_PATH,
+} = consts;
 export class CompileContract extends Command {
   static description = "Generate types from compiled contract metadata";
 
@@ -44,9 +50,33 @@ export class CompileContract extends Command {
     if (!contractInfo.build) {
       this.error(`No build data for contract "${args.contractName}"`);
     }
+    
     await spinner.runCommand(async () => {
-      // @ts-ignore
-      await generateTypes(contractInfo.build.artifactsPath, testPath);
+      const destinationPath = path.resolve(testPath, "typedContract");
+      const destinationPathExists = await fs.pathExists(destinationPath);
+      if (destinationPathExists) {
+        await fs.remove(destinationPath);
+      }
+
+      // Because relative path from input (artifacts) and output (typedContract) does matter for generated files of typechain-polkadot,
+      // Need to copy artifacts (`.contract` and ABI json) to project root artifacts folder beforehand and use them.
+      await fs.copy(
+        // @ts-ignore
+        contractInfo.build.artifactsPath,
+        INK_ARTIFACTS_PATH,
+      );
+
+      await generateTypes(INK_ARTIFACTS_PATH, TYPED_CONTRACT_PATH);
+      
+      await fs.copy(TYPED_CONTRACT_PATH, destinationPath);
+
+      // Need to cleanup files inside artifacts folder, because typechain-polkadot generate types for all files under input folder.
+      // Residues affects the result of next contract's type generation.
+      // 
+      // In compile command, using fs.move from artifacts path, thus there's no residues.
+      await fs.remove(INK_ARTIFACTS_PATH);
+
+      // await fs.readdir(INK_ARTIFACTS_PATH)
     }, "Generating types");
   }
 }

@@ -136,19 +136,9 @@ export async function installDeps(projectPath: string) {
   }
 }
 
-export async function generateTypes(artifactsPath: string, destinationPath: string) {
+export async function generateTypes(artifactsPath: string, outputPath: string) {
   try {
-    const targetPath = path.resolve(destinationPath, "typedContract");
-    const targetPathExists = await pathExists(targetPath);
-    if (targetPathExists) {
-      await remove(targetPath);
-    }
-
-    await execa.command(`npx typechain-polkadot --in . --out typedContract`, {
-      cwd: artifactsPath,
-    });
-
-    await copy(path.resolve(artifactsPath, "typedContract"), targetPath);
+    await execa.command(`npx typechain-polkadot --in ${artifactsPath} --out ${outputPath}`);
   } catch (error) {
     console.error(error);
   }

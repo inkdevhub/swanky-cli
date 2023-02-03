@@ -2,7 +2,7 @@ import execa from "execa";
 import fs = require("fs-extra");
 import { ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import path = require("node:path");
-import { DEFAULT_NETWORK_URL } from "./consts.js";
+import { DEFAULT_NETWORK_URL, INK_ARTIFACTS_PATH, TYPED_CONTRACT_PATH } from "./consts.js";
 import { BuildData, ContractData, SwankyConfig } from "../types";
 
 export async function commandStdoutOrNull(command: string): Promise<string | null> {
@@ -69,7 +69,7 @@ export async function moveArtifactsFor(
   const ts = Date.now();
   const buildData = {
     timestamp: ts,
-    artifactsPath: path.resolve("artifacts", contractName, ts.toString()),
+    artifactsPath: path.resolve(INK_ARTIFACTS_PATH, contractName, ts.toString()),
   };
 
   await fs.ensureDir(buildData.artifactsPath);
@@ -84,11 +84,11 @@ export async function moveArtifactsFor(
     try {
       await Promise.all([
         fs.copyFile(
-          path.resolve("artifacts", `${contractName}.contract`),
+          path.resolve(INK_ARTIFACTS_PATH, `${contractName}.contract`),
           `${buildData.artifactsPath}/${contractName}.wasm`
         ),
         fs.copyFile(
-          path.resolve("artifacts", `${contractName}.json`),
+          path.resolve(INK_ARTIFACTS_PATH, `${contractName}.json`),
           `${buildData.artifactsPath}/${contractName}.json`
         ),
       ]);
@@ -99,16 +99,16 @@ export async function moveArtifactsFor(
       await fs.ensureDir(testTypedContracts)
       await Promise.all([
         fs.move(
-          path.resolve("artifacts", `${contractName}.contract`),
+          path.resolve(INK_ARTIFACTS_PATH, `${contractName}.contract`),
           `${testArtifacts}/${contractName}.contract`,
           { overwrite: true }
         ),
         fs.move(
-          path.resolve("artifacts", `${contractName}.json`),
+          path.resolve(INK_ARTIFACTS_PATH, `${contractName}.json`),
           `${testArtifacts}/${contractName}.json`,
           { overwrite: true }
         ),
-        fs.move("typedContract", testTypedContracts, {
+        fs.move(TYPED_CONTRACT_PATH, testTypedContracts, {
           overwrite: true,
         }),
       ]);
