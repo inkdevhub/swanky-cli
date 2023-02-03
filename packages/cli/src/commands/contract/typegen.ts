@@ -10,7 +10,7 @@ import {
   consts,
 } from "@astar-network/swanky-core";
 const {
-  INK_ARTIFACTS_PATH,
+  ARTIFACTS_PATH,
   TYPED_CONTRACT_PATH,
 } = consts;
 export class CompileContract extends Command {
@@ -63,10 +63,10 @@ export class CompileContract extends Command {
       await fs.copy(
         // @ts-ignore
         contractInfo.build.artifactsPath,
-        INK_ARTIFACTS_PATH,
+        ARTIFACTS_PATH,
       );
 
-      await generateTypes(INK_ARTIFACTS_PATH, TYPED_CONTRACT_PATH);
+      await generateTypes(ARTIFACTS_PATH, TYPED_CONTRACT_PATH);
       
       await fs.copy(TYPED_CONTRACT_PATH, destinationPath);
 
@@ -74,9 +74,13 @@ export class CompileContract extends Command {
       // Residues affects the result of next contract's type generation.
       // 
       // In compile command, using fs.move from artifacts path, thus there's no residues.
-      await fs.remove(INK_ARTIFACTS_PATH);
-
-      // await fs.readdir(INK_ARTIFACTS_PATH)
+      (await fs.readdir(ARTIFACTS_PATH)).forEach(async (file) => {
+        const filepath = path.resolve(ARTIFACTS_PATH, file);
+        const filestat = await fs.stat(filepath);
+        if (!filestat.isDirectory()) {
+          await fs.remove(filepath);
+        }
+      })
     }, "Generating types");
   }
 }

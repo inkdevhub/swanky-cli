@@ -4,4 +4,4 @@ export const DEFAULT_SHIDEN_NETWORK_URL = "wss://rpc.shiden.astar.network";
 export const DEFAULT_SHIBUYA_NETWORK_URL = "wss://rpc.shibuya.astar.network";
 
 export const TYPED_CONTRACT_PATH = "./typedContract";
-export const INK_ARTIFACTS_PATH = "./artifacts";
+export const ARTIFACTS_PATH = "./artifacts";

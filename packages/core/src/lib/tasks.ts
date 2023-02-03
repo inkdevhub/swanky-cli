@@ -136,10 +136,6 @@ export async function installDeps(projectPath: string) {
   }
 }
 
-export async function generateTypes(artifactsPath: string, outputPath: string) {
-  try {
-    await execa.command(`npx typechain-polkadot --in ${artifactsPath} --out ${outputPath}`);
-  } catch (error) {
-    console.error(error);
-  }
+export async function generateTypes(inputPath: string, outputPath: string) {
+  await execa.command(`npx typechain-polkadot --in ${inputPath} --out ${outputPath}`);
 }

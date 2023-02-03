@@ -1,9 +1,11 @@
 import execa from "execa";
 import fs = require("fs-extra");
+import Files from "fs";
 import { ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import path = require("node:path");
-import { DEFAULT_NETWORK_URL, INK_ARTIFACTS_PATH, TYPED_CONTRACT_PATH } from "./consts.js";
+import { DEFAULT_NETWORK_URL, ARTIFACTS_PATH, TYPED_CONTRACT_PATH } from "./consts.js";
 import { BuildData, ContractData, SwankyConfig } from "../types";
+import { generateTypes } from "./tasks.js";
 
 export async function commandStdoutOrNull(command: string): Promise<string | null> {
   try {
@@ -46,88 +48,122 @@ export function getBuildCommandFor(
   language: ContractData["language"],
   contractPath: string,
   release: boolean,
-): ChildProcessWithoutNullStreams {
+) : ChildProcessWithoutNullStreams {
   if (language === "ink") {
-    return spawn("npx", ["typechain-compiler", release ? "--release" : ""]);
+    const args = ["contract", "build", "--manifest-path", `${contractPath}/Cargo.toml`]
+    if (release) {
+      args.push("--release")
+    }
+    return spawn(
+      "cargo",
+      args
+    )
   }
   if (language === "ask") {
+    const args = ["asc", "--config", `${contractPath}/asconfig.json`, `${contractPath}/index.ts`];
+    if (release) {
+      args.push("-O");
+      args.push("--noAssert");
+    }
     return spawn(
       "npx",
-      ["asc", "--config", `${contractPath}/asconfig.json`, `${contractPath}/index.ts`],
+      args,
       { env: { ...process.env, ASK_CONFIG: `${contractPath}/askconfig.json` } }
     );
   }
-
   throw new Error("Unsupported language!");
 }
 
-export async function moveArtifactsFor(
+export async function generateTypesFor(
   language: ContractData["language"],
   contractName: string,
   contractPath: string
+) {
+  // Firstly, need to copy wasm blob and abi.json to workspace folder
+  if (language === "ink") {
+    await Promise.all([
+      fs.copyFile(
+        path.resolve(contractPath, "target", "ink", `${contractName}.contract`),
+        path.resolve(ARTIFACTS_PATH, `${contractName}.contract`),
+      ),
+      fs.copyFile(
+        path.resolve(contractPath, "target", "ink", "metadata.json"),
+        path.resolve(ARTIFACTS_PATH, `${contractName}.json`),
+      )
+    ])
+  } else if (language === "ask") {
+    await Promise.all([
+      fs.copyFile(
+        path.resolve(contractPath, "build", `${contractName}.wasm`),
+        path.resolve(ARTIFACTS_PATH, `${contractName}.wasm`),
+      ),
+      fs.copyFile(
+        path.resolve(contractPath, "build", "metadata.json"),
+        path.resolve(ARTIFACTS_PATH, `${contractName}.json`),
+      ),
+    ])
+
+    // Ask! build artifacts don't have `.contract` file which is just an combination of abi json and wasm blob
+    // `.contract` will have .source.wasm field whose value is wasm blob hex representation.
+    // If Ask! officially support .contract file, no need for this step.
+    const contract = JSON.parse(Files.readFileSync(path.resolve(ARTIFACTS_PATH, `${contractName}.json`)).toString());
+    const wasmBuf = Files.readFileSync(path.resolve(contractPath, "build", `${contractName}.wasm`));
+    const prefix = "0x"
+    contract.source.wasm = prefix + wasmBuf.toString("hex");
+    fs.writeFileSync(path.resolve(ARTIFACTS_PATH, `${contractName}.contract`), JSON.stringify(contract));
+    fs.remove(path.resolve(ARTIFACTS_PATH, `${contractName}.wasm`));
+  } else {
+    throw new Error("Unsupported language!");
+  }
+
+  await generateTypes(ARTIFACTS_PATH, TYPED_CONTRACT_PATH)
+}
+
+export async function moveArtifacts(
+  contractName: string,
 ): Promise<BuildData> {
   const ts = Date.now();
   const buildData = {
     timestamp: ts,
-    artifactsPath: path.resolve(INK_ARTIFACTS_PATH, contractName, ts.toString()),
+    artifactsPath: path.resolve(ARTIFACTS_PATH, contractName, ts.toString()),
   };
 
   await fs.ensureDir(buildData.artifactsPath);
 
-  // const buildPaths = {
-  //   ask: path.resolve(contractPath, "build"),
-  //   ink: path.resolve(contractPath, "target", "ink"),
-  // };
-
-  if (language === "ink") {
-    //copy artifacts/contract_name.contract and .json to artifactsPath .wasm and .json
-    try {
-      await Promise.all([
-        fs.copyFile(
-          path.resolve(INK_ARTIFACTS_PATH, `${contractName}.contract`),
-          `${buildData.artifactsPath}/${contractName}.wasm`
-        ),
-        fs.copyFile(
-          path.resolve(INK_ARTIFACTS_PATH, `${contractName}.json`),
-          `${buildData.artifactsPath}/${contractName}.json`
-        ),
-      ]);
-      //copy both to test/contract_name/artifacts
-      const testArtifacts = path.resolve("test", contractName, "artifacts");
-      const testTypedContracts = path.resolve("test", contractName, "typedContract")
-      await fs.ensureDir(testArtifacts);
-      await fs.ensureDir(testTypedContracts)
-      await Promise.all([
-        fs.move(
-          path.resolve(INK_ARTIFACTS_PATH, `${contractName}.contract`),
-          `${testArtifacts}/${contractName}.contract`,
-          { overwrite: true }
-        ),
-        fs.move(
-          path.resolve(INK_ARTIFACTS_PATH, `${contractName}.json`),
-          `${testArtifacts}/${contractName}.json`,
-          { overwrite: true }
-        ),
-        fs.move(TYPED_CONTRACT_PATH, testTypedContracts, {
-          overwrite: true,
-        }),
-      ]);
-    } catch (e) {
-      console.error(e);
-    }
-  } else {
+  // copy artifacts/contract_name.contract and .json to artifactsPath .contract and .json
+  try {
     await Promise.all([
-      fs.move(
-        path.resolve(contractPath, "build", `${contractName}.wasm`),
-        `${buildData.artifactsPath}/${contractName}.wasm`,
-        { overwrite: true }
+      fs.copyFile(
+        path.resolve(ARTIFACTS_PATH, `${contractName}.contract`),
+        `${buildData.artifactsPath}/${contractName}.contract`
       ),
-      fs.move(
-        path.resolve(contractPath, "build", "metadata.json"),
-        `${buildData.artifactsPath}/${contractName}.json`,
-        { overwrite: true }
+      fs.copyFile(
+        path.resolve(ARTIFACTS_PATH, `${contractName}.json`),
+        `${buildData.artifactsPath}/${contractName}.json`
       ),
     ]);
+    // move both to test/contract_name/artifacts
+    const testArtifacts = path.resolve("test", contractName, "artifacts");
+    const testTypedContracts = path.resolve("test", contractName, "typedContract")
+    await fs.ensureDir(testArtifacts);
+    await fs.ensureDir(testTypedContracts)
+    await Promise.all([
+      fs.move(
+        path.resolve(ARTIFACTS_PATH, `${contractName}.contract`),
+        `${testArtifacts}/${contractName}.contract`,
+        { overwrite: true }
+      ),
+      fs.move(
+        path.resolve(ARTIFACTS_PATH, `${contractName}.json`),
+        `${testArtifacts}/${contractName}.json`,
+        { overwrite: true }
+      ),
+      fs.move(TYPED_CONTRACT_PATH, testTypedContracts, {
+        overwrite: true,
+      }),
+    ]);
+  } catch (e) {
+    console.error(e);
   }
 
   return buildData;

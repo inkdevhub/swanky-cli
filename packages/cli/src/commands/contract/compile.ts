@@ -2,19 +2,15 @@ import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
 import { readdirSync } from "node:fs";
 import {
-  moveArtifactsFor,
+  moveArtifacts,
   ensureSwankyProject,
   getBuildCommandFor,
   getSwankyConfig,
   BuildData,
   Spinner,
-  consts,
+  generateTypesFor,
 } from "@astar-network/swanky-core";
-const {
-  INK_ARTIFACTS_PATH,
-  TYPED_CONTRACT_PATH,
-} = consts;
-import { readJSON, writeJSON } from "fs-extra";
+import { writeJSON } from "fs-extra";
 
 export class CompileContract extends Command {
   static description = "Compile the smart contract(s) in your contracts directory";
@@ -61,45 +57,34 @@ export class CompileContract extends Command {
       this.error(`Path to contract ${args.contractName} does not exist: ${contractPath}`);
     }
 
-    // Dirty fix: This is needed until completely abolishing typechain-compiler.
-    // Modifying typechain-compiler's config.json before compiling.
-    // Due to typechain-compiler's limitation (https://github.com/Supercolony-net/typechain-polkadot#usage-of-typechain-compiler),
-    // it is currently unable to choose which contracts to compile without modifying global config.json file.
-    // This temporal fixes needed until having upstream fixes or finding alternative solution.
-    //
-    // INFO: typechain-compiler and typechain-polkadot is actively developped by 727-Ventures.
-    // https://github.com/727-Ventures/typechain-polkadot
-    // Milestones accomplished there, the way to compile and manage artifacts should be improved in swanky-cli side accordingly.
-    const typechainCompilerConfig: TypechainCompilerConfig = await readJSON("config.json");
-    typechainCompilerConfig.projectFiles = [`contracts/${args.contractName}/*`];
-    typechainCompilerConfig.artifactsPath = INK_ARTIFACTS_PATH;
-    typechainCompilerConfig.typechainGeneratedPath = TYPED_CONTRACT_PATH;
-    await writeJSON(path.resolve("config.json"), typechainCompilerConfig, {
-      spaces: 2,
-    })
-
     await spinner.runCommand(
       async () => {
         return new Promise<void>((resolve, reject) => {
-          const build = getBuildCommandFor(contractInfo.language, contractPath, flags.release);
-          build.stdout.on("data", () => spinner.ora.clear());
-          build.stdout.pipe(process.stdout);
+          const compile = getBuildCommandFor(contractInfo.language, contractPath, flags.release);
+          compile.stdout.on("data", () => spinner.ora.clear());
+          compile.stdout.pipe(process.stdout);
           if (flags.verbose) {
-            build.stderr.on("data", () => spinner.ora.clear());
-            build.stderr.pipe(process.stdout);
+            compile.stderr.on("data", () => spinner.ora.clear());
+            compile.stderr.pipe(process.stdout);
           }
-          build.on("exit", (code) => {
+          compile.on("exit", (code) => {
             if (code === 0) resolve();
             else reject();
           });
         });
       },
       "Compiling contract",
-      "Contract compiled successfully"
+      "Contract compiled successfully",
+    );
+
+    await spinner.runCommand(
+      async () => await generateTypesFor(contractInfo.language, contractInfo.name, contractPath),
+      "Generating contract ts types",
+      "TS types Generated successfully"
     );
 
     const buildData = (await spinner.runCommand(async () => {
-      return moveArtifactsFor(contractInfo.language, contractInfo.name, contractPath);
+      return moveArtifacts(contractInfo.name);
     }, "Moving artifacts")) as BuildData;
 
     await spinner.runCommand(async () => {
