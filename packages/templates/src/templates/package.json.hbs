@@ -9,8 +9,7 @@
   "license": "MIT",
   "scripts": {
     "run-node": "swanky node start",
-    "test": "mocha -r ts-node/register \"test/**/*.test.ts\" --exit --timeout 20000",
-    "postinstall": "patch-package"
+    "test": "mocha -r ts-node/register \"test/**/*.test.ts\" --exit --timeout 20000"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -19,11 +18,10 @@
     {{#if_eq contract_language "ask"}}
     "ask-lang": "^0.4.0-rc3",
     {{/if_eq}}
-    "@727-ventures/typechain-compiler": "^0.5.13",
-    "@727-ventures/typechain-types": "^0.0.22",
-    "typescript": "^4.9.3",
-    "patch-package": "^6.4.7"
-},
+    "@727-ventures/typechain-compiler": "0.5.13",
+    "@727-ventures/typechain-types": "0.0.22",
+    "typescript": "^4.9.3"
+  },
   "devDependencies": {
     {{#if_eq contract_language "ask"}}
     "ask-transform": "^0.4.0-rc3",
