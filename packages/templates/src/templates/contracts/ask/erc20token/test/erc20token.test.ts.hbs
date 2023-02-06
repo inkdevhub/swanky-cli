@@ -58,6 +58,8 @@ describe("{{contract_name}} test", () => {
 
     await contract.tx.transfer(wallet1.address, transferredAmount, [], {
       gasLimit: gasRequired,
+      // ask! mutable message is payable. This is payable value.
+      value: 0,
     });
 
     await expect(
@@ -78,6 +80,8 @@ describe("{{contract_name}} test", () => {
     await expect(
       contract.tx.transfer(wallet1.address, transferredAmount, [], {
         gasLimit: gasRequired,
+        // ask! mutable message is payable. This is payable value.
+        value: 0,
       })
     ).to.eventually.be.rejected;
   });
@@ -92,6 +96,8 @@ describe("{{contract_name}} test", () => {
     await expect(
       contract.tx.transfer(hated_account.address, 10, [], {
         gasLimit: gasRequired,
+        // ask! mutable message is payable. This is payable value.
+        value: 0,
       })
     ).to.eventually.be.fulfilled;
 
@@ -106,6 +112,8 @@ describe("{{contract_name}} test", () => {
     await expect(
       contract.tx.setHatedAccount(hated_account.address, {
         gasLimit: gasRequired,
+        // ask! mutable message is payable. This is payable value.
+        value: 0,
       })
     ).to.eventually.be.ok;
     expect((await contract.query.getHatedAccount()).value).to.equal(
@@ -116,6 +124,8 @@ describe("{{contract_name}} test", () => {
     expect(
       contract.tx.transfer(hated_account.address, 10, [], {
         gasLimit: gasRequired,
+        // ask! mutable message is payable. This is payable value.
+        value: 0,
       })
     ).to.eventually.be.rejected;
 

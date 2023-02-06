@@ -46,6 +46,8 @@ describe("{{contract_name}} test", () => {
 
     await contract.withSigner(deployer).tx.flip({
       gasLimit: gasRequired,
+      // ask! mutable message is payable. This is payable value.
+      value: 0,
     });
 
     await expect((await contract.query.get()).value).to.be.equal(!initialState);
