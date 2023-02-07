@@ -123,9 +123,11 @@ export async function moveArtifacts(
   contractName: string,
 ): Promise<BuildData> {
   const ts = Date.now();
+  const fullPath = path.resolve(ARTIFACTS_PATH, contractName, ts.toString());
+  const relativePath = path.relative(path.resolve(), fullPath);
   const buildData = {
     timestamp: ts,
-    artifactsPath: path.resolve(ARTIFACTS_PATH, contractName, ts.toString()),
+    artifactsPath: relativePath,
   };
 
   await fs.ensureDir(buildData.artifactsPath);
