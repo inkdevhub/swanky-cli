@@ -60,11 +60,15 @@ export class CompileContract extends Command {
 
       // Because relative path from input (artifacts) and output (typedContract) does matter for generated files of typechain-polkadot,
       // Need to copy artifacts (`.contract` and ABI json) to project root artifacts folder beforehand and use them.
-      await fs.copy(
-        // @ts-ignore
-        contractInfo.build.artifactsPath,
-        ARTIFACTS_PATH,
-      );
+      // @ts-ignore
+      const buildInfoArtifactsPath = contractInfo.build.artifactsPath;
+      (await fs.readdir(buildInfoArtifactsPath)).forEach(async (file) => {
+        const filepath = path.resolve(buildInfoArtifactsPath, file);
+        const filestat = await fs.stat(filepath);
+        if (!filestat.isDirectory()) {
+          await fs.copy(filepath, path.resolve(ARTIFACTS_PATH, file));
+        }
+      })
 
       await generateTypes(ARTIFACTS_PATH, TYPED_CONTRACT_PATH);
       
