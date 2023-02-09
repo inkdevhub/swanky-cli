@@ -40,12 +40,15 @@ export class Contract {
     this.data.flag = flag;
   }
 
+  // To avoid typechain-polkadot [issue](https://github.com/727-Ventures/typechain-polkadot/issues/19)
+  // returning bool intentionally until it is resolved.
   @message({ mutates: true })
-  flip(): void {
+  flip(): bool {
     this.data.flag = !this.data.flag;
     let event = new FlipEvent(this.data.flag);
     // @ts-ignore
     env().emitEvent(event);
+    return this.data.flag;
   }
 
   @message()

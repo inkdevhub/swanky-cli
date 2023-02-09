@@ -1,6 +1,6 @@
 {
   "name": "@astar-network/swanky-core",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Core library of Swanky Suite",
   "author": "Astar network",
   "license": "MIT",
@@ -26,7 +26,7 @@
     "@polkadot/types": "9.11.3",
     "@types/decompress": "4.2.4",
     "ts-node": "10.9.1",
-    "tslib": "2.4.1",
+    "tslib": "2.5.0",
     "typescript": "4.8.4"
   },
   "scripts": {

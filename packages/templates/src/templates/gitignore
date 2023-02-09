@@ -228,3 +228,6 @@ Cargo.lock
 /tmp
 node_modules
 oclif.manifest.json
+
+# tmp artifacts path
+tmpArtifacts

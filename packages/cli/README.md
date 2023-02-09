@@ -17,7 +17,7 @@ $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
 running command...
 $ swanky (--version|-V|-v)
-@astar-network/swanky-cli/1.0.10 darwin-x64 node-v18.2.0
+@astar-network/swanky-cli/1.0.11 darwin-x64 node-v18.2.0
 $ swanky --help [COMMAND]
 USAGE
   $ swanky COMMAND
@@ -111,7 +111,7 @@ DESCRIPTION
   Check installed package versions and compatibility
 ```
 
-_See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v1.0.10/dist/commands/check/index.ts)_
+_See code: [dist/commands/check/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v1.0.11/dist/commands/check/index.js)_
 
 ## `swanky contract compile CONTRACTNAME`
 
@@ -119,12 +119,13 @@ Compile the smart contract(s) in your contracts directory
 
 ```
 USAGE
-  $ swanky contract compile [CONTRACTNAME] [-v]
+  $ swanky contract compile [CONTRACTNAME] [-v] [-r]
 
 ARGUMENTS
   CONTRACTNAME  Name of the contract to compile
 
 FLAGS
+  -r, --release  A production contract should always be build in `release` mode for building optimized wasm
   -v, --verbose  Display additional compilation output
 
 DESCRIPTION
@@ -137,16 +138,17 @@ Deploy contract to a running node
 
 ```
 USAGE
-  $ swanky contract deploy [CONTRACTNAME] --account <value> -g <value> [-a <value>] [-n <value>]
+  $ swanky contract deploy [CONTRACTNAME] --account <value> -g <value> [-a <value>] [-c <value>] [-n <value>]
 
 ARGUMENTS
   CONTRACTNAME  Name of the contract to deploy
 
 FLAGS
   -a, --args=<value>...
-  -g, --gas=<value>      (required)
-  -n, --network=<value>  Network name to connect to
-  --account=<value>      (required) Alias of account to be used
+  -c, --constructorName=<value>  [default: new] Constructor function name of a contract to deploy
+  -g, --gas=<value>              (required)
+  -n, --network=<value>          Network name to connect to
+  --account=<value>              (required) Alias of account to be used
 
 DESCRIPTION
   Deploy contract to a running node
@@ -274,7 +276,7 @@ DESCRIPTION
   Generate a new smart contract environment
 ```
 
-_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v1.0.10/dist/commands/init/index.ts)_
+_See code: [dist/commands/init/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v1.0.11/dist/commands/init/index.js)_
 
 ## `swanky node purge`
 
@@ -294,10 +296,18 @@ Start a local node
 
 ```
 USAGE
-  $ swanky node start [-t]
+  $ swanky node start [-t] [--rpcCors <value>]
 
 FLAGS
-  -t, --tmp  Run node with non-persistent mode
+  -t, --tmp
+      Run node with non-persistent mode
+
+  --rpcCors=<value>
+      [default: http://localhost:*,http://127.0.0.1:*,https://localhost:*,https://127.0.0.1:*,https://polkadot.js.org,http
+      s://contracts-ui.substrate.io/] RPC CORS origin swanky-node accepts. With '--tmp' flag, node accepts all origins.
+      Without it, you may need to specify by comma separated string.
+      By default, 'http://localhost:*,http://127.0.0.1:*,https://localhost:*,https://127.0.0.1:*,https://polkadot.js.org,h
+      ttps://contracts-ui.substrate.io/' is set.
 
 DESCRIPTION
   Start a local node
