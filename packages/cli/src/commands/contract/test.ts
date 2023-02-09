@@ -1,3 +1,4 @@
+require("ts-mocha");
 import { Command } from "@oclif/core";
 import path = require("node:path");
 import { readdirSync } from "node:fs";
@@ -73,7 +74,7 @@ export class CompileContract extends Command {
 
     global.contractTypesPath = path.resolve("test", args.contractName, "typedContract");
 
-    shell.cd(`./test/${args.contractName}`)
+    shell.cd(`./test/${args.contractName}`);
     mocha.run((failures) => {
       if (failures) {
         this.error(`At least one of the tests failed. Check report for details: ${reportDir}`);
