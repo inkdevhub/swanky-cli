@@ -6,6 +6,7 @@ import path = require("node:path");
 import { DEFAULT_NETWORK_URL, ARTIFACTS_PATH, TYPED_CONTRACT_PATH } from "./consts.js";
 import { BuildData, ContractData, SwankyConfig } from "../types";
 import { generateTypes } from "./tasks.js";
+import { Abi } from "@polkadot/api-contract";
 
 export async function commandStdoutOrNull(command: string): Promise<string | null> {
   try {
@@ -167,4 +168,47 @@ export async function moveArtifacts(
   }
 
   return buildData;
+}
+
+export async function printContractInfo(metadataPath: string) {
+  const abi = new Abi((await fs.readJson(metadataPath)));
+
+  // TODO: Use templating, colorize.
+
+  console.log(`
+    😎 ${abi.info.contract.name} Contract 😎
+
+    Hash: ${abi.info.source.hash}
+    Language: ${abi.info.source.language}
+    Compiler: ${abi.info.source.compiler}
+  `)
+
+  console.log(`    === Constructors ===\n`)
+  for (const constructor of abi.constructors) {
+    console.log(`    * ${constructor.method}:
+        Args: ${constructor.args.length > 0 ? constructor.args.map((arg) => {
+          return `\n        - ${arg.name} (${arg.type.displayName})`
+        }) : "None"}
+        Description: ${constructor.docs.map((line) => {
+          if (line != "") {
+            return `\n         ` + line
+          }
+        })}
+    `)
+  }
+
+  console.log(`    === Messages ===\n`)
+  for (const message of abi.messages) {
+    console.log(`    * ${message.method}:
+        Payable: ${message.isPayable}
+        Args: ${message.args.length > 0 ? message.args.map((arg) => {
+          return `\n        - ${arg.name} (${arg.type.displayName})`
+        }) : "None"}
+        Description: ${message.docs.map((line) => {
+          if (line != "") {
+            return `\n         ` + line
+          }
+        })}
+    `)
+  }
 }

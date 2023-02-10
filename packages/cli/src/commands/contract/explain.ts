@@ -1,0 +1,53 @@
+import { Command } from "@oclif/core";
+import * as fs from "fs-extra";
+import path = require("node:path");
+import { readdirSync } from "node:fs";
+import {
+  ensureSwankyProject,
+  getSwankyConfig,
+  printContractInfo,
+} from "@astar-network/swanky-core";
+
+export class ExplainContract extends Command {
+  static description = "Explain contract messages based on thier metadata";
+
+  static args = [
+    {
+      name: "contractName",
+      required: true,
+      description: "Name of the contract",
+    },
+  ];
+
+  async run(): Promise<void> {
+    const { args } = await this.parse(ExplainContract);
+
+    await ensureSwankyProject();
+
+    const config = await getSwankyConfig();
+
+    const contractInfo = config.contracts[args.contractName];
+    if (!contractInfo) {
+      this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
+    }
+
+    const contractList = readdirSync(path.resolve("contracts"));
+
+    const contractPath = path.resolve("contracts", args.contractName);
+    if (!contractList.includes(args.contractName)) {
+      this.error(`Path to contract ${args.contractName} does not exist: ${contractPath}`);
+    }
+
+    if (!contractInfo.build) {
+      this.error(`No build data for contract "${args.contractName}"`);
+    }
+    
+    const metadataPath = path.resolve(contractInfo.build?.artifactsPath, `${args.contractName}.json`);
+    if (!fs.existsSync(metadataPath)) {
+        this.error(`Metadata json file for ${args.contractName} contract not found`);
+    }
+
+    printContractInfo(metadataPath)
+  }
+}
+
