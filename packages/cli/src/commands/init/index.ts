@@ -112,7 +112,7 @@ export class Init extends Command {
         () => downloadNode(projectPath, swankyNode, spinner),
         "Downloading Swanky node"
       )) as string;
-      nodePath = taskResult;
+      nodePath = path.relative(projectPath, taskResult);
     }
 
     await ensureDir(path.resolve(projectPath, "artifacts", answers.contractName));
