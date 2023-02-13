@@ -1,4 +1,4 @@
-import { Command } from "@oclif/core";
+import { BaseCommand } from "../../lib/baseCommand";
 import * as fs from "fs-extra";
 import path = require("node:path");
 import { readdirSync } from "node:fs";
@@ -8,7 +8,7 @@ import {
   printContractInfo,
 } from "@astar-network/swanky-core";
 
-export class ExplainContract extends Command {
+export class ExplainContract extends BaseCommand<typeof ExplainContract> {
   static description = "Explain contract messages based on thier metadata";
 
   static args = [
