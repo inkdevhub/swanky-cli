@@ -2,11 +2,7 @@ import { BaseCommand } from "../../lib/baseCommand";
 import * as fs from "fs-extra";
 import path = require("node:path");
 import { readdirSync } from "node:fs";
-import {
-  ensureSwankyProject,
-  getSwankyConfig,
-  printContractInfo,
-} from "@astar-network/swanky-core";
+import { printContractInfo } from "@astar-network/swanky-core";
 
 export class ExplainContract extends BaseCommand<typeof ExplainContract> {
   static description = "Explain contract messages based on thier metadata";
@@ -22,11 +18,7 @@ export class ExplainContract extends BaseCommand<typeof ExplainContract> {
   async run(): Promise<void> {
     const { args } = await this.parse(ExplainContract);
 
-    await ensureSwankyProject();
-
-    const config = await getSwankyConfig();
-
-    const contractInfo = config.contracts[args.contractName];
+    const contractInfo = this.swankyConfig.contracts[args.contractName];
     if (!contractInfo) {
       this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
     }
