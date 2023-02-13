@@ -9,6 +9,8 @@ const hook: Hook<"command_not_found"> = async function (opts) {
     process.stdout.write(
       `You can use it like: ${chalk.greenBright(`swanky contract ${opts.id} contract_name`)}\n`
     );
+  } else {
+    process.stdin.write(`${opts.id} is not known swanky command. Run swanky help to list known commands.\n`)
   }
 };
 
