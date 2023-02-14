@@ -72,7 +72,7 @@ export class CompileContract extends Command {
 
       await generateTypes(ARTIFACTS_PATH, TYPED_CONTRACT_PATH);
       
-      await fs.copy(TYPED_CONTRACT_PATH, destinationPath);
+      await fs.move(TYPED_CONTRACT_PATH, destinationPath);
 
       // Need to cleanup files inside artifacts folder, because typechain-polkadot generate types for all files under input folder.
       // Residues affects the result of next contract's type generation.
