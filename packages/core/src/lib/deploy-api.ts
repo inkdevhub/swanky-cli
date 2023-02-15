@@ -38,9 +38,11 @@ export class DeployApi extends ChainApi {
             deployer: string;
           };
 
-          if (!addresses || !addresses.contract)
+          if (!addresses || !addresses.contract) {
             reject(new Error("Unable to get the contract address"));
-          resolve(addresses.contract);
+          } else {
+            resolve(addresses.contract);
+          }
           this._provider.disconnect();
         }
       });
