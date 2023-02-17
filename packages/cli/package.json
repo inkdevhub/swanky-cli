@@ -83,7 +83,7 @@
     ],
     "hooks": {
       "command_not_found": [
-        "./dist/hooks/command_not_found/command_moved"
+        "./dist/hooks/command_not_found/command_not_found"
       ]
     }
   },
