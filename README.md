@@ -1,5 +1,5 @@
 # How to use
-swanky-cli installation and how-to-use guides are available in the official swanky suite [doc](https://docs.astar.network/docs/wasm/sc-dev/swanky).
+swanky-cli installation and how-to-use guides are available in the official swanky suite [doc](https://docs.astar.network/docs/build/wasm/swanky/).
 
 # Repository Structure
 
