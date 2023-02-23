@@ -88,7 +88,7 @@ export async function generateTypesFor(
         path.resolve(ARTIFACTS_PATH, `${contractName}.contract`),
       ),
       fs.copyFile(
-        path.resolve(contractPath, "target", "ink", "metadata.json"),
+        path.resolve(contractPath, "target", "ink", `${contractName}.json`),
         path.resolve(ARTIFACTS_PATH, `${contractName}.json`),
       )
     ])
