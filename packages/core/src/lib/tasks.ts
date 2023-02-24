@@ -130,6 +130,8 @@ export async function installDeps(projectPath: string) {
   try {
     await execa.command("yarn --version");
     installCommand = "yarn install";
+  } catch (_error) {
+    console.log("\n\t >>Yarn not detected, using NPM");
   } finally {
     await execa.command(installCommand, { cwd: projectPath });
   }
