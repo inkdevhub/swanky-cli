@@ -151,15 +151,14 @@ export async function moveArtifacts(
     await fs.ensureDir(testArtifacts);
     await fs.ensureDir(testTypedContracts)
     await Promise.all([
-      fs.move(
+      fs.copyFile(
         path.resolve(ARTIFACTS_PATH, `${contractName}.contract`),
-        `${testArtifacts}/${contractName}.contract`,
-        { overwrite: true }
+        `${testArtifacts}/${contractName}.contract`        
       ),
       fs.move(
         path.resolve(ARTIFACTS_PATH, `${contractName}.json`),
         `${testArtifacts}/${contractName}.json`,
-        { overwrite: true }
+        { overwrite: true }     
       ),
       fs.move(TYPED_CONTRACT_PATH, testTypedContracts, {
         overwrite: true,
