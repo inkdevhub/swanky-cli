@@ -158,7 +158,7 @@ export async function moveArtifacts(
       fs.move(
         path.resolve(ARTIFACTS_PATH, `${contractName}.json`),
         `${testArtifacts}/${contractName}.json`,
-        { overwrite: true }     
+        { overwrite: true }
       ),
       fs.move(TYPED_CONTRACT_PATH, testTypedContracts, {
         overwrite: true,
