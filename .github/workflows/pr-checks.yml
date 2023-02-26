@@ -13,10 +13,30 @@ jobs:
     - name: Checkout the source code
       uses: actions/checkout@v3
 
-    - name: Install cargo contract
+    - name: Install & display rust toolchain
       run: |
+        rustup show
         rustup component add rust-src
-        sudo apt-get install binaryen
+
+    - name: Check targets are installed correctly
+      run: rustup target list --installed
+
+    - name: Cache Crates
+      uses: actions/cache@v3
+      with:
+        path: ~/.cargo
+        key: ${{ runner.os }}-rust-${{ hashFiles('rust-toolchain.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-rust
+
+    - name: Check if cargo-contract exists
+      id: check-cargo-contract
+      continue-on-error: true
+      run: cargo contract --version
+
+    - name: Install cargo contract
+      if: ${{ steps.check-cargo-contract.outcome == 'failure' }}
+      run: |
         cargo install cargo-dylint dylint-link
         cargo install --force --locked cargo-contract
 
