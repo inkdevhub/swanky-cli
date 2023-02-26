@@ -37,10 +37,8 @@ jobs:
     - name: Install cargo contract
       if: ${{ steps.check-cargo-contract.outcome == 'failure' }}
       run: |
-        sudo apt-get install binaryen
         cargo install cargo-dylint dylint-link
-        # Until 2.0.0 official release, we need to specify --version expressly
-        cargo install --force --locked cargo-contract --version 2.0.0
+        cargo install --force --locked cargo-contract
 
     - name: Use Node.js
       uses: actions/setup-node@v3
