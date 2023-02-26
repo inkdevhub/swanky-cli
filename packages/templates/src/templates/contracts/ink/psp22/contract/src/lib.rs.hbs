@@ -3,8 +3,7 @@
 
 #[openbrush::contract]
 pub mod {{contract_name_snake}} {
-    use ink_storage::traits::SpreadAllocate;
-    use ink_lang::codegen::{Env, EmitEvent};
+    use ink::codegen::{Env, EmitEvent};
     use openbrush::{
         contracts::psp22::*,
         traits::{
@@ -32,12 +31,19 @@ pub mod {{contract_name_snake}} {
     }
 
     #[ink(storage)]
-    #[derive(Default, SpreadAllocate, Storage)]
+    #[derive(Storage)]
     pub struct {{contract_name_pascal}} {
         #[storage_field]
         psp22: psp22::Data,
         // fields for hater logic
         hated_account: AccountId,
+    }
+
+    impl Default for {{contract_name_pascal}} {
+        fn default() -> Self {
+            psp22: Default::default(),
+            hated_account: [0u8; 32].into(),
+        }
     }
 
     impl Transfer for {{contract_name_pascal}} {
@@ -83,11 +89,11 @@ pub mod {{contract_name_snake}} {
     impl {{contract_name_pascal}} {
         #[ink(constructor)]
         pub fn new(total_supply: Balance) -> Self {
-            ink_lang::codegen::initialize_contract(|instance: &mut {{contract_name_pascal}}| {
-                instance
-                    ._mint_to(instance.env().caller(), total_supply)
-                    .expect("Should mint");
-            })
+            let mut instance = Self::default();
+            instance
+                ._mint_to(instance.env().caller(), total_supply)
+                .expect("Should mint");
+            instance
         }
 
         #[ink(message)]
