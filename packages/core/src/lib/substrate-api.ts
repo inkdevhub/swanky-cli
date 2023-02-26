@@ -147,8 +147,6 @@ export class ChainApi {
 
             const errorMessage = `${section}.${method} ${message}`;
             console.error(`error: ${errorMessage}`);
-
-            throw new Error(message);
           } else if (section === "utility" && method === "BatchInterrupted") {
             const anyData = data as any;
             const error = anyData[1].registry.findMetaError(anyData[1].asModule);
