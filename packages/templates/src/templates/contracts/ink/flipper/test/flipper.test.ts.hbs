@@ -38,7 +38,7 @@ describe("{{contract_name}} test", () => {
   });
 
   it("Sets the initial state", async () => {
-    expect((await contract.query.get()).value).to.equal(initialState);
+    expect((await contract.query.get()).value.ok).to.equal(initialState);
   });
 
   it("Can flip the state", async () => {
@@ -48,6 +48,6 @@ describe("{{contract_name}} test", () => {
       gasLimit: gasRequired,
     });
 
-    await expect((await contract.query.get()).value).to.be.equal(!initialState);
+    await expect((await contract.query.get()).value.ok).to.be.equal(!initialState);
   });
 });

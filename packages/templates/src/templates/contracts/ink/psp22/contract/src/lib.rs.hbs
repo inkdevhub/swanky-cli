@@ -41,8 +41,10 @@ pub mod {{contract_name_snake}} {
 
     impl Default for {{contract_name_pascal}} {
         fn default() -> Self {
-            psp22: Default::default(),
-            hated_account: [0u8; 32].into(),
+            Self {
+                psp22: Default::default(),
+                hated_account: [0u8; 32].into(),
+            }
         }
     }
 

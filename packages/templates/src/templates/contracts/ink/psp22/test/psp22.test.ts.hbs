@@ -20,7 +20,7 @@ describe("{{contract_name}} test", () => {
   let wallet1: KeyringPair;
   let wallet2: KeyringPair;
   let contract: {{contract_name_pascal}};
-  let maxSupply = 10000000000;
+  const maxSupply = 10000000000;
 
   before(async function setup(): Promise<void> {
     api = await ApiPromise.create({ provider: wsProvider });
@@ -43,7 +43,7 @@ describe("{{contract_name}} test", () => {
 
   it("Assigns initial balance", async () => {
     expect(
-      (await contract.query.totalSupply()).value.ok.rawNumber.toNumber()
+      (await contract.query.totalSupply()).value.ok?.rawNumber.toNumber()
     ).to.equal(maxSupply);
   });
 
@@ -59,10 +59,10 @@ describe("{{contract_name}} test", () => {
     });
 
     await expect(
-      (await contract.query.balanceOf(wallet1.address)).value.ok.toNumber()
+      (await contract.query.balanceOf(wallet1.address)).value.ok?.toNumber()
     ).to.be.equal(transferredAmount);
     await expect(
-      (await contract.query.balanceOf(contract.signer.address)).value.ok.toNumber()
+      (await contract.query.balanceOf(contract.signer.address)).value.ok?.toNumber()
     ).to.be.equal(maxSupply - transferredAmount);
   });
 
@@ -93,10 +93,10 @@ describe("{{contract_name}} test", () => {
       })
     ).to.eventually.be.fulfilled;
 
-    let result = await contract.query.balanceOf(hated_account.address);
-    expect(result.value.ok.toNumber()).to.equal(transferredAmount);
+    const result = await contract.query.balanceOf(hated_account.address);
+    expect(result.value.ok?.toNumber()).to.equal(transferredAmount);
 
-    expect((await contract.query.getHatedAccount()).value).to.equal(
+    expect((await contract.query.getHatedAccount()).value.ok).to.equal(
       EMPTY_ADDRESS
     );
 
@@ -106,7 +106,7 @@ describe("{{contract_name}} test", () => {
         gasLimit: gasRequired,
       })
     ).to.eventually.be.ok;
-    expect((await contract.query.getHatedAccount()).value).to.equal(
+    expect((await contract.query.getHatedAccount()).value.ok).to.equal(
       hated_account.address
     );
 
@@ -119,7 +119,7 @@ describe("{{contract_name}} test", () => {
 
     // Amount of tokens must be the same
     expect(
-      (await contract.query.balanceOf(hated_account.address)).value.ok.toNumber()
+      (await contract.query.balanceOf(hated_account.address)).value.ok?.toNumber()
     ).to.equal(10);
   });
 });
