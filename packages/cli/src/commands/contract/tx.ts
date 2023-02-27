@@ -44,7 +44,7 @@ export class Tx extends ContractCall<typeof Tx> {
       ...flags.params
     );
 
-    this.log(`Gas required: ${queryResult.gasRequired.toHuman()}`);
+    this.log(`Gas required: ${queryResult.gasRequired["refTime"]} (proofSize: ${queryResult.gasRequired["proofSize"]})`);
 
     if (flags.dry) {
       console.log(`Dry run result:`);
