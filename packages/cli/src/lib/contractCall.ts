@@ -10,7 +10,7 @@ import {
   resolveNetworkUrl,
 } from "@astar-network/swanky-core";
 import path = require("node:path");
-import { Command, Flags, Interfaces } from "@oclif/core";
+import { Args, Command, Flags, Interfaces } from "@oclif/core";
 import inquirer from "inquirer";
 import chalk = require("chalk");
 import { BaseCommand } from "./baseCommand";
@@ -53,14 +53,18 @@ export abstract class ContractCall<T extends typeof Command> extends BaseCommand
   //   }),
   // };
 
-  static callArgs = [
-    { name: "contractName", description: "Contract to call", required: true },
-    {
-      name: "messageName",
+  static callArgs = {
+    contractName: Args.string({
+      name: "Contract name",
+      description: "Contract to call",
+      required: true,
+    }),
+    messageName: Args.string({
+      name: "Message name",
       required: true,
       description: "What message to call",
-    },
-  ];
+    }),
+  };
 
   protected flags!: JoinedFlagsType<T>;
   protected args!: { [name: string]: any };
@@ -74,7 +78,7 @@ export abstract class ContractCall<T extends typeof Command> extends BaseCommand
     await super.init();
     // const { flags, args } = await this.parse(this.constructor as Interfaces.Command.Class);
     const { flags, args } = await this.parse();
-    // this.flags = flags as Flags<JoinedFlagsType>;
+    // this.flags = flags as JoinedFlagsType<typeof ContractCall>;
     this.args = args;
     const contractInfo = this.swankyConfig.contracts[args.contractName];
     if (!contractInfo) {

@@ -19,6 +19,8 @@ export class Tx extends ContractCall<typeof Tx> {
     }),
   };
 
+  static args = { ...ContractCall.callArgs };
+
   public async run(): Promise<void> {
     const { flags, args } = await this.parse(Tx);
 
