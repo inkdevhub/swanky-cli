@@ -18,40 +18,40 @@ import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { readJSON } from "fs-extra";
 
 export type JoinedFlagsType<T extends typeof Command> = Interfaces.InferredFlags<
-  typeof BaseCommand["globalFlags"] & typeof ContractCall["globalFlags"] & T["flags"]
+  typeof BaseCommand["baseFlags"] & typeof ContractCall["baseFlags"] & T["flags"]
 >;
 
 export abstract class ContractCall<T extends typeof Command> extends BaseCommand<
   typeof ContractCall
 > {
   // define flags that can be inherited by any command that extends BaseCommand
-  static globalFlags = {
-    ...BaseCommand.globalFlags,
-    params: Flags.string({
-      required: false,
-      description: "Arguments supplied to the message",
-      multiple: true,
-      default: [],
-      char: "p",
-    }),
-    gas: Flags.string({
-      char: "g",
-      description: "Manually specify gas limit",
-    }),
-    network: Flags.string({
-      char: "n",
-      description: "Network name to connect to",
-    }),
-    account: Flags.string({
-      char: "a",
-      description: "Account to sign the transaction with",
-    }),
-    address: Flags.string({
-      required: false,
-      description: "Target specific address, defaults to last deployed. (--addr, --add)",
-      aliases: ["addr", "add"],
-    }),
-  };
+  // static baseFlags = {
+  //   ...BaseCommand.baseFlags,
+  //   params: Flags.string({
+  //     required: false,
+  //     description: "Arguments supplied to the message",
+  //     multiple: true,
+  //     default: [],
+  //     char: "p",
+  //   }),
+  //   gas: Flags.string({
+  //     char: "g",
+  //     description: "Manually specify gas limit",
+  //   }),
+  //   network: Flags.string({
+  //     char: "n",
+  //     description: "Network name to connect to",
+  //   }),
+  //   account: Flags.string({
+  //     char: "a",
+  //     description: "Account to sign the transaction with",
+  //   }),
+  //   address: Flags.string({
+  //     required: false,
+  //     description: "Target specific address, defaults to last deployed. (--addr, --add)",
+  //     aliases: ["addr", "add"],
+  //   }),
+  // };
 
   static callArgs = [
     { name: "contractName", description: "Contract to call", required: true },
@@ -72,8 +72,9 @@ export abstract class ContractCall<T extends typeof Command> extends BaseCommand
 
   public async init(): Promise<void> {
     await super.init();
-    const { flags, args } = await this.parse(this.constructor as Interfaces.Command.Class);
-    this.flags = flags;
+    // const { flags, args } = await this.parse(this.constructor as Interfaces.Command.Class);
+    const { flags, args } = await this.parse();
+    // this.flags = flags as Flags<JoinedFlagsType>;
     this.args = args;
     const contractInfo = this.swankyConfig.contracts[args.contractName];
     if (!contractInfo) {
@@ -147,3 +148,31 @@ export abstract class ContractCall<T extends typeof Command> extends BaseCommand
     return super.finally(_);
   }
 }
+
+ContractCall.baseFlags = {
+  ...BaseCommand.baseFlags,
+  params: Flags.string({
+    required: false,
+    description: "Arguments supplied to the message",
+    multiple: true,
+    default: [],
+    char: "p",
+  }),
+  gas: Flags.string({
+    char: "g",
+    description: "Manually specify gas limit",
+  }),
+  network: Flags.string({
+    char: "n",
+    description: "Network name to connect to",
+  }),
+  account: Flags.string({
+    char: "a",
+    description: "Account to sign the transaction with",
+  }),
+  address: Flags.string({
+    required: false,
+    description: "Target specific address, defaults to last deployed. (--addr, --add)",
+    aliases: ["addr", "add"],
+  }),
+};

@@ -1,28 +1,28 @@
 import { Command, Flags, Interfaces } from "@oclif/core";
 import { getSwankyConfig, Spinner, SwankyConfig } from "@astar-network/swanky-core";
 
-export type BaseCommandFlags<T extends typeof Command> = Interfaces.InferredFlags<
-  typeof BaseCommand["globalFlags"] & T["flags"]
->;
+// export type BaseCommandFlags<T extends typeof Command> = Interfaces.InferredFlags<
+//   typeof BaseCommand["globalFlags"] & T["flags"]
+// >;
 
 export abstract class BaseCommand<T extends typeof Command> extends Command {
   // define flags that can be inherited by any command that extends BaseCommand
-  static globalFlags = {
-    verbose: Flags.boolean({
-      required: false,
-      description: "Display more info in the result logs",
-      char: "v",
-    }),
-  };
+  // static baseFlags = {
+  //   verbose: Flags.boolean({
+  //     required: false,
+  //     description: "Display more info in the result logs",
+  //     char: "v",
+  //   }),
+  // };
 
-  protected flags!: BaseCommandFlags<T>;
+  // protected flags!: Flags<T>;
   protected spinner!: Spinner;
   protected swankyConfig!: SwankyConfig;
 
   public async init(): Promise<void> {
     await super.init();
-    const { flags } = await this.parse(this.constructor as Interfaces.Command.Class);
-    this.flags = flags;
+    // const { flags } = await this.parse(this.constructor as Interfaces.Command.Class);
+    // this.flags = flags;
     this.spinner = new Spinner();
 
     this.swankyConfig = await getSwankyConfig();
@@ -39,3 +39,11 @@ export abstract class BaseCommand<T extends typeof Command> extends Command {
     return super.finally(_);
   }
 }
+
+BaseCommand.baseFlags = {
+  verbose: Flags.boolean({
+    required: false,
+    description: "Display more info in the result logs",
+    char: "v",
+  }),
+};

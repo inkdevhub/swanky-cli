@@ -19,8 +19,6 @@ export class Tx extends ContractCall<typeof Tx> {
     }),
   };
 
-  static args = [...ContractCall.callArgs];
-
   public async run(): Promise<void> {
     const { flags, args } = await this.parse(Tx);
 
@@ -44,7 +42,9 @@ export class Tx extends ContractCall<typeof Tx> {
       ...flags.params
     );
 
-    this.log(`Gas required: ${queryResult.gasRequired["refTime"]} (proofSize: ${queryResult.gasRequired["proofSize"]})`);
+    this.log(
+      `Gas required: ${queryResult.gasRequired["refTime"]} (proofSize: ${queryResult.gasRequired["proofSize"]})`
+    );
 
     if (flags.dry) {
       console.log(`Dry run result:`);

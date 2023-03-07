@@ -1,4 +1,4 @@
-import { Command, Flags } from "@oclif/core";
+import { Args, Command, Flags } from "@oclif/core";
 import path = require("node:path");
 import { ensureDir, pathExistsSync, readJSON, writeJSON } from "fs-extra";
 import {
@@ -30,13 +30,13 @@ export class NewContract extends Command {
     verbose: Flags.boolean({ char: "v" }),
   };
 
-  static args = [
-    {
+  static args = {
+    contractName: Args.string({
       name: "contractName",
       required: true,
-      description: "Name of new contract",
-    },
-  ];
+      description: "Name of the new contract",
+    }),
+  };
 
   async run(): Promise<void> {
     await ensureSwankyProject();

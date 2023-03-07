@@ -1,5 +1,5 @@
 require("ts-mocha");
-import { Command } from "@oclif/core";
+import { Args, Command } from "@oclif/core";
 import path = require("node:path");
 import { readdirSync } from "node:fs";
 import { ensureSwankyProject, getSwankyConfig } from "@astar-network/swanky-core";
@@ -18,13 +18,13 @@ export class CompileContract extends Command {
   // hidden until the mocha loading issue is resolved
   static hidden = true;
 
-  static args = [
-    {
+  static args = {
+    contractName: Args.string({
       name: "contractName",
       required: true,
-      description: "Name of the contract to compile",
-    },
-  ];
+      description: "Name of the contract to test",
+    }),
+  };
 
   async run(): Promise<void> {
     const { args } = await this.parse(CompileContract);
