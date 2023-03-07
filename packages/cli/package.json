@@ -59,7 +59,7 @@
     "lerna": "6.0.3",
     "mem-fs": "2.2.1",
     "mem-fs-editor": "9.6.0",
-    "oclif": "3.4.2",
+    "oclif": "3.7.0",
     "prettier": "2.7.1",
     "shx": "0.3.3",
     "ts-node": "10.9.1",
