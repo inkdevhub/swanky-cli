@@ -36,14 +36,5 @@
   ],
   "workspaces": [
     "packages/*"
-  ],
-  "resolutions": {
-    "@polkadot/api": "9.14.2",
-    "@polkadot/api-contract": "9.14.2",
-    "@polkadot/util": "10.4.2",
-    "@polkadot/util-crypto": "10.4.2",
-    "@polkadot/keyring": "10.4.2",
-    "@polkadot/api-augment": "9.14.2",
-    "@polkadot/types": "9.14.2"
-  }
+  ]
 }
