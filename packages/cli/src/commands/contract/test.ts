@@ -1,10 +1,10 @@
 require("ts-mocha");
-import { Command } from "@oclif/core";
+import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
 import { ensureSwankyProject, getSwankyConfig } from "@astar-network/swanky-core";
 import globby from "globby";
 import Mocha from "mocha";
-import { ensureDir, readdirSync } from "fs-extra";
+import { ensureDir, readdirSync, lstatSync } from "fs-extra";
 import * as shell from "shelljs";
 
 declare global {
@@ -17,6 +17,14 @@ export class CompileContract extends Command {
   // hidden until the mocha loading issue is resolved
   static hidden = true;
 
+  static flags = {
+    all: Flags.boolean({
+      default: false,
+      char: "a",
+      description: "Set all to true to compile all contracts"
+    })
+  };
+
   static args = [
     {
       name: "contractName",
@@ -27,38 +35,31 @@ export class CompileContract extends Command {
   ];
 
   async run(): Promise<void> {
-    const { args } = await this.parse(CompileContract);
+    const { args, flags } = await this.parse(CompileContract);
+
+    if (args.contractName == "" && !flags.all) {
+      this.error("No contracts were selected to compile")
+    }
 
     await ensureSwankyProject();
-
     const config = await getSwankyConfig();
 
-    let contractList = readdirSync(path.resolve("contracts"));
-    if (args.contractName !== "") {
-      if (!config.contracts[args.contractName]) {
-        this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
-      }
-
-      if (!contractList.includes(args.contractName)) {
-        this.error(`Path to contract ${args.contractName} does not exist: ${path.resolve("contracts", args.contractName)}`);
-      }
-
-      // remove unselected contracts from contractList to compile
-      contractList = contractList.filter(contractName => contractName === args.contractName);
-    } else {
-      if (contractList.length === 0) {
-        this.error("Nothing to test");
-      }
+    const contractNames = [];
+    if (flags.all) {
+      const contractList = readdirSync(path.resolve("contracts"));
       for (const contractName of contractList) {
-        console.log(`${contractName} contract is found`)
+        if (lstatSync(path.resolve("contracts", contractName)).isDirectory()) {
+          console.log(`${contractName} contract is found`);
+          contractNames.push(contractName);
+        }
       }
+    } else {
+      contractNames.push(args.contractName);
     }
 
     const projectDir = path.resolve();
     const testDir = path.resolve("test");
-    console.log(projectDir)
-    console.log(testDir);
-    for (const contractName of contractList) {
+    for (const contractName of contractNames) {
       const contractInfo = config.contracts[contractName];
 
       if (!contractInfo.build) {

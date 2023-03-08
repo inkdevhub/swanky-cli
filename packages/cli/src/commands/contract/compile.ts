@@ -9,7 +9,7 @@ import {
   Spinner,
   generateTypesFor,
 } from "@astar-network/swanky-core";
-import { writeJSON, readdirSync } from "fs-extra";
+import { writeJSON, readdirSync, lstatSync } from "fs-extra";
 
 export class CompileContract extends Command {
   static description = "Compile the smart contract(s) in your contracts directory";
@@ -24,6 +24,11 @@ export class CompileContract extends Command {
       default: false,
       char: "r",
       description: "A production contract should always be build in `release` mode for building optimized wasm"
+    }),
+    all: Flags.boolean({
+      default: false,
+      char: "a",
+      description: "Set all to true to compile all contracts"
     })
   };
 
@@ -32,41 +37,36 @@ export class CompileContract extends Command {
       name: "contractName",
       required: false,
       default: "",
-      description: "Name of the contract to compile, compile all contracts if not specified.",
+      description: "Name of the contracts to compile, separated by comman for multiple contracts compilation",
     },
   ];
 
   async run(): Promise<void> {
     const { args, flags } = await this.parse(CompileContract);
 
-    await ensureSwankyProject();
+    if (args.contractName == "" && !flags.all) {
+      this.error("No contracts were selected to compile")
+    }
 
+    await ensureSwankyProject();
     const config = await getSwankyConfig();
 
-    let contractList = readdirSync(path.resolve("contracts"));
-    if (args.contractName !== "") {
-      if (!config.contracts[args.contractName]) {
-        this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
-      }
-
-      if (!contractList.includes(args.contractName)) {
-        this.error(`Path to contract ${args.contractName} does not exist: ${path.resolve("contracts", args.contractName)}`);
-      }
-
-      // remove unselected contracts from contractList to compile
-      contractList = contractList.filter(contractName => contractName === args.contractName);
-    } else {
-      if (contractList.length === 0) {
-        this.error("Nothing to compile");
-      }
+    const contractNames = [];
+    if (flags.all) {
+      const contractList = readdirSync(path.resolve("contracts"));
       for (const contractName of contractList) {
-        console.log(`${contractName} contract is found`)
+        if (lstatSync(path.resolve("contracts", contractName)).isDirectory()) {
+          console.log(`${contractName} contract is found`);
+          contractNames.push(contractName);
+        }
       }
+    } else {
+      contractNames.push(args.contractName);
     }
 
     const spinner = new Spinner();
 
-    for (const contractName of contractList) {
+    for (const contractName of contractNames) {
       const contractInfo = config.contracts[contractName];
       const contractPath = path.resolve("contracts", contractName);
 
