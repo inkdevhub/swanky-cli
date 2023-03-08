@@ -27,10 +27,6 @@ interface Ctx {
 export default class Check extends Command {
   static description = "Check installed package versions and compatibility";
 
-  static flags = {};
-
-  static args = [];
-
   public async run(): Promise<void> {
     await ensureSwankyProject();
     const tasks = new Listr<Ctx>([

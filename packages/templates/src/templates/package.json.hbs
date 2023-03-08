@@ -18,8 +18,8 @@
     {{#if_eq contract_language "ask"}}
     "ask-lang": "^0.4.0-rc3",
     {{/if_eq}}
-    "@727-ventures/typechain-compiler": "0.5.13",
     "@727-ventures/typechain-types": "0.0.22",
+    "@727-ventures/typechain-polkadot": "0.6.10",
     "typescript": "^4.9.3"
 },
   "devDependencies": {
@@ -37,7 +37,12 @@
     "ts-node": "^10.8.0"
   },
   "resolutions": {
-    "@polkadot/api": "^9.6.1",
-    "@polkadot/api-contract": "^9.6.1"
+    "@polkadot/api": "10.0.1",
+    "@polkadot/api-contract": "10.0.1",
+    "@polkadot/util": "11.0.1",
+    "@polkadot/util-crypto": "11.0.1",
+    "@polkadot/keyring": "11.0.1",
+    "@polkadot/api-augment": "10.0.1",
+    "@polkadot/types": "10.0.1"
   }
 }

@@ -1,4 +1,4 @@
-import { Command, Flags } from "@oclif/core";
+import { Args, Command, Flags } from "@oclif/core";
 import path = require("node:path");
 import { readdirSync } from "node:fs";
 import {
@@ -24,17 +24,18 @@ export class CompileContract extends Command {
     release: Flags.boolean({
       default: false,
       char: "r",
-      description: "A production contract should always be build in `release` mode for building optimized wasm"
-    })
+      description:
+        "A production contract should always be build in `release` mode for building optimized wasm",
+    }),
   };
 
-  static args = [
-    {
+  static args = {
+    contractName: Args.string({
       name: "contractName",
       required: true,
       description: "Name of the contract to compile",
-    },
-  ];
+    }),
+  };
 
   async run(): Promise<void> {
     const { args, flags } = await this.parse(CompileContract);
@@ -74,7 +75,7 @@ export class CompileContract extends Command {
         });
       },
       "Compiling contract",
-      "Contract compiled successfully",
+      "Contract compiled successfully"
     );
 
     await spinner.runCommand(
@@ -100,7 +101,7 @@ export class CompileContract extends Command {
 // https://github.com/Supercolony-net/typechain-polkadot#usage-of-typechain-compiler
 interface TypechainCompilerConfig {
   projectFiles: string[]; // Path to all project files, everystring in glob format
-  skipLinting : boolean; // Skip linting of project files
-  artifactsPath : string; // Path to artifacts folder, where artifacts will be stored it will save both .contract and .json (contract ABI)
-  typechainGeneratedPath : string; // Path to typechain generated folder
+  skipLinting: boolean; // Skip linting of project files
+  artifactsPath: string; // Path to artifacts folder, where artifacts will be stored it will save both .contract and .json (contract ABI)
+  typechainGeneratedPath: string; // Path to typechain generated folder
 }
