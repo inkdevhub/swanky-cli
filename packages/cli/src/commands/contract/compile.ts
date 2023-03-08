@@ -1,6 +1,5 @@
 import { Command, Flags } from "@oclif/core";
 import path = require("node:path");
-import { readdirSync } from "node:fs";
 import {
   moveArtifacts,
   ensureSwankyProject,
@@ -10,7 +9,7 @@ import {
   Spinner,
   generateTypesFor,
 } from "@astar-network/swanky-core";
-import { writeJSON } from "fs-extra";
+import { writeJSON, readdirSync } from "fs-extra";
 
 export class CompileContract extends Command {
   static description = "Compile the smart contract(s) in your contracts directory";

@@ -1,11 +1,10 @@
 require("ts-mocha");
 import { Command } from "@oclif/core";
 import path = require("node:path");
-import { readdirSync } from "node:fs";
 import { ensureSwankyProject, getSwankyConfig } from "@astar-network/swanky-core";
 import globby from "globby";
 import Mocha from "mocha";
-import { ensureDir } from "fs-extra";
+import { ensureDir, readdirSync } from "fs-extra";
 import * as shell from "shelljs";
 
 declare global {
