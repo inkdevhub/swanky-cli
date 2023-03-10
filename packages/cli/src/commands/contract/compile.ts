@@ -9,7 +9,8 @@ import {
   Spinner,
   generateTypesFor,
 } from "@astar-network/swanky-core";
-import { writeJSON, readdirSync, lstatSync } from "fs-extra";
+import { writeJSON, readdirSync, existsSync } from "fs-extra";
+import { fstat } from "node:fs";
 
 export class CompileContract extends Command {
   static description = "Compile the smart contract(s) in your contracts directory";
@@ -53,11 +54,11 @@ export class CompileContract extends Command {
 
     const contractNames = [];
     if (flags.all) {
-      const contractList = readdirSync(path.resolve("contracts"));
-      for (const contractName of contractList) {
-        if (lstatSync(path.resolve("contracts", contractName)).isDirectory()) {
-          console.log(`${contractName} contract is found`);
-          contractNames.push(contractName);
+      const contractList = readdirSync(path.resolve("contracts"), { withFileTypes: true });
+      for (const contract of contractList) {
+        if (contract.isDirectory()) {
+          console.log(`${contract.name} contract is found`);
+          contractNames.push(contract.name);
         }
       }
     } else {
@@ -68,7 +69,13 @@ export class CompileContract extends Command {
 
     for (const contractName of contractNames) {
       const contractInfo = config.contracts[contractName];
+      if (!contractInfo) {
+        this.error(`Cannot find contract info for ${contractName} contract in swanky.config.json`);
+      }
       const contractPath = path.resolve("contracts", contractName);
+      if (!existsSync(contractPath)) {
+        this.error(`Contract folder not found at expected path`);
+      }
 
       await spinner.runCommand(
         async () => {

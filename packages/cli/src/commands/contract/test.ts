@@ -4,7 +4,7 @@ import path = require("node:path");
 import { ensureSwankyProject, getSwankyConfig } from "@astar-network/swanky-core";
 import globby from "globby";
 import Mocha from "mocha";
-import { ensureDir, readdirSync, lstatSync } from "fs-extra";
+import { ensureDir, readdirSync } from "fs-extra";
 import * as shell from "shelljs";
 
 declare global {
@@ -46,11 +46,11 @@ export class CompileContract extends Command {
 
     const contractNames = [];
     if (flags.all) {
-      const contractList = readdirSync(path.resolve("contracts"));
-      for (const contractName of contractList) {
-        if (lstatSync(path.resolve("contracts", contractName)).isDirectory()) {
-          console.log(`${contractName} contract is found`);
-          contractNames.push(contractName);
+      const contractList = readdirSync(path.resolve("contracts"), { withFileTypes: true });
+      for (const contract of contractList) {
+        if (contract.isDirectory()) {
+          console.log(`${contract.name} contract is found`);
+          contractNames.push(contract.name);
         }
       }
     } else {
@@ -61,7 +61,6 @@ export class CompileContract extends Command {
     const testDir = path.resolve("test");
     for (const contractName of contractNames) {
       const contractInfo = config.contracts[contractName];
-
       if (!contractInfo.build) {
         this.error(`Cannot find build data for ${contractName} contract in swanky.config.json`);
       }
