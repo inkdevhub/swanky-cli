@@ -17,7 +17,7 @@ $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
 running command...
 $ swanky (--version|-V|-v)
-@astar-network/swanky-cli/2.0.0 linux-x64 node-v18.14.2
+@astar-network/swanky-cli/2.1.0 darwin-x64 node-v18.2.0
 $ swanky --help [COMMAND]
 USAGE
   $ swanky COMMAND
@@ -32,11 +32,12 @@ USAGE
 * [`swanky account list`](#swanky-account-list)
 * [`swanky account ls`](#swanky-account-ls)
 * [`swanky check`](#swanky-check)
-* [`swanky contract compile CONTRACTNAME`](#swanky-contract-compile-contractname)
+* [`swanky contract compile [CONTRACTNAME]`](#swanky-contract-compile-contractname)
 * [`swanky contract deploy CONTRACTNAME`](#swanky-contract-deploy-contractname)
 * [`swanky contract explain CONTRACTNAME`](#swanky-contract-explain-contractname)
 * [`swanky contract new CONTRACTNAME`](#swanky-contract-new-contractname)
 * [`swanky contract query CONTRACTNAME MESSAGENAME`](#swanky-contract-query-contractname-messagename)
+* [`swanky contract test CONTRACTNAME`](#swanky-contract-test-contractname)
 * [`swanky contract tx CONTRACTNAME MESSAGENAME`](#swanky-contract-tx-contractname-messagename)
 * [`swanky contract typegen CONTRACTNAME`](#swanky-contract-typegen-contractname)
 * [`swanky help [COMMANDS]`](#swanky-help-commands)
@@ -112,20 +113,21 @@ DESCRIPTION
   Check installed package versions and compatibility
 ```
 
-_See code: [dist/commands/check/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v2.0.0/dist/commands/check/index.js)_
+_See code: [dist/commands/check/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v2.1.0/dist/commands/check/index.js)_
 
-## `swanky contract compile CONTRACTNAME`
+## `swanky contract compile [CONTRACTNAME]`
 
 Compile the smart contract(s) in your contracts directory
 
 ```
 USAGE
-  $ swanky contract compile CONTRACTNAME [-v] [-r]
+  $ swanky contract compile [CONTRACTNAME] [-v] [-r] [-a]
 
 ARGUMENTS
   CONTRACTNAME  Name of the contract to compile
 
 FLAGS
+  -a, --all      Set all to true to compile all contracts
   -r, --release  A production contract should always be build in `release` mode for building optimized wasm
   -v, --verbose  Display additional compilation output
 
@@ -215,6 +217,24 @@ FLAGS
   --address=<value>        Target specific address, defaults to last deployed. (--addr, --add)
 ```
 
+## `swanky contract test CONTRACTNAME`
+
+Run tests for a given contact
+
+```
+USAGE
+  $ swanky contract test CONTRACTNAME [-a]
+
+ARGUMENTS
+  CONTRACTNAME  Name of the contract to test
+
+FLAGS
+  -a, --all  Set all to true to compile all contracts
+
+DESCRIPTION
+  Run tests for a given contact
+```
+
 ## `swanky contract tx CONTRACTNAME MESSAGENAME`
 
 Call a Tx message on smart contract
@@ -295,7 +315,7 @@ DESCRIPTION
   Generate a new smart contract environment
 ```
 
-_See code: [dist/commands/init/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v2.0.0/dist/commands/init/index.js)_
+_See code: [dist/commands/init/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v2.1.0/dist/commands/init/index.js)_
 
 ## `swanky node purge`
 
