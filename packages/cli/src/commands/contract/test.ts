@@ -14,15 +14,12 @@ declare global {
 export class CompileContract extends Command {
   static description = "Run tests for a given contact";
 
-  // hidden until the mocha loading issue is resolved
-  static hidden = true;
-
   static flags = {
     all: Flags.boolean({
       default: false,
       char: "a",
-      description: "Set all to true to compile all contracts"
-    })
+      description: "Set all to true to compile all contracts",
+    }),
   };
 
   static args = {
@@ -37,7 +34,7 @@ export class CompileContract extends Command {
     const { args, flags } = await this.parse(CompileContract);
 
     if (args.contractName == "" && !flags.all) {
-      this.error("No contracts were selected to compile")
+      this.error("No contracts were selected to compile");
     }
 
     await ensureSwankyProject();
@@ -65,9 +62,14 @@ export class CompileContract extends Command {
       }
       const buildData = contractInfo.build;
 
-      const reportDir = path.resolve(projectDir, buildData.artifactsPath, "testReports", Date.now().toString());
+      const reportDir = path.resolve(
+        projectDir,
+        buildData.artifactsPath,
+        "testReports",
+        Date.now().toString()
+      );
       await ensureDir(reportDir);
-  
+
       const mocha = new Mocha({
         timeout: 200000,
         reporter: "mochawesome",
@@ -79,16 +81,16 @@ export class CompileContract extends Command {
           json: false,
         },
       });
-  
+
       const tests = await globby(`${path.resolve(testDir, contractName)}/*.test.ts`);
-  
+
       mocha.addFile;
       tests.forEach((test) => {
         mocha.addFile(test);
       });
-  
+
       global.contractTypesPath = path.resolve(testDir, contractName, "typedContract");
-  
+
       shell.cd(`${testDir}/${contractName}`);
       try {
         await new Promise<void>((resolve, reject) => {
