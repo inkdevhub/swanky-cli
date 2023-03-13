@@ -1,4 +1,4 @@
-import { Command, Flags } from "@oclif/core";
+import { Args, Command, Flags } from "@oclif/core";
 import path = require("node:path");
 import { readJSON, readFile, writeJSON } from "fs-extra";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
@@ -44,13 +44,13 @@ export class DeployContract extends Command {
     }),
   };
 
-  static args = [
-    {
+  static args = {
+    contractName: Args.string({
       name: "contractName",
       required: true,
       description: "Name of the contract to deploy",
-    },
-  ];
+    }),
+  };
 
   async run(): Promise<void> {
     await ensureSwankyProject();

@@ -1,4 +1,4 @@
-import { Command, Flags } from "@oclif/core";
+import { Args, Command, Flags } from "@oclif/core";
 import path = require("node:path");
 import {
   moveArtifacts,
@@ -10,7 +10,6 @@ import {
   generateTypesFor,
 } from "@astar-network/swanky-core";
 import { writeJSON, readdirSync, existsSync } from "fs-extra";
-import { fstat } from "node:fs";
 
 export class CompileContract extends Command {
   static description = "Compile the smart contract(s) in your contracts directory";
@@ -33,14 +32,14 @@ export class CompileContract extends Command {
     })
   };
 
-  static args = [
-    {
+  static args = {
+    contractName: Args.string({
       name: "contractName",
       required: false,
       default: "",
-      description: "Name of the contracts to compile, separated by comman for multiple contracts compilation",
-    },
-  ];
+      description: "Name of the contract to compile",
+    }),
+  };
 
   async run(): Promise<void> {
     const { args, flags } = await this.parse(CompileContract);

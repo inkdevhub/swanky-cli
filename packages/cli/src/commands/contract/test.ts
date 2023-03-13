@@ -1,5 +1,5 @@
 require("ts-mocha");
-import { Command, Flags } from "@oclif/core";
+import { Command, Flags, Args } from "@oclif/core";
 import path = require("node:path");
 import { ensureSwankyProject, getSwankyConfig } from "@astar-network/swanky-core";
 import globby from "globby";
@@ -25,14 +25,13 @@ export class CompileContract extends Command {
     })
   };
 
-  static args = [
-    {
+  static args = {
+    contractName: Args.string({
       name: "contractName",
-      required: false,
-      default: "",
-      description: "Name of the contract to compile",
-    },
-  ];
+      required: true,
+      description: "Name of the contract to test",
+    }),
+  };
 
   async run(): Promise<void> {
     const { args, flags } = await this.parse(CompileContract);

@@ -4,7 +4,7 @@ import { ContractCall } from "../../lib/contractCall";
 export class Query extends ContractCall<typeof Query> {
   static summary = "Call a query message on smart contract";
 
-  static args = [...ContractCall.callArgs];
+  static args = { ...ContractCall.callArgs };
 
   public async run(): Promise<void> {
     const { flags, args } = await this.parse(Query);

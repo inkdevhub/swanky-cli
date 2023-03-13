@@ -21,8 +21,6 @@ export class CreateAccount extends Command {
     }),
   };
 
-  static args = [];
-
   async run(): Promise<void> {
     await ensureSwankyProject();
     const { flags } = await this.parse(CreateAccount);
