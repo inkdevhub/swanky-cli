@@ -4,48 +4,61 @@ on:
     types: [opened, reopened, synchronize, ready_for_review]
   workflow_dispatch:
 env:
-  NODE_VER: 18.x
+  NODE_JS_VER: 18.x
+  SWANKY_NODE_VER: v1.2.0
 jobs:
-  runs-on: ubuntu-latest
-  steps:
-  - name: Checkout the source code
+  e2e-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout the source code
       uses: actions/checkout@v3
 
-  - name: Install & display rust toolchain
-    run: |
-      rustup show
-      rustup component add rust-src
+    - name: Install & display rust toolchain
+      run: |
+        rustup toolchain install nightly
+        rustup default nightly
+        rustup show
+        rustup component add rust-src
 
-  - name: Check targets are installed correctly
-    run: rustup target list --installed
+    - name: Check targets are installed correctly
+      run: rustup target list --installed
 
-  - name: Cache cargo
-    uses: actions/cache@v3
-    with:
-      path: ~/.cargo
-      key: ${{ runner.os }}-rust-${{ hashFiles('rust-toolchain.toml') }}
-      restore-keys: |
-        ${{ runner.os }}-rust
+    - name: Cache cargo
+      uses: actions/cache@v3
+      with:
+        path: ~/.cargo
+        key: ${{ runner.os }}-rust-${{ hashFiles('rust-toolchain.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-rust
 
-  - name: Install cargo contract
-    if: ${{ steps.check-cargo-contract.outcome == 'failure' }}
-    run: |
-      cargo install cargo-dylint dylint-link
-      cargo install --force --locked cargo-contract
+    - name: Check if cargo-contract exists
+      id: check-cargo-contract
+      continue-on-error: true
+      run: cargo contract --version
 
-  - name: Use Node.js
-    uses: actions/setup-node@v3
-    with:
-      node-version: ${{ env.NODE_VER }}
+    - name: Install cargo contract
+      if: ${{ steps.check-cargo-contract.outcome == 'failure' }}
+      run: |
+        cargo install cargo-dylint dylint-link
+        cargo install --force --locked cargo-contract
 
-  - name: Install swanky-cli
-    run: npm install -g @astar-network/swanky-cli
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ env.NODE_JS_VER }}
 
-  - name: Compile contracts
-    run:
-      swanky contract compile --all
+    - name: Install swanky-cli
+      run: npm install && npm install -g @astar-network/swanky-cli
 
-  - name: Test contracts
-    run:
-      swanky node start
-      swanky contract test --all
+    - name: Compile contracts
+      run: swanky contract compile --all -v
+
+    - name: Download and start swanky-node
+      run: |
+        sudo wget https://github.com/AstarNetwork/swanky-node/releases/download/${{ env.SWANKY_NODE_VER }}/swanky-node-${{ env.SWANKY_NODE_VER }}-ubuntu-x86_64.tar.gz
+        sudo tar -zxvf swanky-node-v1.2.0-ubuntu-x86_64.tar.gz
+        sudo chmod +x swanky-node
+        ./swanky-node
+
+    - name: Test contracts
+      run: swanky contract test --all
