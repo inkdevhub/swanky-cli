@@ -53,12 +53,9 @@ export class CompileContract extends Command {
 
     const contractNames = [];
     if (flags.all) {
-      const contractList = readdirSync(path.resolve("contracts"), { withFileTypes: true });
-      for (const contract of contractList) {
-        if (contract.isDirectory()) {
-          console.log(`${contract.name} contract is found`);
-          contractNames.push(contract.name);
-        }
+      for (const contractName of Object.keys(config.contracts)) {
+        console.log(`${contractName} contract is found`);
+        contractNames.push(contractName);
       }
     } else {
       contractNames.push(args.contractName);
