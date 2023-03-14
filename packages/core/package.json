@@ -1,17 +1,17 @@
 {
   "name": "@astar-network/swanky-core",
-  "version": "1.0.11",
+  "version": "2.0.0",
   "description": "Core library of Swanky Suite",
   "author": "Astar network",
   "license": "MIT",
   "main": "./dist/index.js",
   "repository": "https://github.com/AstarNetwork/swanky-cli",
   "dependencies": {
-    "@polkadot/api": "9.11.3",
-    "@polkadot/api-contract": "9.11.3",
-    "@polkadot/keyring": "10.2.6",
-    "@polkadot/util": "10.2.6",
-    "@polkadot/util-crypto": "10.2.6",
+    "@polkadot/api": "9.14.2",
+    "@polkadot/api-contract": "9.14.2",
+    "@polkadot/keyring": "10.4.2",
+    "@polkadot/util": "10.4.2",
+    "@polkadot/util-crypto": "10.4.2",
     "bn.js": "5.2.1",
     "decompress": "4.2.1",
     "execa": "5.1.1",
@@ -22,8 +22,8 @@
     "ora": "5.4.1"
   },
   "devDependencies": {
-    "@polkadot/api-augment": "9.11.3",
-    "@polkadot/types": "9.11.3",
+    "@polkadot/api-augment": "9.14.2",
+    "@polkadot/types": "9.14.2",
     "@types/decompress": "4.2.4",
     "ts-node": "10.9.1",
     "tslib": "2.5.0",
@@ -41,12 +41,12 @@
     "access": "public"
   },
   "resolutions": {
-    "@polkadot/api": "9.11.3",
-    "@polkadot/api-contract": "9.11.3",
-    "@polkadot/util": "10.2.6",
-    "@polkadot/util-crypto": "10.2.6",
-    "@polkadot/keyring": "10.2.6",
-    "@polkadot/api-augment": "9.11.3",
-    "@polkadot/types": "9.11.3"
+    "@polkadot/api": "10.0.1",
+    "@polkadot/api-contract": "10.0.1",
+    "@polkadot/util": "11.0.1",
+    "@polkadot/util-crypto": "11.0.1",
+    "@polkadot/keyring": "11.0.1",
+    "@polkadot/api-augment": "10.0.1",
+    "@polkadot/types": "10.0.1"
   }
 }

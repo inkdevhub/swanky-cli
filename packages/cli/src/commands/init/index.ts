@@ -1,4 +1,4 @@
-import { Command, Flags } from "@oclif/core";
+import { Args, Command, Flags } from "@oclif/core";
 import path = require("node:path");
 import { ensureDir, writeJSON } from "fs-extra";
 import execa = require("execa");
@@ -37,13 +37,13 @@ export class Init extends Command {
     verbose: Flags.boolean({ char: "v" }),
   };
 
-  static args = [
-    {
+  static args = {
+    projectName: Args.string({
       name: "projectName",
       required: true,
       description: "directory name of new project",
-    },
-  ];
+    }),
+  };
 
   async run(): Promise<void> {
     const { args, flags } = await this.parse(Init);

@@ -1,6 +1,6 @@
 {
   "name": "@astar-network/swanky-cli",
-  "version": "1.0.11",
+  "version": "2.1.0",
   "description": "Astar network WASM contract CLI tool",
   "author": "Astar network",
   "bin": {
@@ -17,13 +17,14 @@
     "/oclif.manifest.json"
   ],
   "dependencies": {
-    "@astar-network/swanky-core": "^1.0.11",
-    "@astar-network/swanky-templates": "^1.0.11",
-    "@oclif/core": "1.26.0",
-    "@oclif/plugin-help": "5.1.17",
-    "@oclif/plugin-plugins": "2.1.4",
-    "@oclif/plugin-version": "1.1.3",
-    "@polkadot/util-crypto": "10.2.6",
+    "@astar-network/swanky-core": "^2.0.0",
+    "@astar-network/swanky-templates": "^2.0.0",
+    "@oclif/core": "2.5.0",
+    "@oclif/plugin-help": "5.2.7",
+    "@oclif/plugin-plugins": "2.3.2",
+    "@oclif/plugin-version": "1.2.1",
+    "@polkadot/util": "11.0.1",
+    "@polkadot/util-crypto": "11.0.1",
     "@types/shelljs": "0.8.11",
     "chalk": "4",
     "change-case": "4.1.2",
@@ -32,17 +33,17 @@
     "globby": "11",
     "inquirer": "8.2.5",
     "listr2": "5.0.7",
-    "mocha": "10.0.0",
+    "mocha": "10.2.0",
     "mocha-suppress-logs": "0.3.1",
     "mochawesome": "7.1.3",
-    "semver": "7.3.7",
+    "semver": "7.3.8",
     "shelljs": "0.8.5",
     "toml": "3.0.0",
     "ts-mocha": "^10.0.0",
-    "typescript": "4.8.4"
+    "typescript": "4.9.5"
   },
   "devDependencies": {
-    "@oclif/test": "2.2.8",
+    "@oclif/test": "2.3.9",
     "@types/chai": "4",
     "@types/fs-extra": "9.0.13",
     "@types/inquirer": "8.2.5",
@@ -58,7 +59,7 @@
     "lerna": "6.0.3",
     "mem-fs": "2.2.1",
     "mem-fs-editor": "9.6.0",
-    "oclif": "3.4.2",
+    "oclif": "3.7.0",
     "prettier": "2.7.1",
     "shx": "0.3.3",
     "ts-node": "10.9.1",
@@ -116,12 +117,12 @@
     "access": "public"
   },
   "resolutions": {
-    "@polkadot/api": "9.11.3",
-    "@polkadot/api-contract": "9.11.3",
-    "@polkadot/util": "10.2.6",
-    "@polkadot/util-crypto": "10.2.6",
-    "@polkadot/keyring": "10.2.6",
-    "@polkadot/api-augment": "9.11.3",
-    "@polkadot/types": "9.11.3"
+    "@polkadot/api": "10.0.1",
+    "@polkadot/api-contract": "10.0.1",
+    "@polkadot/util": "11.0.1",
+    "@polkadot/util-crypto": "11.0.1",
+    "@polkadot/keyring": "11.0.1",
+    "@polkadot/api-augment": "10.0.1",
+    "@polkadot/types": "10.0.1"
   }
 }

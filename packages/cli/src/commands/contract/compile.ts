@@ -1,6 +1,5 @@
-import { Command, Flags } from "@oclif/core";
+import { Args, Command, Flags } from "@oclif/core";
 import path = require("node:path");
-import { readdirSync } from "node:fs";
 import {
   moveArtifacts,
   ensureSwankyProject,
@@ -10,7 +9,7 @@ import {
   Spinner,
   generateTypesFor,
 } from "@astar-network/swanky-core";
-import { writeJSON } from "fs-extra";
+import { writeJSON, readdirSync, existsSync } from "fs-extra";
 
 export class CompileContract extends Command {
   static description = "Compile the smart contract(s) in your contracts directory";
@@ -25,82 +24,95 @@ export class CompileContract extends Command {
       default: false,
       char: "r",
       description: "A production contract should always be build in `release` mode for building optimized wasm"
+    }),
+    all: Flags.boolean({
+      default: false,
+      char: "a",
+      description: "Set all to true to compile all contracts"
     })
   };
 
-  static args = [
-    {
+  static args = {
+    contractName: Args.string({
       name: "contractName",
-      required: true,
+      required: false,
+      default: "",
       description: "Name of the contract to compile",
-    },
-  ];
+    }),
+  };
 
   async run(): Promise<void> {
     const { args, flags } = await this.parse(CompileContract);
 
-    await ensureSwankyProject();
+    if (args.contractName == "" && !flags.all) {
+      this.error("No contracts were selected to compile")
+    }
 
+    await ensureSwankyProject();
     const config = await getSwankyConfig();
 
-    const contractInfo = config.contracts[args.contractName];
-    if (!contractInfo) {
-      this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
+    const contractNames = [];
+    if (flags.all) {
+      const contractList = readdirSync(path.resolve("contracts"), { withFileTypes: true });
+      for (const contract of contractList) {
+        if (contract.isDirectory()) {
+          console.log(`${contract.name} contract is found`);
+          contractNames.push(contract.name);
+        }
+      }
+    } else {
+      contractNames.push(args.contractName);
     }
 
     const spinner = new Spinner();
 
-    const contractList = readdirSync(path.resolve("contracts"));
+    for (const contractName of contractNames) {
+      const contractInfo = config.contracts[contractName];
+      if (!contractInfo) {
+        this.error(`Cannot find contract info for ${contractName} contract in swanky.config.json`);
+      }
+      const contractPath = path.resolve("contracts", contractName);
+      if (!existsSync(contractPath)) {
+        this.error(`Contract folder not found at expected path`);
+      }
 
-    const contractPath = path.resolve("contracts", args.contractName);
-    if (!contractList.includes(args.contractName)) {
-      this.error(`Path to contract ${args.contractName} does not exist: ${contractPath}`);
+      await spinner.runCommand(
+        async () => {
+          return new Promise<void>((resolve, reject) => {
+            const compile = getBuildCommandFor(contractInfo.language, contractPath, flags.release);
+            compile.stdout.on("data", () => spinner.ora.clear());
+            compile.stdout.pipe(process.stdout);
+            if (flags.verbose) {
+              compile.stderr.on("data", () => spinner.ora.clear());
+              compile.stderr.pipe(process.stdout);
+            }
+            compile.on("exit", (code) => {
+              if (code === 0) resolve();
+              else reject();
+            });
+          });
+        },
+        `Compiling ${contractName} contract`,
+        `${contractName} Contract compiled successfully`,
+      );
+
+      await spinner.runCommand(
+        async () => await generateTypesFor(contractInfo.language, contractInfo.name, contractPath),
+        `Generating ${contractName} contract ts types`,
+        `${contractName} contract's TS types Generated successfully`
+      );
+
+      const buildData = (await spinner.runCommand(async () => {
+        return moveArtifacts(contractInfo.name);
+      }, "Moving artifacts")) as BuildData;
+
+      contractInfo.build = buildData;
     }
 
-    await spinner.runCommand(
-      async () => {
-        return new Promise<void>((resolve, reject) => {
-          const compile = getBuildCommandFor(contractInfo.language, contractPath, flags.release);
-          compile.stdout.on("data", () => spinner.ora.clear());
-          compile.stdout.pipe(process.stdout);
-          if (flags.verbose) {
-            compile.stderr.on("data", () => spinner.ora.clear());
-            compile.stderr.pipe(process.stdout);
-          }
-          compile.on("exit", (code) => {
-            if (code === 0) resolve();
-            else reject();
-          });
-        });
-      },
-      "Compiling contract",
-      "Contract compiled successfully",
-    );
-
-    await spinner.runCommand(
-      async () => await generateTypesFor(contractInfo.language, contractInfo.name, contractPath),
-      "Generating contract ts types",
-      "TS types Generated successfully"
-    );
-
-    const buildData = (await spinner.runCommand(async () => {
-      return moveArtifacts(contractInfo.name);
-    }, "Moving artifacts")) as BuildData;
-
     await spinner.runCommand(async () => {
-      contractInfo.build = buildData;
-
       await writeJSON(path.resolve("swanky.config.json"), config, {
         spaces: 2,
       });
     }, "Writing config");
   }
-}
-
-// https://github.com/Supercolony-net/typechain-polkadot#usage-of-typechain-compiler
-interface TypechainCompilerConfig {
-  projectFiles: string[]; // Path to all project files, everystring in glob format
-  skipLinting : boolean; // Skip linting of project files
-  artifactsPath : string; // Path to artifacts folder, where artifacts will be stored it will save both .contract and .json (contract ABI)
-  typechainGeneratedPath : string; // Path to typechain generated folder
 }
