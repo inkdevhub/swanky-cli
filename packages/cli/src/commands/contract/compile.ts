@@ -44,7 +44,7 @@ export class CompileContract extends Command {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(CompileContract);
 
-    if (args.contractName == "" && !flags.all) {
+    if (args.contractName === undefined && !flags.all) {
       this.error("No contracts were selected to compile")
     }
 

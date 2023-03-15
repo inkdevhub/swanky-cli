@@ -33,7 +33,7 @@ export class TestContract extends Command {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(TestContract);
 
-    if (args.contractName == "" && !flags.all) {
+    if (args.contractName === undefined && !flags.all) {
       this.error("No contracts were selected to compile");
     }
 
