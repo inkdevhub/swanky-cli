@@ -69,7 +69,7 @@ export class CompileContract extends Command {
     for (const contractName of contractNames) {
       const contractInfo = config.contracts[contractName];
       if (!contractInfo) {
-        this.error(`Cannot find contract info for ${contractName} contract in swanky.config.json`);
+        this.error(`Cannot find contract info for ${contractName} contract in swanky.config.json. If you are trying to compile all available contracts in the project, please use --all flag.`);
       }
       const contractPath = path.resolve("contracts", contractName);
       if (!existsSync(contractPath)) {
