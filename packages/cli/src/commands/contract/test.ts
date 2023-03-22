@@ -11,7 +11,7 @@ declare global {
   var contractTypesPath: string; // eslint-disable-line no-var
 }
 
-export class CompileContract extends Command {
+export class TestContract extends Command {
   static description = "Run tests for a given contact";
 
   static flags = {
@@ -25,15 +25,15 @@ export class CompileContract extends Command {
   static args = {
     contractName: Args.string({
       name: "contractName",
-      required: true,
+      default: "",
       description: "Name of the contract to test",
     }),
   };
 
   async run(): Promise<void> {
-    const { args, flags } = await this.parse(CompileContract);
+    const { args, flags } = await this.parse(TestContract);
 
-    if (args.contractName == "" && !flags.all) {
+    if (args.contractName === undefined && !flags.all) {
       this.error("No contracts were selected to compile");
     }
 
@@ -42,12 +42,9 @@ export class CompileContract extends Command {
 
     const contractNames = [];
     if (flags.all) {
-      const contractList = readdirSync(path.resolve("contracts"), { withFileTypes: true });
-      for (const contract of contractList) {
-        if (contract.isDirectory()) {
-          console.log(`${contract.name} contract is found`);
-          contractNames.push(contract.name);
-        }
+      for (const contractName of Object.keys(config.contracts)) {
+        console.log(`${contractName} contract is found`);
+        contractNames.push(contractName);
       }
     } else {
       contractNames.push(args.contractName);
