@@ -9,7 +9,7 @@ import {
   Spinner,
   generateTypesFor,
 } from "@astar-network/swanky-core";
-import { writeJSON, readdirSync, existsSync } from "fs-extra";
+import { writeJSON, existsSync } from "fs-extra";
 
 export class CompileContract extends Command {
   static description = "Compile the smart contract(s) in your contracts directory";
@@ -23,13 +23,14 @@ export class CompileContract extends Command {
     release: Flags.boolean({
       default: false,
       char: "r",
-      description: "A production contract should always be build in `release` mode for building optimized wasm"
+      description:
+        "A production contract should always be build in `release` mode for building optimized wasm",
     }),
     all: Flags.boolean({
       default: false,
       char: "a",
-      description: "Set all to true to compile all contracts"
-    })
+      description: "Set all to true to compile all contracts",
+    }),
   };
 
   static args = {
@@ -45,7 +46,7 @@ export class CompileContract extends Command {
     const { args, flags } = await this.parse(CompileContract);
 
     if (args.contractName === undefined && !flags.all) {
-      this.error("No contracts were selected to compile")
+      this.error("No contracts were selected to compile");
     }
 
     await ensureSwankyProject();
@@ -90,7 +91,7 @@ export class CompileContract extends Command {
           });
         },
         `Compiling ${contractName} contract`,
-        `${contractName} Contract compiled successfully`,
+        `${contractName} Contract compiled successfully`
       );
 
       await spinner.runCommand(
