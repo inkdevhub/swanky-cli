@@ -39,6 +39,10 @@ export async function copyTemplateFiles(
     })
   );
   await rename(path.resolve(projectPath, "gitignore"), path.resolve(projectPath, ".gitignore"));
+  await copy(
+    path.resolve(templatesPath, "github"),
+    path.resolve(projectPath, ".github")
+  );
   await copyContractTemplateFiles(contractTemplatePath, contractName, projectPath);
 }
 
