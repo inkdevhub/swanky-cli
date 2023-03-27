@@ -48,17 +48,14 @@ export function resolveNetworkUrl(config: SwankyConfig, networkName: string): st
 export function getBuildCommandFor(
   language: ContractData["language"],
   contractPath: string,
-  release: boolean,
-) : ChildProcessWithoutNullStreams {
+  release: boolean
+): ChildProcessWithoutNullStreams {
   if (language === "ink") {
-    const args = ["contract", "build", "--manifest-path", `${contractPath}/Cargo.toml`]
+    const args = ["contract", "build", "--manifest-path", `${contractPath}/Cargo.toml`];
     if (release) {
-      args.push("--release")
+      args.push("--release");
     }
-    return spawn(
-      "cargo",
-      args
-    )
+    return spawn("cargo", args);
   }
   if (language === "ask") {
     const args = ["asc", "--config", `${contractPath}/asconfig.json`, `${contractPath}/index.ts`];
@@ -66,11 +63,9 @@ export function getBuildCommandFor(
       args.push("-O");
       args.push("--noAssert");
     }
-    return spawn(
-      "npx",
-      args,
-      { env: { ...process.env, ASK_CONFIG: `${contractPath}/askconfig.json` } }
-    );
+    return spawn("npx", args, {
+      env: { ...process.env, ASK_CONFIG: `${contractPath}/askconfig.json` },
+    });
   }
   throw new Error("Unsupported language!");
 }
@@ -85,53 +80,58 @@ export async function generateTypesFor(
     await Promise.all([
       fs.copyFile(
         path.resolve(contractPath, "target", "ink", `${contractName}.contract`),
-        path.resolve(ARTIFACTS_PATH, `${contractName}.contract`),
+        path.resolve(ARTIFACTS_PATH, `${contractName}.contract`)
       ),
       fs.copyFile(
         path.resolve(contractPath, "target", "ink", `${contractName}.json`),
-        path.resolve(ARTIFACTS_PATH, `${contractName}.json`),
-      )
-    ])
+        path.resolve(ARTIFACTS_PATH, `${contractName}.json`)
+      ),
+    ]);
   } else if (language === "ask") {
     await Promise.all([
       fs.copyFile(
         path.resolve(contractPath, "build", `${contractName}.wasm`),
-        path.resolve(ARTIFACTS_PATH, `${contractName}.wasm`),
+        path.resolve(ARTIFACTS_PATH, `${contractName}.wasm`)
       ),
       fs.copyFile(
         path.resolve(contractPath, "build", "metadata.json"),
-        path.resolve(ARTIFACTS_PATH, `${contractName}.json`),
+        path.resolve(ARTIFACTS_PATH, `${contractName}.json`)
       ),
-    ])
+    ]);
 
     // Ask! build artifacts don't have `.contract` file which is just an combination of abi json and wasm blob
     // `.contract` will have .source.wasm field whose value is wasm blob hex representation.
     // If Ask! officially support .contract file, no need for this step.
-    const contract = JSON.parse(Files.readFileSync(path.resolve(ARTIFACTS_PATH, `${contractName}.json`)).toString());
+    const contract = JSON.parse(
+      Files.readFileSync(path.resolve(ARTIFACTS_PATH, `${contractName}.json`)).toString()
+    );
     const wasmBuf = Files.readFileSync(path.resolve(contractPath, "build", `${contractName}.wasm`));
-    const prefix = "0x"
+    const prefix = "0x";
     contract.source.wasm = prefix + wasmBuf.toString("hex");
-    fs.writeFileSync(path.resolve(ARTIFACTS_PATH, `${contractName}.contract`), JSON.stringify(contract));
+    fs.writeFileSync(
+      path.resolve(ARTIFACTS_PATH, `${contractName}.contract`),
+      JSON.stringify(contract)
+    );
     fs.remove(path.resolve(ARTIFACTS_PATH, `${contractName}.wasm`));
   } else {
     throw new Error("Unsupported language!");
   }
 
-  await generateTypes(ARTIFACTS_PATH, TYPED_CONTRACT_PATH)
+  await generateTypes(ARTIFACTS_PATH, TYPED_CONTRACT_PATH);
 }
 
-export async function moveArtifacts(
-  contractName: string,
-): Promise<BuildData> {
-  const ts = Date.now();
-  const fullPath = path.resolve(ARTIFACTS_PATH, contractName, ts.toString());
-  const relativePath = path.relative(path.resolve(), fullPath);
-  const buildData = {
-    timestamp: ts,
-    artifactsPath: relativePath,
-  };
+export async function moveArtifacts(contractName: string): Promise<BuildData> {
+  const contractArtifactsPath = path.resolve(ARTIFACTS_PATH, contractName);
 
-  await fs.ensureDir(buildData.artifactsPath);
+  // emptyDir also creates the directory if it doesn't exist
+  await fs.emptyDir(contractArtifactsPath);
+
+  const ts = Date.now();
+  const relativePath = path.relative(path.resolve(), contractArtifactsPath);
+  const buildData = {
+    artifactsPath: relativePath,
+    timestamp: ts,
+  };
 
   // copy artifacts/contract_name.contract and .json to artifactsPath .contract and .json
   try {
@@ -147,9 +147,9 @@ export async function moveArtifacts(
     ]);
     // move both to test/contract_name/artifacts
     const testArtifacts = path.resolve("test", contractName, "artifacts");
-    const testTypedContracts = path.resolve("test", contractName, "typedContract")
+    const testTypedContracts = path.resolve("test", contractName, "typedContract");
     await fs.ensureDir(testArtifacts);
-    await fs.ensureDir(testTypedContracts)
+    await fs.ensureDir(testTypedContracts);
     await Promise.all([
       fs.move(
         path.resolve(ARTIFACTS_PATH, `${contractName}.contract`),
@@ -173,7 +173,7 @@ export async function moveArtifacts(
 }
 
 export async function printContractInfo(metadataPath: string) {
-  const abi = new Abi((await fs.readJson(metadataPath)));
+  const abi = new Abi(await fs.readJson(metadataPath));
 
   // TODO: Use templating, colorize.
 
@@ -183,34 +183,42 @@ export async function printContractInfo(metadataPath: string) {
     Hash: ${abi.info.source.hash}
     Language: ${abi.info.source.language}
     Compiler: ${abi.info.source.compiler}
-  `)
+  `);
 
-  console.log(`    === Constructors ===\n`)
+  console.log(`    === Constructors ===\n`);
   for (const constructor of abi.constructors) {
     console.log(`    * ${constructor.method}:
-        Args: ${constructor.args.length > 0 ? constructor.args.map((arg) => {
-          return `\n        - ${arg.name} (${arg.type.displayName})`
-        }) : "None"}
+        Args: ${
+          constructor.args.length > 0
+            ? constructor.args.map((arg) => {
+                return `\n        - ${arg.name} (${arg.type.displayName})`;
+              })
+            : "None"
+        }
         Description: ${constructor.docs.map((line) => {
           if (line != "") {
-            return `\n         ` + line
+            return `\n         ` + line;
           }
         })}
-    `)
+    `);
   }
 
-  console.log(`    === Messages ===\n`)
+  console.log(`    === Messages ===\n`);
   for (const message of abi.messages) {
     console.log(`    * ${message.method}:
         Payable: ${message.isPayable}
-        Args: ${message.args.length > 0 ? message.args.map((arg) => {
-          return `\n        - ${arg.name} (${arg.type.displayName})`
-        }) : "None"}
+        Args: ${
+          message.args.length > 0
+            ? message.args.map((arg) => {
+                return `\n        - ${arg.name} (${arg.type.displayName})`;
+              })
+            : "None"
+        }
         Description: ${message.docs.map((line) => {
           if (line != "") {
-            return `\n         ` + line
+            return `\n         ` + line;
           }
         })}
-    `)
+    `);
   }
 }
