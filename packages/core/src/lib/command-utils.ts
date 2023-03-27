@@ -126,11 +126,10 @@ export async function moveArtifacts(contractName: string): Promise<BuildData> {
   // emptyDir also creates the directory if it doesn't exist
   await fs.emptyDir(contractArtifactsPath);
 
-  const ts = Date.now();
   const relativePath = path.relative(path.resolve(), contractArtifactsPath);
   const buildData = {
     artifactsPath: relativePath,
-    timestamp: ts,
+    timestamp: Date.now(),
   };
 
   // copy artifacts/contract_name.contract and .json to artifactsPath .contract and .json
