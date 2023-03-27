@@ -4,7 +4,7 @@ import path = require("node:path");
 import { ensureSwankyProject, getSwankyConfig } from "@astar-network/swanky-core";
 import globby from "globby";
 import Mocha from "mocha";
-import { ensureDir } from "fs-extra";
+import { emptyDir } from "fs-extra";
 import * as shell from "shelljs";
 
 declare global {
@@ -59,13 +59,8 @@ export class TestContract extends Command {
       }
       const buildData = contractInfo.build;
 
-      const reportDir = path.resolve(
-        projectDir,
-        buildData.artifactsPath,
-        "testReports",
-        Date.now().toString()
-      );
-      await ensureDir(reportDir);
+      const reportDir = path.resolve(projectDir, buildData.artifactsPath, "testReports");
+      await emptyDir(reportDir);
 
       const mocha = new Mocha({
         timeout: 200000,
