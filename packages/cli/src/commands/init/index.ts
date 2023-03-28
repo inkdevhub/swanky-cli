@@ -121,9 +121,6 @@ export class Init extends Command {
     await spinner.runCommand(
       () => installDeps(projectPath),
       "Installing dependencies",
-      "",
-      "",
-      false
     );
 
     const config: SwankyConfig = {
