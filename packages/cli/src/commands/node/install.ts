@@ -13,7 +13,7 @@ export class InstallNode extends Command {
   };
 
   async run(): Promise<void> {
-    ensureSwankyProject();
+    await ensureSwankyProject();
 
     const { flags } = await this.parse(InstallNode);
     const config = await getSwankyConfig();
