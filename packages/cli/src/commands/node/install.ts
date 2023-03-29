@@ -1,16 +1,11 @@
-import { Command, Flags } from "@oclif/core";
+import { BaseCommand } from "../../lib/baseCommand";
+import { ux } from "@oclif/core";
 import { ensureSwankyProject, getSwankyConfig, Spinner, downloadNode, swankyNode } from "@astar-network/swanky-core";
-import inquirer = require("inquirer");
 import path = require("node:path");
 import { writeJSON } from "fs-extra";
-import { choice } from "../../lib/prompts";
 
-export class InstallNode extends Command {
+export class InstallNode extends BaseCommand<typeof InstallNode> {
   static description = "Install swanky node binary";
-
-  static flags = {
-    verbose: Flags.boolean({ char: "v" }),
-  };
 
   async run(): Promise<void> {
     await ensureSwankyProject();
@@ -22,10 +17,8 @@ export class InstallNode extends Command {
     const projectPath = path.resolve();
 
     if (config.node.localPath !== "") {
-        const answers = await inquirer.prompt([
-            choice("overwrite", "Swanky node already installed. Do you want to overwrite it?")
-        ]);
-        if (!answers.overwrite) {
+        const overwrite = await ux.confirm("Swanky node already installed. Do you want to overwrite it? (y/n)");
+        if (!overwrite) {
             return;
         }
     }
