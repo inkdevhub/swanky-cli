@@ -1,6 +1,6 @@
 import { Args, Flags } from "@oclif/core";
 import path = require("node:path");
-import { ensureDir, writeJSON } from "fs-extra";
+import { ensureDir, writeJSON, stat, readdir } from "fs-extra";
 import execa = require("execa");
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer = require("inquirer");
@@ -53,6 +53,17 @@ export class Init extends BaseCommand {
     const { args, flags } = await this.parse(Init);
 
     const projectPath = path.resolve(args.projectName);
+
+    try {
+      const pathStat = await stat(projectPath);
+
+      if (pathStat.isDirectory()) {
+        const files = await readdir(projectPath);
+        if (files.length > 0) throw new Error(`Directory ${args.projectName} is not empty!`);
+      }
+    } catch (error: unknown) {
+      if (error instanceof Error && !error.message.includes("ENOENT")) throw error;
+    }
 
     const { contractLanguage } = await inquirer.prompt([pickLanguage()]);
 
