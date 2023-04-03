@@ -35,7 +35,10 @@ export class Init extends BaseCommand {
       char: "t",
     }),
     language: Flags.string({ options: ["ask", "ink"], char: "l" }),
-    convert: Flags.boolean(),
+    convert: Flags.string({
+      char: "c",
+      description: "Converts an existing smart contract into a Swanky project",
+    }),
   };
 
   static args = {
