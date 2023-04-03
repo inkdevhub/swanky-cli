@@ -40,26 +40,17 @@ export class TestContract extends Command {
     await ensureSwankyProject();
     const config = await getSwankyConfig();
 
-    const contractNames = [];
-    if (flags.all) {
-      for (const contractName of Object.keys(config.contracts)) {
-        console.log(`${contractName} contract is found`);
-        contractNames.push(contractName);
-      }
-    } else {
-      contractNames.push(args.contractName);
-    }
+    const contractNames = flags.all ? Object.keys(config.contracts) : args.contractName;
 
-    const projectDir = path.resolve();
     const testDir = path.resolve("test");
     for (const contractName of contractNames) {
+      console.log(`Testing contract: ${contractName}`);
       const contractInfo = config.contracts[contractName];
       if (!contractInfo.build) {
         this.error(`Cannot find build data for ${contractName} contract in swanky.config.json`);
       }
-      const buildData = contractInfo.build;
 
-      const reportDir = path.resolve(projectDir, buildData.artifactsPath, "testReports");
+      const reportDir = path.resolve(testDir, contractInfo.name, "testReports");
       await emptyDir(reportDir);
 
       const mocha = new Mocha({
