@@ -52,15 +52,7 @@ export class CompileContract extends Command {
     await ensureSwankyProject();
     const config = await getSwankyConfig();
 
-    const contractNames = [];
-    if (flags.all) {
-      for (const contractName of Object.keys(config.contracts)) {
-        console.log(`${contractName} contract is found`);
-        contractNames.push(contractName);
-      }
-    } else {
-      contractNames.push(args.contractName);
-    }
+    const contractNames = flags.all ? Object.keys(config.contracts) : args.contractName;
 
     const spinner = new Spinner();
 
