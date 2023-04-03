@@ -5,8 +5,8 @@ import { readdirSync } from "node:fs";
 import { printContractInfo } from "@astar-network/swanky-core";
 import { Args } from "@oclif/core";
 
-export class ExplainContract extends BaseCommand<typeof ExplainContract> {
-  static description = "Explain contract messages based on thier metadata";
+export class ExplainContract extends BaseCommand {
+  static description = "Explain contract messages based on the contracts' metadata";
 
   static args = {
     contractName: Args.string({

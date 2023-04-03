@@ -1,7 +1,7 @@
-import { Command, Flags, Interfaces } from "@oclif/core";
+import { Command, Flags } from "@oclif/core";
 import { getSwankyConfig, Spinner, SwankyConfig } from "@astar-network/swanky-core";
 
-export abstract class BaseCommand<T extends typeof Command> extends Command {
+export abstract class BaseCommand extends Command {
   protected spinner!: Spinner;
   protected swankyConfig!: SwankyConfig;
 

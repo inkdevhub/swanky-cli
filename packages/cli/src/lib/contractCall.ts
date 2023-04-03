@@ -21,9 +21,7 @@ export type JoinedFlagsType<T extends typeof Command> = Interfaces.InferredFlags
   typeof BaseCommand["baseFlags"] & typeof ContractCall["baseFlags"] & T["flags"]
 >;
 
-export abstract class ContractCall<T extends typeof Command> extends BaseCommand<
-  typeof ContractCall
-> {
+export abstract class ContractCall<T extends typeof Command> extends BaseCommand {
   static callArgs = {
     contractName: Args.string({
       name: "Contract name",

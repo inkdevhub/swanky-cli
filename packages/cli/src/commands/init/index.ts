@@ -1,4 +1,4 @@
-import { Args, Command, Flags } from "@oclif/core";
+import { Args, Flags } from "@oclif/core";
 import path = require("node:path");
 import { ensureDir, writeJSON } from "fs-extra";
 import execa = require("execa");
@@ -18,13 +18,14 @@ import {
   swankyNode,
 } from "@astar-network/swanky-core";
 import { getAllTemplateNames, getTemplates } from "@astar-network/swanky-templates";
+import { BaseCommand } from "../../lib/baseCommand";
 const {
   DEFAULT_ASTAR_NETWORK_URL,
   DEFAULT_NETWORK_URL,
   DEFAULT_SHIBUYA_NETWORK_URL,
   DEFAULT_SHIDEN_NETWORK_URL,
 } = consts;
-export class Init extends Command {
+export class Init extends BaseCommand {
   static description = "Generate a new smart contract environment";
 
   static flags = {
@@ -34,7 +35,7 @@ export class Init extends Command {
       char: "t",
     }),
     language: Flags.string({ options: ["ask", "ink"], char: "l" }),
-    verbose: Flags.boolean({ char: "v" }),
+    convert: Flags.boolean(),
   };
 
   static args = {
