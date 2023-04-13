@@ -1,9 +1,10 @@
 import { Args, Flags } from "@oclif/core";
 import path = require("node:path");
-import { ensureDir, writeJSON, stat, readdir } from "fs-extra";
+import { ensureDir, writeJSON, stat, readdir, pathExists, readFile } from "fs-extra";
 import execa = require("execa");
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer = require("inquirer");
+import { load } from "js-toml";
 import { choice, email, name, pickLanguage, pickTemplate } from "../../lib/prompts";
 import {
   checkCliDependencies,
@@ -18,6 +19,7 @@ import {
 } from "@astar-network/swanky-core";
 import { getAllTemplateNames, getTemplates } from "@astar-network/swanky-templates";
 import { BaseCommand } from "../../lib/baseCommand";
+import globby = require("globby");
 const {
   DEFAULT_ASTAR_NETWORK_URL,
   DEFAULT_NETWORK_URL,
@@ -111,6 +113,7 @@ export class Init extends BaseCommand {
 
     if (flags.convert) {
       await this.convert(flags.convert);
+      return;
     } else {
       await this.generate(args.projectName);
     }
@@ -244,7 +247,60 @@ export class Init extends BaseCommand {
     };
   }
 
-  async convert(pathToProject: string) {
-    return;
+  async convert(pathToExistingProject: string) {
+    try {
+      const pathStat = await stat(pathToExistingProject);
+      if (pathStat.isDirectory()) {
+        const files = await readdir(pathToExistingProject);
+        if (files.length < 1)
+          throw new Error(`Target project directory [${pathToExistingProject}] is empty!`);
+      }
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message.includes("ENOENT"))
+        throw new Error(`Target project directory [${pathToExistingProject}] not found!`);
+      throw error;
+    }
+
+    // 2. Look for cargo.toml with "workspace" field in the root
+    const rootToml = await getRootCargoToml(pathToExistingProject);
+    // 3a. Workspace found - use the glob in the "members field" to select directories to copy over
+    // 3b. workspace not found, use regex to find dir/dirs*/[cargo.toml, lib.rs]
+    // 3c. if not found, ask user for a path where contracts are -> [Ctrl+C to cancel]
+    // 4. make a list (checkbox) for user to confirm contracts to copy
+    // 5. add directories from Cargo.toml/exclude path to copy list
+    // 6. look for test/tests directory and add it to the list
+    // 7. copy all the selected directories/files and update the swanky.config
+    // 8. copy cargo.toml from the root, modify path if needed ( "uniswap-v2/contracts/**" -> "contracts/**")
+    // 9. keep log of all the steps and write it to file
+    // 10. Copy rust.toolchain and .rustfmt.toml if exists
   }
+}
+
+async function getRootCargoToml(targetPath: string) {
+  const rootTomlPath = path.resolve(targetPath, "Cargo.toml");
+
+  if (!(await pathExists(rootTomlPath))) return;
+
+  const fileData = await readFile(rootTomlPath, "utf-8");
+  const toml: { workspace?: { members?: string[]; exclude?: string[] } } = load(fileData);
+
+  if (!toml.workspace?.members) return;
+
+  const getGlobPaths = async (globList: string[]) =>
+    globby(
+      globList.map((glob) => path.resolve(targetPath, glob)),
+      {
+        absolute: true,
+        onlyDirectories: true,
+        deep: 1,
+        objectMode: true,
+      }
+    );
+
+  const detectedPaths = {
+    contracts: await getGlobPaths(toml.workspace.members),
+    additionalPaths: toml.workspace.exclude ? await getGlobPaths(toml.workspace.exclude) : [],
+  };
+
+  return detectedPaths;
 }
