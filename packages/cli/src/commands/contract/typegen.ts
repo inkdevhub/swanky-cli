@@ -7,11 +7,9 @@ import {
   getSwankyConfig,
   Spinner,
   generateTypes,
-  consts,
 } from "@astar-network/swanky-core";
-const { TEMP_ARTIFACTS_PATH } = consts;
 
-export class CompileContract extends Command {
+export class TypegenCommand extends Command {
   static description = "Generate types from compiled contract metadata";
 
   static args = {
@@ -23,7 +21,7 @@ export class CompileContract extends Command {
   };
 
   async run(): Promise<void> {
-    const { args } = await this.parse(CompileContract);
+    const { args } = await this.parse(TypegenCommand);
 
     await ensureSwankyProject();
 
@@ -56,23 +54,12 @@ export class CompileContract extends Command {
         await fs.remove(destinationPath);
       }
 
-      await fs.ensureDir(TEMP_ARTIFACTS_PATH);
+      const buildInfoArtifactsPath = contractInfo.build?.artifactsPath;
+      if (buildInfoArtifactsPath == undefined) {
+        throw new Error(`Invalid artifacts path "${buildInfoArtifactsPath}"`);
+      }
 
-      // Getting error if typechain-polkadot takes folder with unnecessary files/folders as inputs.
-      // So, need to copy artifacts to empty temp folder and use it as input.
-      // @ts-ignore
-      const buildInfoArtifactsPath = contractInfo.build.artifactsPath;
-      (await fs.readdir(buildInfoArtifactsPath)).forEach(async (file) => {
-        const filepath = path.resolve(buildInfoArtifactsPath, file);
-        const filestat = await fs.stat(filepath);
-        if (!filestat.isDirectory()) {
-          await fs.copy(filepath, path.resolve(TEMP_ARTIFACTS_PATH, file));
-        }
-      });
-
-      await generateTypes(path.resolve(TEMP_ARTIFACTS_PATH), destinationPath);
-
-      await fs.remove(TEMP_ARTIFACTS_PATH);
+      await generateTypes(buildInfoArtifactsPath, args.contractName, destinationPath)
     }, "Generating types");
   }
 }

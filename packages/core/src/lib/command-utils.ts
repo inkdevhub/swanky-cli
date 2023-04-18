@@ -4,6 +4,7 @@ import path = require("node:path");
 import { DEFAULT_NETWORK_URL, STORED_ARTIFACTS_PATH } from "./consts.js";
 import { BuildData, SwankyConfig } from "../types";
 import { Abi } from "@polkadot/api-contract";
+import { TEMP_ARTIFACTS_PATH, TEMP_TYPED_CONTRACT_PATH } from "./consts";
 
 export async function commandStdoutOrNull(command: string): Promise<string | null> {
   try {
@@ -133,9 +134,31 @@ export async function printContractInfo(metadataPath: string) {
   }
 }
 
-// typechain-polkadot can only take relative paths as inputs.
-// This function take absolute paths and convert it to relative path from where the command is executed
-// for the sake of simplicity and clarity for usage.
-export async function generateTypes(inputAbsPath: string, outputAbsPath: string) {
-  await execa.command(`npx typechain-polkadot --in ${path.relative(path.resolve(), inputAbsPath)} --out ${path.relative(path.resolve(), outputAbsPath)}`);
+export async function generateTypes(inputAbsPath: string, contractName: string, outputAbsPath: string) {
+  await fs.ensureDir(TEMP_ARTIFACTS_PATH);
+
+  // Getting error if typechain-polkadot takes folder with unnecessary files/folders as inputs.
+  // So, need to copy artifacts to empty temp folder and use it as input.
+  (await fs.readdir(TEMP_ARTIFACTS_PATH)).forEach(async (file) => {
+    const filepath = path.resolve(TEMP_ARTIFACTS_PATH, file);
+    const filestat = await fs.stat(filepath);
+    if (!filestat.isDirectory()) {
+      await fs.remove(filepath);
+    }
+  });
+
+  // Cannot generate typedContract directly to `outputAbsPath`
+  // because relative path of typechain-polkadot input and output folder does matter for later use.
+  await fs.copyFile(
+    path.resolve(inputAbsPath, `${contractName}.contract`),
+    path.resolve(TEMP_ARTIFACTS_PATH, `${contractName}.contract`),
+  ),
+  await fs.copyFile(
+    path.resolve(inputAbsPath, `${contractName}.json`),
+    path.resolve(TEMP_ARTIFACTS_PATH, `${contractName}.json`),
+  )
+
+  await execa.command(`npx typechain-polkadot --in ${TEMP_ARTIFACTS_PATH} --out ${TEMP_TYPED_CONTRACT_PATH}`);
+
+  await fs.move(path.resolve(TEMP_TYPED_CONTRACT_PATH), outputAbsPath)
 }

@@ -14,7 +14,7 @@ import {
 } from "@astar-network/swanky-core";
 import { ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import { writeJSON, existsSync } from "fs-extra";
-const { TEMP_ARTIFACTS_PATH } = consts;
+const { TEMP_ARTIFACTS_PATH, TEMP_TYPED_CONTRACT_PATH } = consts;
 
 function getBuildCommandFor(
   language: ContractData["language"],
@@ -156,22 +156,9 @@ export class CompileContract extends Command {
         await fs.remove(path.resolve(artifactsPath, `${contractName}.wasm`));
       }
 
-      await fs.ensureDir(TEMP_ARTIFACTS_PATH);
-
-      // Getting error if typechain-polkadot takes folder with unnecessary files/folders as inputs.
-      // So, need to copy artifacts to empty temp folder and use it as input.
-      await fs.copyFile(
-        path.resolve(artifactsPath, `${contractName}.contract`),
-        path.resolve(TEMP_ARTIFACTS_PATH, `${contractName}.contract`),
-      ),
-      await fs.copyFile(
-        path.resolve(artifactsPath, `${contractName}.json`),
-        path.resolve(TEMP_ARTIFACTS_PATH, `${contractName}.json`),
-      )
-      const tsTypesDestPath = path.resolve("test", contractName, "typedContract");
-      await fs.ensureDir(tsTypesDestPath)
+      const typedContractDestPath = path.resolve("test", contractName, "typedContract");
       await spinner.runCommand(
-        async () => await generateTypes(path.resolve(TEMP_ARTIFACTS_PATH), tsTypesDestPath),
+        async () => await generateTypes(artifactsPath, contractName, typedContractDestPath),
         `Generating ${contractName} contract ts types`,
         `${contractName} contract's TS types Generated successfully`
       );
@@ -188,7 +175,5 @@ export class CompileContract extends Command {
         spaces: 2,
       });
     }, "Writing config");
-
-    await fs.remove(TEMP_ARTIFACTS_PATH);
   }
 }
