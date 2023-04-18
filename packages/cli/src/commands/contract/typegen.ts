@@ -9,7 +9,8 @@ import {
   generateTypes,
   consts,
 } from "@astar-network/swanky-core";
-const { ARTIFACTS_PATH, TYPED_CONTRACT_PATH } = consts;
+const { TEMP_ARTIFACTS_PATH } = consts;
+
 export class CompileContract extends Command {
   static description = "Generate types from compiled contract metadata";
 
@@ -55,33 +56,23 @@ export class CompileContract extends Command {
         await fs.remove(destinationPath);
       }
 
-      // Because relative path from input (artifacts) and output (typedContract) does matter for generated files of typechain-polkadot,
-      // Need to copy artifacts (`.contract` and ABI json) to project root artifacts folder beforehand and use them.
+      await fs.ensureDir(TEMP_ARTIFACTS_PATH);
+
+      // Getting error if typechain-polkadot takes folder with unnecessary files/folders as inputs.
+      // So, need to copy artifacts to empty temp folder and use it as input.
       // @ts-ignore
       const buildInfoArtifactsPath = contractInfo.build.artifactsPath;
       (await fs.readdir(buildInfoArtifactsPath)).forEach(async (file) => {
         const filepath = path.resolve(buildInfoArtifactsPath, file);
         const filestat = await fs.stat(filepath);
         if (!filestat.isDirectory()) {
-          await fs.copy(filepath, path.resolve(ARTIFACTS_PATH, file));
+          await fs.copy(filepath, path.resolve(TEMP_ARTIFACTS_PATH, file));
         }
       });
 
-      await generateTypes(ARTIFACTS_PATH, TYPED_CONTRACT_PATH);
+      await generateTypes(path.resolve(TEMP_ARTIFACTS_PATH), destinationPath);
 
-      await fs.move(TYPED_CONTRACT_PATH, destinationPath);
-
-      // Need to cleanup files inside artifacts folder, because typechain-polkadot generate types for all files under input folder.
-      // Residues affects the result of next contract's type generation.
-      //
-      // In compile command, using fs.move from artifacts path, thus there's no residues.
-      (await fs.readdir(ARTIFACTS_PATH)).forEach(async (file) => {
-        const filepath = path.resolve(ARTIFACTS_PATH, file);
-        const filestat = await fs.stat(filepath);
-        if (!filestat.isDirectory()) {
-          await fs.remove(filepath);
-        }
-      });
+      await fs.remove(TEMP_ARTIFACTS_PATH);
     }, "Generating types");
   }
 }

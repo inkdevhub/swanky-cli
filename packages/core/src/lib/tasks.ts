@@ -1,5 +1,5 @@
 import execa from "execa";
-import { ensureDir, rename, copy, readFile, rm, writeFile, remove, pathExists } from "fs-extra";
+import { ensureDir, rename, copy, readFile, rm, writeFile, remove } from "fs-extra";
 import path from "node:path";
 import globby from "globby";
 import handlebars from "handlebars";
@@ -139,8 +139,4 @@ export async function installDeps(projectPath: string) {
   } finally {
     await execa.command(installCommand, { cwd: projectPath });
   }
-}
-
-export async function generateTypes(inputPath: string, outputPath: string) {
-  await execa.command(`npx typechain-polkadot --in ${inputPath} --out ${outputPath}`);
 }

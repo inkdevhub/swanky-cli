@@ -1,11 +1,8 @@
 import execa from "execa";
 import fs = require("fs-extra");
-import Files from "fs";
-import { ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import path = require("node:path");
-import { DEFAULT_NETWORK_URL, ARTIFACTS_PATH, TYPED_CONTRACT_PATH } from "./consts.js";
-import { BuildData, ContractData, SwankyConfig } from "../types";
-import { generateTypes } from "./tasks.js";
+import { DEFAULT_NETWORK_URL, STORED_ARTIFACTS_PATH } from "./consts.js";
+import { BuildData, SwankyConfig } from "../types";
 import { Abi } from "@polkadot/api-contract";
 
 export async function commandStdoutOrNull(command: string): Promise<string | null> {
@@ -45,86 +42,12 @@ export function resolveNetworkUrl(config: SwankyConfig, networkName: string): st
   }
 }
 
-export function getBuildCommandFor(
-  language: ContractData["language"],
-  contractPath: string,
-  release: boolean,
-) : ChildProcessWithoutNullStreams {
-  if (language === "ink") {
-    const args = ["contract", "build", "--manifest-path", `${contractPath}/Cargo.toml`]
-    if (release) {
-      args.push("--release")
-    }
-    return spawn(
-      "cargo",
-      args
-    )
-  }
-  if (language === "ask") {
-    const args = ["asc", "--config", `${contractPath}/asconfig.json`, `${contractPath}/index.ts`];
-    if (release) {
-      args.push("-O");
-      args.push("--noAssert");
-    }
-    return spawn(
-      "npx",
-      args,
-      { env: { ...process.env, ASK_CONFIG: `${contractPath}/askconfig.json` } }
-    );
-  }
-  throw new Error("Unsupported language!");
-}
-
-export async function generateTypesFor(
-  language: ContractData["language"],
-  contractName: string,
-  contractPath: string
-) {
-  // Firstly, need to copy wasm blob and abi.json to workspace folder
-  if (language === "ink") {
-    await Promise.all([
-      fs.copyFile(
-        path.resolve(contractPath, "target", "ink", `${contractName}.contract`),
-        path.resolve(ARTIFACTS_PATH, `${contractName}.contract`),
-      ),
-      fs.copyFile(
-        path.resolve(contractPath, "target", "ink", `${contractName}.json`),
-        path.resolve(ARTIFACTS_PATH, `${contractName}.json`),
-      )
-    ])
-  } else if (language === "ask") {
-    await Promise.all([
-      fs.copyFile(
-        path.resolve(contractPath, "build", `${contractName}.wasm`),
-        path.resolve(ARTIFACTS_PATH, `${contractName}.wasm`),
-      ),
-      fs.copyFile(
-        path.resolve(contractPath, "build", "metadata.json"),
-        path.resolve(ARTIFACTS_PATH, `${contractName}.json`),
-      ),
-    ])
-
-    // Ask! build artifacts don't have `.contract` file which is just an combination of abi json and wasm blob
-    // `.contract` will have .source.wasm field whose value is wasm blob hex representation.
-    // If Ask! officially support .contract file, no need for this step.
-    const contract = JSON.parse(Files.readFileSync(path.resolve(ARTIFACTS_PATH, `${contractName}.json`)).toString());
-    const wasmBuf = Files.readFileSync(path.resolve(contractPath, "build", `${contractName}.wasm`));
-    const prefix = "0x"
-    contract.source.wasm = prefix + wasmBuf.toString("hex");
-    fs.writeFileSync(path.resolve(ARTIFACTS_PATH, `${contractName}.contract`), JSON.stringify(contract));
-    fs.remove(path.resolve(ARTIFACTS_PATH, `${contractName}.wasm`));
-  } else {
-    throw new Error("Unsupported language!");
-  }
-
-  await generateTypes(ARTIFACTS_PATH, TYPED_CONTRACT_PATH)
-}
-
-export async function moveArtifacts(
+export async function storeArtifacts(
+  artifactsPath: string,
   contractName: string,
 ): Promise<BuildData> {
   const ts = Date.now();
-  const fullPath = path.resolve(ARTIFACTS_PATH, contractName, ts.toString());
+  const fullPath = path.resolve(STORED_ARTIFACTS_PATH, contractName, ts.toString());
   const relativePath = path.relative(path.resolve(), fullPath);
   const buildData = {
     timestamp: ts,
@@ -137,33 +60,28 @@ export async function moveArtifacts(
   try {
     await Promise.all([
       fs.copyFile(
-        path.resolve(ARTIFACTS_PATH, `${contractName}.contract`),
+        path.resolve(artifactsPath, `${contractName}.contract`),
         `${buildData.artifactsPath}/${contractName}.contract`
       ),
       fs.copyFile(
-        path.resolve(ARTIFACTS_PATH, `${contractName}.json`),
+        path.resolve(artifactsPath, `${contractName}.json`),
         `${buildData.artifactsPath}/${contractName}.json`
       ),
     ]);
     // move both to test/contract_name/artifacts
     const testArtifacts = path.resolve("test", contractName, "artifacts");
-    const testTypedContracts = path.resolve("test", contractName, "typedContract")
     await fs.ensureDir(testArtifacts);
-    await fs.ensureDir(testTypedContracts)
     await Promise.all([
       fs.move(
-        path.resolve(ARTIFACTS_PATH, `${contractName}.contract`),
+        path.resolve(artifactsPath, `${contractName}.contract`),
         `${testArtifacts}/${contractName}.contract`,
         { overwrite: true }
       ),
       fs.move(
-        path.resolve(ARTIFACTS_PATH, `${contractName}.json`),
+        path.resolve(artifactsPath, `${contractName}.json`),
         `${testArtifacts}/${contractName}.json`,
         { overwrite: true }
       ),
-      fs.move(TYPED_CONTRACT_PATH, testTypedContracts, {
-        overwrite: true,
-      }),
     ]);
   } catch (e) {
     console.error(e);
@@ -213,4 +131,11 @@ export async function printContractInfo(metadataPath: string) {
         })}
     `)
   }
+}
+
+// typechain-polkadot can only take relative paths as inputs.
+// This function take absolute paths and convert it to relative path from where the command is executed
+// for the sake of simplicity and clarity for usage.
+export async function generateTypes(inputAbsPath: string, outputAbsPath: string) {
+  await execa.command(`npx typechain-polkadot --in ${path.relative(path.resolve(), inputAbsPath)} --out ${path.relative(path.resolve(), outputAbsPath)}`);
 }
