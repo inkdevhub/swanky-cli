@@ -10,11 +10,9 @@ import {
   BuildData,
   Spinner,
   generateTypes,
-  consts,
 } from "@astar-network/swanky-core";
 import { ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import { writeJSON, existsSync } from "fs-extra";
-const { TEMP_ARTIFACTS_PATH, TEMP_TYPED_CONTRACT_PATH } = consts;
 
 function getBuildCommandFor(
   language: ContractData["language"],
