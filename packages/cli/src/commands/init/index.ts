@@ -262,10 +262,17 @@ export class Init extends BaseCommand {
     }
 
     // 2. Look for cargo.toml with "workspace" field in the root
-    const rootToml = await getRootCargoToml(pathToExistingProject);
-    // 3a. Workspace found - use the glob in the "members field" to select directories to copy over
-    // 3b. workspace not found, use regex to find dir/dirs*/[cargo.toml, lib.rs]
-    // 3c. if not found, ask user for a path where contracts are -> [Ctrl+C to cancel]
+    const rootTomlPath = path.resolve(pathToExistingProject, "Cargo.toml");
+    if (await pathExists(rootTomlPath)) {
+      const rootTomlContracts = await getRootCargoToml(rootTomlPath);
+      // 3a. Workspace found - use the glob in the "members field" to select directories to copy over
+      console.log(rootTomlContracts);
+    } else {
+      // WILL NOT IMPLEMENT - too many variables 3b. workspace not found, use regex to find dir/dirs*/[cargo.toml, lib.rs]
+      // 3c. if not found, ask user for a path where contracts are -> [Ctrl+C to cancel]
+      // and optionally
+    }
+
     // 4. make a list (checkbox) for user to confirm contracts to copy
     // 5. add directories from Cargo.toml/exclude path to copy list
     // 6. look for test/tests directory and add it to the list
@@ -276,19 +283,17 @@ export class Init extends BaseCommand {
   }
 }
 
-async function getRootCargoToml(targetPath: string) {
-  const rootTomlPath = path.resolve(targetPath, "Cargo.toml");
+// async function copyWorkspaceContracts() {}
 
-  if (!(await pathExists(rootTomlPath))) return;
-
+async function getRootCargoToml(rootTomlPath: string) {
   const fileData = await readFile(rootTomlPath, "utf-8");
   const toml: { workspace?: { members?: string[]; exclude?: string[] } } = load(fileData);
 
-  if (!toml.workspace?.members) return;
+  if (!toml.workspace?.members) throw new Error(`No "workspace.members" field in Cargo.toml`);
 
   const getGlobPaths = async (globList: string[]) =>
     globby(
-      globList.map((glob) => path.resolve(targetPath, glob)),
+      globList.map((glob) => path.resolve(path.dirname(rootTomlPath), glob)),
       {
         absolute: true,
         onlyDirectories: true,
@@ -301,6 +306,6 @@ async function getRootCargoToml(targetPath: string) {
     contracts: await getGlobPaths(toml.workspace.members),
     additionalPaths: toml.workspace.exclude ? await getGlobPaths(toml.workspace.exclude) : [],
   };
-
+  console.log(toml);
   return detectedPaths;
 }
