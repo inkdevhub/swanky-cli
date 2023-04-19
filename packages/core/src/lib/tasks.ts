@@ -1,5 +1,5 @@
 import execa from "execa";
-import { ensureDir, rename, copy, readFile, rm, writeFile, remove, pathExists } from "fs-extra";
+import { ensureDir, rename, copy, readFile, rm, writeFile, remove } from "fs-extra";
 import path from "node:path";
 import globby from "globby";
 import handlebars from "handlebars";
@@ -91,7 +91,7 @@ export async function processTemplates(projectPath: string, templateData: Record
 export async function downloadNode(projectPath: string, nodeInfo: nodeInfo, spinner: Spinner) {
   const binPath = path.resolve(projectPath, "bin");
   await ensureDir(binPath);
-  const dlUrl = nodeInfo.downloadUrl[process.platform];
+  const dlUrl = nodeInfo.downloadUrl[process.platform][process.arch];
 
   if (!dlUrl)
     throw new Error(`Could not download swanky-node. Platform ${process.platform} not supported!`);
