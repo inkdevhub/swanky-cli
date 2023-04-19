@@ -1,4 +1,5 @@
 [workspace]
 members = [
     "contracts/*",
+    "crates/*",
 ]
