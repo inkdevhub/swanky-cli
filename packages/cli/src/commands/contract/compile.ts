@@ -1,15 +1,49 @@
 import { Args, Command, Flags } from "@oclif/core";
 import path = require("node:path");
+import Files from "fs";
+import fs = require("fs-extra");
 import {
-  moveArtifacts,
+  storeArtifacts,
   ensureSwankyProject,
-  getBuildCommandFor,
+  ContractData,
   getSwankyConfig,
   BuildData,
   Spinner,
-  generateTypesFor,
+  generateTypes,
 } from "@astar-network/swanky-core";
-import { writeJSON, readdirSync, existsSync } from "fs-extra";
+import { ChildProcessWithoutNullStreams, spawn } from "node:child_process";
+import { writeJSON, existsSync } from "fs-extra";
+
+function getBuildCommandFor(
+  language: ContractData["language"],
+  contractPath: string,
+  release: boolean,
+) : ChildProcessWithoutNullStreams {
+  if (language === "ink") {
+    const args = ["contract", "build", "--manifest-path", `${contractPath}/Cargo.toml`]
+    if (release) {
+      args.push("--release")
+    }
+    return spawn(
+      "cargo",
+      args
+    )
+  }
+  if (language === "ask") {
+    const args = ["asc", "--config", `${contractPath}/asconfig.json`, `${contractPath}/index.ts`];
+    if (release) {
+      args.push("-O");
+      args.push("--noAssert");
+    }
+    return spawn(
+      "npx",
+      args,
+      { env: { ...process.env, ASK_CONFIG: `${contractPath}/askconfig.json` } }
+    );
+  }
+  throw new Error("Unsupported language!");
+}
+
 
 export class CompileContract extends Command {
   static description = "Compile the smart contract(s) in your contracts directory";
@@ -93,14 +127,42 @@ export class CompileContract extends Command {
         `${contractName} Contract compiled successfully`,
       );
 
+      // Depends on which language was used, the artifacts will be generated in different places at compile step.
+      let artifactsPath: string;
+      if (contractInfo.language === "ink") {
+        artifactsPath = path.resolve("target", "ink", `${contractName}`);
+      } else if (contractInfo.language === "ask") {
+        artifactsPath = path.resolve(contractPath, "build");
+      } else {
+        throw new Error("Unsupported language!");
+      }
+
+      // Ask! build artifacts don't have `.contract` file which is just an combination of abi json and wasm blob
+      // `.contract` will have .source.wasm field whose value is wasm blob hex representation.
+      // Once Ask! support .contract file, this part will be removed.
+      if (contractInfo.language == "ask") {
+        // Unlike ink!, ask! names metadata file `metadata.json`. So, renaming it to contract name here needed for following tasks.
+        await fs.copyFile(
+          path.resolve(artifactsPath, "metadata.json"),
+          path.resolve(artifactsPath, `${contractName}.json`),
+        )
+        const contract = JSON.parse(Files.readFileSync(path.resolve(artifactsPath, `${contractName}.json`)).toString());
+        const wasmBuf = Files.readFileSync(path.resolve(artifactsPath, `${contractName}.wasm`));
+        const prefix = "0x"
+        contract.source.wasm = prefix + wasmBuf.toString("hex");
+        fs.writeFileSync(path.resolve(artifactsPath, `${contractName}.contract`), JSON.stringify(contract));
+        await fs.remove(path.resolve(artifactsPath, `${contractName}.wasm`));
+      }
+
+      const typedContractDestPath = path.resolve("test", contractName, "typedContract");
       await spinner.runCommand(
-        async () => await generateTypesFor(contractInfo.language, contractInfo.name, contractPath),
+        async () => await generateTypes(artifactsPath, contractName, typedContractDestPath),
         `Generating ${contractName} contract ts types`,
         `${contractName} contract's TS types Generated successfully`
       );
 
       const buildData = (await spinner.runCommand(async () => {
-        return moveArtifacts(contractInfo.name);
+        return storeArtifacts(artifactsPath, contractInfo.name);
       }, "Moving artifacts")) as BuildData;
 
       contractInfo.build = buildData;
