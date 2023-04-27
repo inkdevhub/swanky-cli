@@ -32,6 +32,7 @@
     "fs-extra": "10.1.0",
     "globby": "11",
     "inquirer": "8.2.5",
+    "inquirer-file-tree-selection-prompt": "^1",
     "js-toml": "^0.1.1",
     "listr2": "5.0.7",
     "mocha": "10.2.0",

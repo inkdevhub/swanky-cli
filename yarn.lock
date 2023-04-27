@@ -2934,7 +2934,7 @@ cli-boxes@^1.0.0:
   resolved "https://registry.yarnpkg.com/cli-boxes/-/cli-boxes-1.0.0.tgz#4fa917c3e59c94a004cd61f8ee509da651687143"
   integrity sha512-3Fo5wu8Ytle8q9iCzS4D2MWVL2X7JVWRiS1BnXbTFDhS9c/REkM9vd1AmabsoZoY5/dGi5TT9iKL8Kb6DeBRQg==
 
-cli-cursor@3.1.0, cli-cursor@^3.1.0:
+cli-cursor@3.1.0, cli-cursor@^3, cli-cursor@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/cli-cursor/-/cli-cursor-3.1.0.tgz#264305a7ae490d1d03bf0c9ba7c925d1753af307"
   integrity sha512-I/zHAwsKf9FqGoXM4WWRACob9+SNukZTd94DWF57E4toouRulbCxcUh6RKUEOQlYTHJnzkPMySvPNaaSLNfLZw==
@@ -3927,7 +3927,7 @@ fetch-blob@^3.1.2, fetch-blob@^3.1.4:
     node-domexception "^1.0.0"
     web-streams-polyfill "^3.0.3"
 
-figures@3.2.0, figures@^3.0.0:
+figures@3.2.0, figures@^3, figures@^3.0.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/figures/-/figures-3.2.0.tgz#625c18bd293c604dc4a8ddb2febf0c88341746af"
   integrity sha512-yaduQFRKLXYOGgEn6AZau90j3ggSOyiqXU0F9JZfeXYhNa+Jk4X+s45A2zg5jns87GAFa34BBm2kXw4XpNcbdg==
@@ -4677,6 +4677,17 @@ init-package-json@^3.0.2:
     semver "^7.3.5"
     validate-npm-package-license "^3.0.4"
     validate-npm-package-name "^4.0.0"
+
+inquirer-file-tree-selection-prompt@^1:
+  version "1.0.19"
+  resolved "https://registry.yarnpkg.com/inquirer-file-tree-selection-prompt/-/inquirer-file-tree-selection-prompt-1.0.19.tgz#40fa05991a6ab4bda4dad6116f07a8892627c3d2"
+  integrity sha512-aL01njANm5bJhQtUNBKWurniroUJ9I+rnJ20DBG3xY9gtKBxgpRFSRs0lzjx42iCRJ4J083IZ2SrN4t8ejPlEQ==
+  dependencies:
+    chalk "^4.0.0"
+    cli-cursor "^3"
+    figures "^3"
+    lodash "^4.17.11"
+    rxjs "^7.5.2"
 
 inquirer@8.2.5, inquirer@^8.0.0, inquirer@^8.2.4:
   version "8.2.5"
@@ -7007,6 +7018,13 @@ rxjs@^7.0.0, rxjs@^7.5.5, rxjs@^7.8.0:
   version "7.8.0"
   resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-7.8.0.tgz#90a938862a82888ff4c7359811a595e14e1e09a4"
   integrity sha512-F2+gxDshqmIub1KdvZkaEfGDwLNpPvk9Fs6LD/MyQxNgMds/WH9OdDDXOmxUZpME+iSK3rQCctkL0DYyytUqMg==
+  dependencies:
+    tslib "^2.1.0"
+
+rxjs@^7.5.2:
+  version "7.8.1"
+  resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-7.8.1.tgz#6f6f3d99ea8044291efd92e7c7fcf562c4057543"
+  integrity sha512-AA3TVj+0A2iuIoQkWEK/tqFjBq2j+6PO6Y0zJcvzLAFhEFIO3HL0vls9hWLncZbAAbK0mar7oZ4V079I/qPMxg==
   dependencies:
     tslib "^2.1.0"
 

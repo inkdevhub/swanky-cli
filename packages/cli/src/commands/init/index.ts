@@ -20,6 +20,7 @@ import {
 import { getAllTemplateNames, getTemplates } from "@astar-network/swanky-templates";
 import { BaseCommand } from "../../lib/baseCommand";
 import globby = require("globby");
+import inquirerFileTreeSelection from "inquirer-file-tree-selection-prompt";
 const {
   DEFAULT_ASTAR_NETWORK_URL,
   DEFAULT_NETWORK_URL,
@@ -38,6 +39,8 @@ interface Task {
   shouldExitOnError?: boolean;
   callback?: (param: string) => void;
 }
+
+inquirer.registerPrompt("file-tree-selection", inquirerFileTreeSelection);
 export class Init extends BaseCommand {
   static description = "Generate a new smart contract environment";
 
@@ -262,50 +265,117 @@ export class Init extends BaseCommand {
     }
 
     // 2. Look for cargo.toml with "workspace" field in the root
-    const rootTomlPath = path.resolve(pathToExistingProject, "Cargo.toml");
-    if (await pathExists(rootTomlPath)) {
-      const rootTomlContracts = await getRootCargoToml(rootTomlPath);
-      // 3a. Workspace found - use the glob in the "members field" to select directories to copy over
-      console.log(rootTomlContracts);
-    } else {
-      // WILL NOT IMPLEMENT - too many variables 3b. workspace not found, use regex to find dir/dirs*/[cargo.toml, lib.rs]
-      // 3c. if not found, ask user for a path where contracts are -> [Ctrl+C to cancel]
-      // and optionally
-    }
+    let rootTomlPaths = await getRootCargoToml(pathToExistingProject);
 
-    // 4. make a list (checkbox) for user to confirm contracts to copy
-    // 5. add directories from Cargo.toml/exclude path to copy list
-    // 6. look for test/tests directory and add it to the list
-    // 7. copy all the selected directories/files and update the swanky.config
-    // 8. copy cargo.toml from the root, modify path if needed ( "uniswap-v2/contracts/**" -> "contracts/**")
-    // 9. keep log of all the steps and write it to file
-    // 10. Copy rust.toolchain and .rustfmt.toml if exists
+    if (rootTomlPaths) {
+      console.log("Workspaces detected in root Cargo.toml file.");
+      const { shouldKeepRootToml } = await inquirer.prompt([
+        choice("shouldKeepRootToml", "Do you want to use it to automatically copy contracts?"),
+      ]);
+      rootTomlPaths = shouldKeepRootToml ? rootTomlPaths : null;
+    }
+    console.log(rootTomlPaths);
+    const candidatesList = rootTomlPaths
+      ? await getCopyCandidatesList(pathToExistingProject, rootTomlPaths)
+      : await getCopyCandidatesList(
+          pathToExistingProject,
+          await getManualPaths(pathToExistingProject)
+        );
+
+    console.log("Candidates list: ", candidatesList);
   }
 }
 
 // async function copyWorkspaceContracts() {}
 
-async function getRootCargoToml(rootTomlPath: string) {
+async function getRootCargoToml(pathToProject: string) {
+  const rootTomlPath = path.resolve(pathToProject, "Cargo.toml");
+  if (!(await pathExists(rootTomlPath))) return null;
+
   const fileData = await readFile(rootTomlPath, "utf-8");
   const toml: { workspace?: { members?: string[]; exclude?: string[] } } = load(fileData);
 
-  if (!toml.workspace?.members) throw new Error(`No "workspace.members" field in Cargo.toml`);
+  if (!toml.workspace?.members) return null;
 
-  const getGlobPaths = async (globList: string[]) =>
-    globby(
-      globList.map((glob) => path.resolve(path.dirname(rootTomlPath), glob)),
-      {
-        absolute: true,
-        onlyDirectories: true,
-        deep: 1,
-        objectMode: true,
-      }
-    );
-
-  const detectedPaths = {
-    contracts: await getGlobPaths(toml.workspace.members),
-    additionalPaths: toml.workspace.exclude ? await getGlobPaths(toml.workspace.exclude) : [],
+  return {
+    contractsDirectories: toml.workspace.members,
+    cratesDirectories: toml.workspace.exclude,
   };
-  console.log(toml);
+}
+
+async function getManualPaths(pathToProject: string) {
+  console.log("No Cargo.toml found in the provided directory, or no workspace field within it.");
+  const { contractsDirectory, cratesDirectory, useCrateDirectory } = await inquirer.prompt([
+    {
+      type: "file-tree-selection",
+      name: "contractsDirectory",
+      onlyShowDir: true,
+      root: pathToProject,
+      message: "Please enter the path to the contracts directory: ",
+      hideRoot: true,
+    },
+    {
+      type: "confirm",
+      name: "useCrateDirectory",
+      message: "Do you have an extra the crate directory?",
+      default: false,
+    },
+    {
+      when: (answers) => answers.useCrateDirectory,
+      type: "file-tree-selection",
+      name: "cratesDirectory",
+      onlyShowDir: true,
+      root: pathToProject,
+      message: "Please enter the path to the contracts directory: ",
+    },
+  ]);
+
+  return {
+    contractsDirectories: [contractsDirectory],
+    cratesDirectories: useCrateDirectory ? [cratesDirectory] : [],
+  };
+}
+
+async function getCopyCandidatesList(
+  projectPath: string,
+  pathsToCopy: {
+    contractsDirectories: string[];
+    cratesDirectories?: string[];
+  }
+) {
+  const detectedPaths = {
+    contracts: [
+      ...(await getGlobPaths(projectPath, pathsToCopy.contractsDirectories, false)),
+      ...(await getGlobPaths(projectPath, pathsToCopy.contractsDirectories, true)),
+    ],
+    additionalPaths:
+      pathsToCopy.cratesDirectories && pathsToCopy.cratesDirectories.length > 0
+        ? [
+            ...(await getGlobPaths(projectPath, pathsToCopy.cratesDirectories, false)),
+            ...(await getGlobPaths(projectPath, pathsToCopy.cratesDirectories, true)),
+          ]
+        : [],
+  };
+
   return detectedPaths;
 }
+
+async function getGlobPaths(projectPath: string, globList: string[], isDirOnly: boolean) {
+  return globby(
+    globList.map((glob) => path.resolve(projectPath, glob)),
+    {
+      absolute: true,
+      onlyDirectories: isDirOnly,
+      deep: 1,
+      objectMode: true,
+    }
+  );
+}
+
+// 4. make a list (checkbox) for user to confirm contracts to copy
+// 5. add directories from Cargo.toml/exclude path to copy list
+// 6. look for test/tests directory and add it to the list
+// 7. copy all the selected directories/files and update the swanky.config
+// 8. copy cargo.toml from the root, modify path if needed ( "uniswap-v2/contracts/**" -> "contracts/**")
+// 9. keep log of all the steps and write it to file
+// 10. Copy rust.toolchain and .rustfmt.toml if exists
