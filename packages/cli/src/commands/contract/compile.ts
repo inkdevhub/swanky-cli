@@ -163,7 +163,7 @@ export class CompileContract extends Command {
 
       const buildData = (await spinner.runCommand(async () => {
         return storeArtifacts(artifactsPath, contractInfo.name);
-      }, "Moving artifacts")) as BuildData;
+      }, "Storing artifacts")) as BuildData;
 
       contractInfo.build = buildData;
     }
