@@ -154,7 +154,7 @@ export class CompileContract extends Command {
         await fs.remove(path.resolve(artifactsPath, `${contractName}.wasm`));
       }
 
-      const typedContractDestPath = path.resolve("test", contractName, "typedContract");
+      const typedContractDestPath = path.resolve("typedContracts", contractName);
       await spinner.runCommand(
         async () => await generateTypes(artifactsPath, contractName, typedContractDestPath),
         `Generating ${contractName} contract ts types`,

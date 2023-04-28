@@ -52,6 +52,7 @@ export class TestContract extends Command {
 
     const projectDir = path.resolve();
     const testDir = path.resolve("test");
+    const typedContractsDir = path.resolve("typedCotracts")
     for (const contractName of contractNames) {
       const contractInfo = config.contracts[contractName];
       if (!contractInfo.build) {
@@ -86,7 +87,7 @@ export class TestContract extends Command {
         mocha.addFile(test);
       });
 
-      global.contractTypesPath = path.resolve(testDir, contractName, "typedContract");
+      global.contractTypesPath = path.resolve(typedContractsDir, contractName);
 
       shell.cd(`${testDir}/${contractName}`);
       try {

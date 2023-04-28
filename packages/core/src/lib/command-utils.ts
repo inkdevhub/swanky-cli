@@ -4,7 +4,7 @@ import path = require("node:path");
 import { DEFAULT_NETWORK_URL, STORED_ARTIFACTS_PATH } from "./consts.js";
 import { BuildData, SwankyConfig } from "../types";
 import { Abi } from "@polkadot/api-contract";
-import { TEMP_ARTIFACTS_PATH, TEMP_TYPED_CONTRACT_PATH } from "./consts";
+import { TEMP_ARTIFACTS_PATH } from "./consts";
 
 export async function commandStdoutOrNull(command: string): Promise<string | null> {
   try {
@@ -69,21 +69,6 @@ export async function storeArtifacts(
         `${buildData.artifactsPath}/${contractName}.json`
       ),
     ]);
-    // move both to test/contract_name/artifacts
-    const testArtifacts = path.resolve("test", contractName, "artifacts");
-    await fs.ensureDir(testArtifacts);
-    await Promise.all([
-      fs.move(
-        path.resolve(artifactsPath, `${contractName}.contract`),
-        `${testArtifacts}/${contractName}.contract`,
-        { overwrite: true }
-      ),
-      fs.move(
-        path.resolve(artifactsPath, `${contractName}.json`),
-        `${testArtifacts}/${contractName}.json`,
-        { overwrite: true }
-      ),
-    ]);
   } catch (e) {
     console.error(e);
   }
@@ -134,7 +119,7 @@ export async function printContractInfo(metadataPath: string) {
   }
 }
 
-export async function generateTypes(inputAbsPath: string, contractName: string, outputAbsPath: string) {
+export async function generateTypes(inputPath: string, contractName: string, outputPath: string) {
   await fs.ensureDir(TEMP_ARTIFACTS_PATH);
 
   // Getting error if typechain-polkadot takes folder with unnecessary files/folders as inputs.
@@ -150,15 +135,16 @@ export async function generateTypes(inputAbsPath: string, contractName: string, 
   // Cannot generate typedContract directly to `outputAbsPath`
   // because relative path of typechain-polkadot input and output folder does matter for later use.
   await fs.copyFile(
-    path.resolve(inputAbsPath, `${contractName}.contract`),
+    path.resolve(inputPath, `${contractName}.contract`),
     path.resolve(TEMP_ARTIFACTS_PATH, `${contractName}.contract`),
   ),
   await fs.copyFile(
-    path.resolve(inputAbsPath, `${contractName}.json`),
+    path.resolve(inputPath, `${contractName}.json`),
     path.resolve(TEMP_ARTIFACTS_PATH, `${contractName}.json`),
   )
 
-  await execa.command(`npx typechain-polkadot --in ${TEMP_ARTIFACTS_PATH} --out ${TEMP_TYPED_CONTRACT_PATH}`);
+  const outputRelativePath = path.relative(path.resolve(), path.resolve(outputPath));
+  await execa.command(`npx typechain-polkadot --in ${TEMP_ARTIFACTS_PATH} --out ${outputRelativePath}`);
 
-  await fs.move(path.resolve(TEMP_TYPED_CONTRACT_PATH), outputAbsPath)
+  await fs.remove(TEMP_ARTIFACTS_PATH);
 }
