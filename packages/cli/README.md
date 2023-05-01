@@ -17,7 +17,7 @@ $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
 running command...
 $ swanky (--version|-V|-v)
-@astar-network/swanky-cli/2.1.0 darwin-x64 node-v18.2.0
+@astar-network/swanky-cli/2.1.1 darwin-x64 node-v18.2.0
 $ swanky --help [COMMAND]
 USAGE
   $ swanky COMMAND
@@ -37,11 +37,12 @@ USAGE
 * [`swanky contract explain CONTRACTNAME`](#swanky-contract-explain-contractname)
 * [`swanky contract new CONTRACTNAME`](#swanky-contract-new-contractname)
 * [`swanky contract query CONTRACTNAME MESSAGENAME`](#swanky-contract-query-contractname-messagename)
-* [`swanky contract test CONTRACTNAME`](#swanky-contract-test-contractname)
+* [`swanky contract test [CONTRACTNAME]`](#swanky-contract-test-contractname)
 * [`swanky contract tx CONTRACTNAME MESSAGENAME`](#swanky-contract-tx-contractname-messagename)
 * [`swanky contract typegen CONTRACTNAME`](#swanky-contract-typegen-contractname)
 * [`swanky help [COMMANDS]`](#swanky-help-commands)
 * [`swanky init PROJECTNAME`](#swanky-init-projectname)
+* [`swanky node install`](#swanky-node-install)
 * [`swanky node purge`](#swanky-node-purge)
 * [`swanky node start`](#swanky-node-start)
 * [`swanky plugins`](#swanky-plugins)
@@ -113,7 +114,7 @@ DESCRIPTION
   Check installed package versions and compatibility
 ```
 
-_See code: [dist/commands/check/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v2.1.0/dist/commands/check/index.js)_
+_See code: [dist/commands/check/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v2.1.1/dist/commands/check/index.js)_
 
 ## `swanky contract compile [CONTRACTNAME]`
 
@@ -217,13 +218,13 @@ FLAGS
   --address=<value>        Target specific address, defaults to last deployed. (--addr, --add)
 ```
 
-## `swanky contract test CONTRACTNAME`
+## `swanky contract test [CONTRACTNAME]`
 
 Run tests for a given contact
 
 ```
 USAGE
-  $ swanky contract test CONTRACTNAME [-a]
+  $ swanky contract test [CONTRACTNAME] [-a]
 
 ARGUMENTS
   CONTRACTNAME  Name of the contract to test
@@ -315,7 +316,22 @@ DESCRIPTION
   Generate a new smart contract environment
 ```
 
-_See code: [dist/commands/init/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v2.1.0/dist/commands/init/index.js)_
+_See code: [dist/commands/init/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v2.1.1/dist/commands/init/index.js)_
+
+## `swanky node install`
+
+Install swanky node binary
+
+```
+USAGE
+  $ swanky node install [-v]
+
+FLAGS
+  -v, --verbose  Display more info in the result logs
+
+DESCRIPTION
+  Install swanky node binary
+```
 
 ## `swanky node purge`
 
