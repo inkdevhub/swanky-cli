@@ -5,10 +5,6 @@ import { existsSync } from "fs-extra";
 import { fork } from "child_process";
 import path = require("node:path");
 
-declare global {
-  var contractTypesPath: string; // eslint-disable-line no-var
-}
-
 export class RunCommand extends BaseCommand<typeof RunCommand> {
   static description = "Run a user-defined scripts";
 
@@ -25,9 +21,12 @@ export class RunCommand extends BaseCommand<typeof RunCommand> {
 
     const { args } = await this.parse(RunCommand);
 
-    const scriptPath = path.resolve("scripts", args.scriptName);
-    console.log(scriptPath)
+    let scriptName = args.scriptName;
+    if (!scriptName.endsWith(".ts")) {
+      scriptName += ".ts";
+    }
 
+    const scriptPath = path.resolve("scripts", scriptName);
     if (!existsSync(scriptPath)) {
       throw new Error(`Script ${args.scriptName} does not exist`)
     }

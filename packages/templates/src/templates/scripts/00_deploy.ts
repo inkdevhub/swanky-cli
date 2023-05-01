@@ -1,7 +1,20 @@
+import { ApiPromise, WsProvider } from "@polkadot/api";
+
+// `swanky script run 00_deploy` will run this script.
+
+// User-defined script to run.
+// This is just an deploy contract example, you can change it freely.
+
+import {
+    getSwankyConfig,
+    AccountData,
+    ChainAccount,
+    Encrypted,
+    decrypt,
+    resolveNetworkUrl
+} from "@astar-network/swanky-core";
 import FlipperFactory from "../typedContracts/flipper/constructors/flipper";
 import Flipper from "../typedContracts/flipper/contracts/flipper";
-import { ApiPromise, WsProvider } from "@polkadot/api";
-import { getSwankyConfig, AccountData, ChainAccount, Encrypted, decrypt, resolveNetworkUrl } from "@astar-network/swanky-core";
 import inquirer from "inquirer";
 import chalk from "chalk";
 
@@ -44,6 +57,7 @@ async function main() {
     const wsProvider = new WsProvider(networkUrl);
     const api = await ApiPromise.create({ provider: wsProvider });
 
+    // Deploy flipper contract whose initial state is set to `true`.
     const flipperFactory = new FlipperFactory(api, deployer);
     const initialState = true;
 
