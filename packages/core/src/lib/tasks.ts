@@ -91,10 +91,15 @@ export async function processTemplates(projectPath: string, templateData: Record
 export async function downloadNode(projectPath: string, nodeInfo: nodeInfo, spinner: Spinner) {
   const binPath = path.resolve(projectPath, "bin");
   await ensureDir(binPath);
-  const dlUrl = nodeInfo.downloadUrl[process.platform];
 
-  if (!dlUrl)
+  const platformDlUrls = nodeInfo.downloadUrl[process.platform];
+  if (!platformDlUrls)
     throw new Error(`Could not download swanky-node. Platform ${process.platform} not supported!`);
+
+  const dlUrl = platformDlUrls[process.arch];
+  if (!dlUrl)
+    throw new Error(`Could not download swanky-node. Platform ${process.platform} Arch ${process.arch} not supported!`);
+
   const dlFileDetails = await new Promise<DownloadEndedStats>((resolve, reject) => {
     const dl = new DownloaderHelper(dlUrl, binPath);
 

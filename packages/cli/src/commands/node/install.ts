@@ -10,6 +10,11 @@ export class InstallNode extends BaseCommand<typeof InstallNode> {
   async run(): Promise<void> {
     await ensureSwankyProject();
 
+    const { flags } = await this.parse(InstallNode);
+    if (flags.verbose) {
+        this.spinner.verbose = true;
+    }
+
     const projectPath = path.resolve();
 
     if (this.swankyConfig.node.localPath !== "") {
