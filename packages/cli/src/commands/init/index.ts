@@ -20,7 +20,9 @@ import {
 import { getAllTemplateNames, getTemplates } from "@astar-network/swanky-templates";
 import { BaseCommand } from "../../lib/baseCommand";
 import globby = require("globby");
-import inquirerFileTreeSelection from "inquirer-file-tree-selection-prompt";
+
+import inquirerFuzzyPath from "inquirer-fuzzy-path";
+
 const {
   DEFAULT_ASTAR_NETWORK_URL,
   DEFAULT_NETWORK_URL,
@@ -40,7 +42,8 @@ interface Task {
   callback?: (param: string) => void;
 }
 
-inquirer.registerPrompt("file-tree-selection", inquirerFileTreeSelection);
+inquirer.registerPrompt("fuzzypath", inquirerFuzzyPath);
+
 export class Init extends BaseCommand {
   static description = "Generate a new smart contract environment";
 
@@ -307,12 +310,12 @@ async function getManualPaths(pathToProject: string) {
   console.log("No Cargo.toml found in the provided directory, or no workspace field within it.");
   const { contractsDirectory, cratesDirectory, useCrateDirectory } = await inquirer.prompt([
     {
-      type: "file-tree-selection",
+      type: "fuzzypath",
       name: "contractsDirectory",
-      onlyShowDir: true,
-      root: pathToProject,
+      itemType: "directory",
+      rootPath: pathToProject,
       message: "Please enter the path to the contracts directory: ",
-      hideRoot: true,
+      excludePath: (nodePath: string) => nodePath.startsWith("node_modules"),
     },
     {
       type: "confirm",
@@ -322,11 +325,12 @@ async function getManualPaths(pathToProject: string) {
     },
     {
       when: (answers) => answers.useCrateDirectory,
-      type: "file-tree-selection",
+      type: "fuzzypath",
       name: "cratesDirectory",
-      onlyShowDir: true,
-      root: pathToProject,
+      itemType: "directory",
+      rootPath: pathToProject,
       message: "Please enter the path to the contracts directory: ",
+      excludePath: (nodePath: string) => nodePath.startsWith("node_modules"),
     },
   ]);
 
