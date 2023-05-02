@@ -1,6 +1,6 @@
 import { Args, Flags } from "@oclif/core";
 import path = require("node:path");
-import { ensureDir, writeJSON, stat, readdir, pathExists, readFile } from "fs-extra";
+import { ensureDir, writeJSON, stat, readdir, pathExists, readFile, Dirent } from "fs-extra";
 import execa = require("execa");
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer = require("inquirer");
@@ -41,6 +41,18 @@ interface Task {
   shouldExitOnError?: boolean;
   callback?: (param: string) => void;
 }
+
+type PathEntry = {
+  dirent: Dirent;
+  name: string;
+  path: string;
+};
+
+type CopyCandidates = {
+  contracts: PathEntry[];
+  additionalPaths: PathEntry[];
+  tests?: PathEntry[];
+};
 
 inquirer.registerPrompt("fuzzypath", inquirerFuzzyPath);
 
@@ -267,7 +279,6 @@ export class Init extends BaseCommand {
       throw error;
     }
 
-    // 2. Look for cargo.toml with "workspace" field in the root
     let rootTomlPaths = await getRootCargoToml(pathToExistingProject);
 
     if (rootTomlPaths) {
@@ -277,13 +288,57 @@ export class Init extends BaseCommand {
       ]);
       rootTomlPaths = shouldKeepRootToml ? rootTomlPaths : null;
     }
-    console.log(rootTomlPaths);
-    const candidatesList = rootTomlPaths
+
+    const candidatesList: CopyCandidates = rootTomlPaths
       ? await getCopyCandidatesList(pathToExistingProject, rootTomlPaths)
       : await getCopyCandidatesList(
           pathToExistingProject,
           await getManualPaths(pathToExistingProject)
         );
+
+    const testDirNames = ["test", "tests", "spec", "specs"];
+
+    let testDir = undefined;
+
+    for (const testDirName of testDirNames) {
+      const testDirCandidate = path.resolve(pathToExistingProject, testDirName);
+      const testDirExists = await pathExists(testDirCandidate);
+      if (testDirExists) {
+        testDir = testDirCandidate;
+        break;
+      }
+    }
+
+    const { shouldOverwriteTestDir, manualTestDir } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "shouldOverwriteTestDir",
+        message: `${
+          testDir
+            ? `Detected test directory [${path.basename(
+                testDir
+              )}] will be copied. Do you want to override and`
+            : "No test directory detected, do you want to"
+        } specify it manually?`,
+        default: false,
+      },
+      {
+        when: (answers) => answers.shouldOverwriteTestDir,
+        type: "fuzzypath",
+        name: "manualTestDir",
+        itemType: "directory",
+        rootPath: pathToExistingProject,
+        message: "Please enter the path to the contracts directory: ",
+        excludePath: (nodePath: string) => nodePath.startsWith("node_modules"),
+      },
+    ]);
+    if (shouldOverwriteTestDir) {
+      testDir = manualTestDir;
+    }
+
+    candidatesList.tests = (await pathExists(testDir))
+      ? await getDirsAndFiles(pathToExistingProject, [testDir])
+      : [];
 
     console.log("Candidates list: ", candidatesList);
   }
@@ -348,16 +403,10 @@ async function getCopyCandidatesList(
   }
 ) {
   const detectedPaths = {
-    contracts: [
-      ...(await getGlobPaths(projectPath, pathsToCopy.contractsDirectories, false)),
-      ...(await getGlobPaths(projectPath, pathsToCopy.contractsDirectories, true)),
-    ],
+    contracts: await getDirsAndFiles(projectPath, pathsToCopy.contractsDirectories),
     additionalPaths:
       pathsToCopy.cratesDirectories && pathsToCopy.cratesDirectories.length > 0
-        ? [
-            ...(await getGlobPaths(projectPath, pathsToCopy.cratesDirectories, false)),
-            ...(await getGlobPaths(projectPath, pathsToCopy.cratesDirectories, true)),
-          ]
+        ? await getDirsAndFiles(projectPath, pathsToCopy.cratesDirectories)
         : [],
   };
 
@@ -376,10 +425,22 @@ async function getGlobPaths(projectPath: string, globList: string[], isDirOnly: 
   );
 }
 
-// 4. make a list (checkbox) for user to confirm contracts to copy
-// 5. add directories from Cargo.toml/exclude path to copy list
-// 6. look for test/tests directory and add it to the list
-// 7. copy all the selected directories/files and update the swanky.config
-// 8. copy cargo.toml from the root, modify path if needed ( "uniswap-v2/contracts/**" -> "contracts/**")
-// 9. keep log of all the steps and write it to file
-// 10. Copy rust.toolchain and .rustfmt.toml if exists
+async function getDirsAndFiles(projectPath: string, globList: string[]) {
+  return [
+    ...(await getGlobPaths(projectPath, globList, false)),
+    ...(await getGlobPaths(projectPath, globList, true)),
+  ];
+}
+
+//[X] 1. Check if the project is a directory, or is it empty
+//[X] 2. Look for cargo.toml with "workspace" field in the root
+//[X] 3a. Workspace found - use the glob in the "members field" to select directories to copy over
+//[X] 3b. if not found, ask user for a path where contracts are -> [Ctrl+C to cancel]
+//[X] 4. add directories from Cargo.toml/exclude path to copy list
+//[ ] 5. make a list (checkbox) for user to confirm contracts/crates/files to copy
+//[X] 6. look for test/tests directory and add it to the list (also take manual input)
+//[ ] 7. copy all the selected directories/files and update the swanky.config
+//[ ] 8. copy cargo.toml from the root, modify path if needed ( "uniswap-v2/contracts/**" -> "contracts/**")
+//[ ] 9. keep log of all the steps and write it to file
+//[ ] 10. Copy rust.toolchain and .rustfmt.toml if exists
+//[ ] 11. Merge package.json from imported project into the one generated from template
