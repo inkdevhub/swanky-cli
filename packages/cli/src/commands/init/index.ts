@@ -296,55 +296,103 @@ export class Init extends BaseCommand {
           await getManualPaths(pathToExistingProject)
         );
 
-    const testDirNames = ["test", "tests", "spec", "specs"];
-
-    let testDir = undefined;
-
-    for (const testDirName of testDirNames) {
-      const testDirCandidate = path.resolve(pathToExistingProject, testDirName);
-      const testDirExists = await pathExists(testDirCandidate);
-      if (testDirExists) {
-        testDir = testDirCandidate;
-        break;
-      }
-    }
-
-    const { shouldOverwriteTestDir, manualTestDir } = await inquirer.prompt([
-      {
-        type: "confirm",
-        name: "shouldOverwriteTestDir",
-        message: `${
-          testDir
-            ? `Detected test directory [${path.basename(
-                testDir
-              )}] will be copied. Do you want to override and`
-            : "No test directory detected, do you want to"
-        } specify it manually?`,
-        default: false,
-      },
-      {
-        when: (answers) => answers.shouldOverwriteTestDir,
-        type: "fuzzypath",
-        name: "manualTestDir",
-        itemType: "directory",
-        rootPath: pathToExistingProject,
-        message: "Please enter the path to the contracts directory: ",
-        excludePath: (nodePath: string) => nodePath.startsWith("node_modules"),
-      },
-    ]);
-    if (shouldOverwriteTestDir) {
-      testDir = manualTestDir;
-    }
+    const testDir = await detectTests(pathToExistingProject);
 
     candidatesList.tests = (await pathExists(testDir))
       ? await getDirsAndFiles(pathToExistingProject, [testDir])
       : [];
 
-    console.log("Candidates list: ", candidatesList);
+    const confirmedCopyList = await confirmCopyList(candidatesList);
+    console.log("Candidates list: ", confirmedCopyList);
   }
 }
 
 // async function copyWorkspaceContracts() {}
+
+async function confirmCopyList(candidatesList: CopyCandidates) {
+  if (!candidatesList.tests) candidatesList.tests = [];
+
+  const { confirmedCopyList } = await inquirer.prompt({
+    message: "Please review  the list of files and directories to copy:",
+    name: "confirmedCopyList",
+    type: "checkbox",
+    choices: [
+      new inquirer.Separator("=====Contracts====="),
+      ...candidatesList.contracts.map((contract) => ({
+        name: `${contract.name}${contract.dirent.isDirectory() ? "/" : ""}`,
+        value: { ...contract, group: "contracts" },
+        checked: true,
+      })),
+      new inquirer.Separator("=====Crates====="),
+      ...candidatesList.additionalPaths.map((path) => ({
+        name: `${path.name}${path.dirent.isDirectory() ? "/" : ""}`,
+        value: { ...path, group: "additionalPaths" },
+        checked: true,
+      })),
+      new inquirer.Separator("=====Tests====="),
+      ...candidatesList.tests.map((test) => ({
+        name: `${test.name}${test.dirent.isDirectory() ? "/" : ""}`,
+        value: { ...test, group: "tests" },
+        checked: true,
+      })),
+    ],
+  });
+
+  const resultingList: CopyCandidates = { contracts: [], additionalPaths: [], tests: [] };
+  confirmedCopyList.forEach(
+    (
+      item: PathEntry & {
+        group: "contracts" | "additionalPaths" | "tests";
+      }
+    ) => {
+      resultingList[item.group]?.push(item);
+    }
+  );
+  return resultingList;
+}
+
+async function detectTests(pathToExistingProject: string) {
+  const testDirNames = ["test", "tests", "spec", "specs"];
+
+  let testDir = undefined;
+
+  for (const testDirName of testDirNames) {
+    const testDirCandidate = path.resolve(pathToExistingProject, testDirName);
+    const testDirExists = await pathExists(testDirCandidate);
+    if (testDirExists) {
+      testDir = testDirCandidate;
+      break;
+    }
+  }
+
+  const { shouldOverwriteTestDir, manualTestDir } = await inquirer.prompt([
+    {
+      type: "confirm",
+      name: "shouldOverwriteTestDir",
+      message: `${
+        testDir
+          ? `Detected test directory [${path.basename(
+              testDir
+            )}] will be copied. Do you want to override and`
+          : "No test directory detected, do you want to"
+      } specify it manually?`,
+      default: false,
+    },
+    {
+      when: (answers) => answers.shouldOverwriteTestDir,
+      type: "fuzzypath",
+      name: "manualTestDir",
+      itemType: "directory",
+      rootPath: pathToExistingProject,
+      message: "Please enter the path to the contracts directory: ",
+      excludePath: (nodePath: string) => nodePath.startsWith("node_modules"),
+    },
+  ]);
+  if (shouldOverwriteTestDir) {
+    return manualTestDir;
+  }
+  return testDir;
+}
 
 async function getRootCargoToml(pathToProject: string) {
   const rootTomlPath = path.resolve(pathToProject, "Cargo.toml");
@@ -437,7 +485,7 @@ async function getDirsAndFiles(projectPath: string, globList: string[]) {
 //[X] 3a. Workspace found - use the glob in the "members field" to select directories to copy over
 //[X] 3b. if not found, ask user for a path where contracts are -> [Ctrl+C to cancel]
 //[X] 4. add directories from Cargo.toml/exclude path to copy list
-//[ ] 5. make a list (checkbox) for user to confirm contracts/crates/files to copy
+//[X] 5. make a list (checkbox) for user to confirm contracts/crates/files to copy
 //[X] 6. look for test/tests directory and add it to the list (also take manual input)
 //[ ] 7. copy all the selected directories/files and update the swanky.config
 //[ ] 8. copy cargo.toml from the root, modify path if needed ( "uniswap-v2/contracts/**" -> "contracts/**")
