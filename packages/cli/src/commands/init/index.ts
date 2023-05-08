@@ -1,6 +1,6 @@
 import { Args, Flags } from "@oclif/core";
 import path = require("node:path");
-import { ensureDir, writeJSON, stat, readdir, pathExists, readFile, Dirent } from "fs-extra";
+import { ensureDir, writeJSON, stat, readdir, pathExists, readFile, Dirent, copy } from "fs-extra";
 import execa = require("execa");
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer = require("inquirer");
@@ -50,7 +50,7 @@ type PathEntry = {
 
 type CopyCandidates = {
   contracts: PathEntry[];
-  additionalPaths: PathEntry[];
+  crates: PathEntry[];
   tests?: PathEntry[];
 };
 
@@ -108,6 +108,7 @@ export class Init extends BaseCommand {
       shiden: { url: DEFAULT_SHIDEN_NETWORK_URL },
       shibuya: { url: DEFAULT_SHIBUYA_NETWORK_URL },
     },
+    contracts: {},
   };
 
   taskQueue: Task[] = [];
@@ -131,7 +132,6 @@ export class Init extends BaseCommand {
 
     if (flags.convert) {
       await this.convert(flags.convert);
-      return;
     } else {
       await this.generate(args.projectName);
     }
@@ -303,17 +303,43 @@ export class Init extends BaseCommand {
       : [];
 
     const confirmedCopyList = await confirmCopyList(candidatesList);
-    console.log("Candidates list: ", confirmedCopyList);
+
+    this.taskQueue.push({
+      task: copyWorkspaceContracts,
+      args: [confirmedCopyList, this.projectPath],
+      runningMessage: "Copying existing project files",
+      successMessage: "Project files successfully copied",
+      failMessage: "Failed to copy project files",
+      shouldExitOnError: true,
+      callback: (result) => {
+        console.log(result);
+      },
+    });
   }
 }
 
-// async function copyWorkspaceContracts() {}
+async function copyWorkspaceContracts(copyList: CopyCandidates, projectPath: string) {
+  const copyPaths = async (group: "contracts" | "tests" | "crates") => {
+    const destDir = path.resolve(projectPath, group);
+    await ensureDir(destDir);
+
+    for (const entry of copyList[group] as PathEntry[]) {
+      const basename = path.basename(entry.path);
+      const destPath = path.join(destDir, basename);
+      await copy(entry.path, destPath);
+    }
+  };
+
+  await copyPaths("contracts");
+  await copyPaths("tests");
+  await copyPaths("crates");
+}
 
 async function confirmCopyList(candidatesList: CopyCandidates) {
   if (!candidatesList.tests) candidatesList.tests = [];
 
   const { confirmedCopyList } = await inquirer.prompt({
-    message: "Please review  the list of files and directories to copy:",
+    message: "Please review the list of files and directories to copy:",
     name: "confirmedCopyList",
     type: "checkbox",
     choices: [
@@ -324,9 +350,9 @@ async function confirmCopyList(candidatesList: CopyCandidates) {
         checked: true,
       })),
       new inquirer.Separator("=====Crates====="),
-      ...candidatesList.additionalPaths.map((path) => ({
+      ...candidatesList.crates.map((path) => ({
         name: `${path.name}${path.dirent.isDirectory() ? "/" : ""}`,
-        value: { ...path, group: "additionalPaths" },
+        value: { ...path, group: "crates" },
         checked: true,
       })),
       new inquirer.Separator("=====Tests====="),
@@ -338,11 +364,11 @@ async function confirmCopyList(candidatesList: CopyCandidates) {
     ],
   });
 
-  const resultingList: CopyCandidates = { contracts: [], additionalPaths: [], tests: [] };
+  const resultingList: CopyCandidates = { contracts: [], crates: [], tests: [] };
   confirmedCopyList.forEach(
     (
       item: PathEntry & {
-        group: "contracts" | "additionalPaths" | "tests";
+        group: "contracts" | "crates" | "tests";
       }
     ) => {
       resultingList[item.group]?.push(item);
@@ -452,7 +478,7 @@ async function getCopyCandidatesList(
 ) {
   const detectedPaths = {
     contracts: await getDirsAndFiles(projectPath, pathsToCopy.contractsDirectories),
-    additionalPaths:
+    crates:
       pathsToCopy.cratesDirectories && pathsToCopy.cratesDirectories.length > 0
         ? await getDirsAndFiles(projectPath, pathsToCopy.cratesDirectories)
         : [],
