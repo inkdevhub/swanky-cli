@@ -1,6 +1,6 @@
 import { Args, Command, Flags } from "@oclif/core";
 import path = require("node:path");
-import { readJSON, readFile, writeJSON } from "fs-extra";
+import { readJSON, writeJSON } from "fs-extra";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import {
   ensureSwankyProject,

@@ -43,11 +43,6 @@ export async function copyTemplateFiles(
     path.resolve(templatesPath, "github"),
     path.resolve(projectPath, ".github")
   );
-  await ensureDir(path.resolve(projectPath, "typedContracts"));
-  await copy(
-    path.resolve(templatesPath, "typedContracts", "flipper"),
-    path.resolve(projectPath, "typedContracts", "flipper")
-  );
   await copy(
     path.resolve(templatesPath, "scripts"),
     path.resolve(projectPath, "scripts")
