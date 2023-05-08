@@ -1,10 +1,20 @@
 import { Args, Flags } from "@oclif/core";
 import path = require("node:path");
-import { ensureDir, writeJSON, stat, readdir, pathExists, readFile, Dirent, copy } from "fs-extra";
+import {
+  ensureDir,
+  writeJSON,
+  stat,
+  readdir,
+  pathExists,
+  readFile,
+  Dirent,
+  copy,
+  outputFile,
+} from "fs-extra";
 import execa = require("execa");
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer = require("inquirer");
-import { load } from "js-toml";
+import TOML from "@iarna/toml";
 import { choice, email, name, pickLanguage, pickTemplate } from "../../lib/prompts";
 import {
   checkCliDependencies,
@@ -279,7 +289,7 @@ export class Init extends BaseCommand {
       throw error;
     }
 
-    let rootTomlPaths = await getRootCargoToml(pathToExistingProject);
+    let rootTomlPaths = await getRootCargoTomlPaths(pathToExistingProject);
 
     if (rootTomlPaths) {
       console.log("Workspaces detected in root Cargo.toml file.");
@@ -314,6 +324,47 @@ export class Init extends BaseCommand {
       callback: (result) => {
         console.log(result);
       },
+    });
+
+    if (!this.configBuilder.contracts) this.configBuilder.contracts = {};
+
+    for (const contract of confirmedCopyList.contracts) {
+      this.configBuilder.contracts[contract.name] = {
+        name: contract.name,
+        deployments: [],
+        language: "ink",
+      };
+    }
+
+    let rootToml = await readRootCargoToml(pathToExistingProject);
+
+    if (!rootToml) rootToml = { workspace: {} };
+
+    rootToml.workspace.members = ["contracts/*"];
+    rootToml.workspace.exclude = ["crates/*"];
+
+    this.taskQueue.push({
+      task: async (tomlObject, projectPath) => {
+        const tomlString = TOML.stringify(tomlObject);
+        const rootTomlPath = path.resolve(projectPath, "Cargo.toml");
+        await outputFile(rootTomlPath, tomlString);
+      },
+      args: [rootToml, this.projectPath],
+      runningMessage: "Writing Cargo.toml",
+    });
+
+    this.taskQueue.push({
+      task: async (pathToExistingProject, projectPath) => {
+        const fileList = ["rust-toolchain.toml", ".rustfmt.toml"];
+        for (const fileName of fileList) {
+          const filePath = await path.resolve(pathToExistingProject, fileName);
+          if (await pathExists(filePath)) {
+            await copy(filePath, path.resolve(projectPath, fileName));
+          }
+        }
+      },
+      args: [pathToExistingProject, this.projectPath],
+      runningMessage: "Copying workspace files",
     });
   }
 }
@@ -420,19 +471,26 @@ async function detectTests(pathToExistingProject: string) {
   return testDir;
 }
 
-async function getRootCargoToml(pathToProject: string) {
-  const rootTomlPath = path.resolve(pathToProject, "Cargo.toml");
-  if (!(await pathExists(rootTomlPath))) return null;
+async function getRootCargoTomlPaths(pathToProject: string) {
+  const toml = await readRootCargoToml(pathToProject);
 
-  const fileData = await readFile(rootTomlPath, "utf-8");
-  const toml: { workspace?: { members?: string[]; exclude?: string[] } } = load(fileData);
-
-  if (!toml.workspace?.members) return null;
+  if (!toml?.workspace.members) return null;
 
   return {
     contractsDirectories: toml.workspace.members,
     cratesDirectories: toml.workspace.exclude,
   };
+}
+
+async function readRootCargoToml(pathToProject: string) {
+  const rootTomlPath = path.resolve(pathToProject, "Cargo.toml");
+  if (!(await pathExists(rootTomlPath))) return null;
+  const fileData = await readFile(rootTomlPath, "utf-8");
+  const toml: any = TOML.parse(fileData);
+
+  if (!toml.workspace) toml.workspace = {};
+
+  return toml;
 }
 
 async function getManualPaths(pathToProject: string) {
@@ -513,8 +571,9 @@ async function getDirsAndFiles(projectPath: string, globList: string[]) {
 //[X] 4. add directories from Cargo.toml/exclude path to copy list
 //[X] 5. make a list (checkbox) for user to confirm contracts/crates/files to copy
 //[X] 6. look for test/tests directory and add it to the list (also take manual input)
-//[ ] 7. copy all the selected directories/files and update the swanky.config
-//[ ] 8. copy cargo.toml from the root, modify path if needed ( "uniswap-v2/contracts/**" -> "contracts/**")
+//[X] 7. copy all the selected directories/files
+//[X] 7a. update the swanky.config
+//[X] 8. copy cargo.toml from the root, modify path if needed ( "uniswap-v2/contracts/**" -> "contracts/**")
 //[ ] 9. keep log of all the steps and write it to file
-//[ ] 10. Copy rust.toolchain and .rustfmt.toml if exists
+//[X] 10. Copy rust.toolchain and .rustfmt.toml if exists
 //[ ] 11. Merge package.json from imported project into the one generated from template
