@@ -25,12 +25,7 @@ export async function checkCliDependencies(spinner: Spinner) {
   }
 }
 
-export async function copyTemplateFiles(
-  templatesPath: string,
-  contractTemplatePath: string,
-  contractName: string,
-  projectPath: string
-) {
+export async function copyCommonTemplateFiles(templatesPath: string, projectPath: string) {
   await ensureDir(projectPath);
   const commonFiles = await globby(`*`, { cwd: templatesPath });
   await Promise.all(
@@ -39,7 +34,6 @@ export async function copyTemplateFiles(
     })
   );
   await rename(path.resolve(projectPath, "gitignore"), path.resolve(projectPath, ".gitignore"));
-  await copyContractTemplateFiles(contractTemplatePath, contractName, projectPath);
 }
 
 export async function copyContractTemplateFiles(

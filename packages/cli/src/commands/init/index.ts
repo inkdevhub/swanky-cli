@@ -18,7 +18,8 @@ import TOML from "@iarna/toml";
 import { choice, email, name, pickLanguage, pickTemplate } from "../../lib/prompts";
 import {
   checkCliDependencies,
-  copyTemplateFiles,
+  copyCommonTemplateFiles,
+  copyContractTemplateFiles,
   downloadNode,
   installDeps,
   ChainAccount,
@@ -30,7 +31,7 @@ import {
 import { getAllTemplateNames, getTemplates } from "@astar-network/swanky-templates";
 import { BaseCommand } from "../../lib/baseCommand";
 import globby = require("globby");
-
+import { merge } from "lodash";
 import inquirerFuzzyPath from "inquirer-fuzzy-path";
 
 const {
@@ -146,6 +147,23 @@ export class Init extends BaseCommand {
       await this.generate(args.projectName);
     }
 
+    const templates = getTemplates("ink");
+    this.taskQueue.push({
+      task: copyCommonTemplateFiles,
+      args: [templates.templatesPath, this.projectPath],
+      runningMessage: "Copying common template files",
+    });
+
+    this.taskQueue.push({
+      task: processTemplates,
+      args: [
+        this.projectPath,
+        {
+          project_name: paramCase(args.projectName),
+        },
+      ],
+      runningMessage: "Processing common templates",
+    });
     this.taskQueue.push({
       task: installDeps,
       args: [this.projectPath],
@@ -238,14 +256,13 @@ export class Init extends BaseCommand {
     });
 
     this.taskQueue.push({
-      task: copyTemplateFiles,
+      task: copyContractTemplateFiles,
       args: [
-        templates.templatesPath,
         path.resolve(templates.contractTemplatesPath, answers.contractTemplate),
         answers.contractName,
         this.projectPath,
       ],
-      runningMessage: "Copying template files",
+      runningMessage: "Copying contract template files",
     });
 
     this.taskQueue.push({
@@ -263,7 +280,7 @@ export class Init extends BaseCommand {
           contract_language: contractLanguage,
         },
       ],
-      runningMessage: "Processing templates",
+      runningMessage: "Processing contract template",
     });
 
     this.configBuilder.contracts = {
