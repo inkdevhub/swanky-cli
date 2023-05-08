@@ -10,6 +10,9 @@ import {
   Dirent,
   copy,
   outputFile,
+  readJSON,
+  writeJson,
+  remove,
 } from "fs-extra";
 import execa = require("execa");
 import { paramCase, pascalCase, snakeCase } from "change-case";
@@ -141,12 +144,6 @@ export class Init extends BaseCommand {
       if (!(error instanceof Error) || !error.message.includes("ENOENT")) throw error;
     }
 
-    if (flags.convert) {
-      await this.convert(flags.convert);
-    } else {
-      await this.generate(args.projectName);
-    }
-
     const templates = getTemplates("ink");
     this.taskQueue.push({
       task: copyCommonTemplateFiles,
@@ -164,6 +161,13 @@ export class Init extends BaseCommand {
       ],
       runningMessage: "Processing common templates",
     });
+
+    if (flags.convert) {
+      await this.convert(flags.convert);
+    } else {
+      await this.generate(args.projectName);
+    }
+
     this.taskQueue.push({
       task: installDeps,
       args: [this.projectPath],
@@ -383,6 +387,23 @@ export class Init extends BaseCommand {
       args: [pathToExistingProject, this.projectPath],
       runningMessage: "Copying workspace files",
     });
+
+    const existingPJsonPath = path.resolve(pathToExistingProject, "package.json");
+    if (await pathExists(existingPJsonPath)) {
+      this.taskQueue.push({
+        task: async (pJsonPath, projectPath) => {
+          const existingPJson = await readJSON(pJsonPath);
+          const templatePJsonPath = path.resolve(projectPath, "package.json");
+          const templatePJson = await readJSON(templatePJsonPath);
+          const mergedJson = merge(templatePJson, existingPJson);
+          console.log(existingPJson, templatePJson, mergedJson);
+          await remove(templatePJsonPath);
+          await writeJson(templatePJsonPath, mergedJson, { spaces: 2 });
+        },
+        args: [existingPJsonPath, this.projectPath],
+        runningMessage: "Merging package.json",
+      });
+    }
   }
 }
 
