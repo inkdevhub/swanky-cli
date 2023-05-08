@@ -396,7 +396,6 @@ export class Init extends BaseCommand {
           const templatePJsonPath = path.resolve(projectPath, "package.json");
           const templatePJson = await readJSON(templatePJsonPath);
           const mergedJson = merge(templatePJson, existingPJson);
-          console.log(existingPJson, templatePJson, mergedJson);
           await remove(templatePJsonPath);
           await writeJson(templatePJsonPath, mergedJson, { spaces: 2 });
         },
@@ -601,17 +600,3 @@ async function getDirsAndFiles(projectPath: string, globList: string[]) {
     ...(await getGlobPaths(projectPath, globList, true)),
   ];
 }
-
-//[X] 1. Check if the project is a directory, or is it empty
-//[X] 2. Look for cargo.toml with "workspace" field in the root
-//[X] 3a. Workspace found - use the glob in the "members field" to select directories to copy over
-//[X] 3b. if not found, ask user for a path where contracts are -> [Ctrl+C to cancel]
-//[X] 4. add directories from Cargo.toml/exclude path to copy list
-//[X] 5. make a list (checkbox) for user to confirm contracts/crates/files to copy
-//[X] 6. look for test/tests directory and add it to the list (also take manual input)
-//[X] 7. copy all the selected directories/files
-//[X] 7a. update the swanky.config
-//[X] 8. copy cargo.toml from the root, modify path if needed ( "uniswap-v2/contracts/**" -> "contracts/**")
-//[ ] 9. keep log of all the steps and write it to file
-//[X] 10. Copy rust.toolchain and .rustfmt.toml if exists
-//[ ] 11. Merge package.json from imported project into the one generated from template
