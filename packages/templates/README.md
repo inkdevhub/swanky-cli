@@ -32,6 +32,6 @@ Contract-specific templates are grouped by language:
 - ask
 - ink
 
-Each contract directory must contain `contract` and `test` subdirectories.
+Each contract directory must contain `contract` and `tests` subdirectories.
 
 All the files contained within will be copied, respecting the directory structure, and the `.hbs` files will be processed by the templating engine.

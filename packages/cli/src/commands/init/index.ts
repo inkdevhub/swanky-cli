@@ -199,7 +199,7 @@ export class Init extends BaseCommand {
     Object.keys(this.configBuilder.contracts as typeof this.swankyConfig.contracts).forEach(
       async (contractName) => {
         await ensureDir(path.resolve(this.projectPath, "artifacts", contractName));
-        await ensureDir(path.resolve(this.projectPath, "test", contractName));
+        await ensureDir(path.resolve(this.projectPath, "tests", contractName));
       }
     );
 

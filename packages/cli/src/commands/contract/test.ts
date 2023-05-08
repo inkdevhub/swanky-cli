@@ -42,7 +42,7 @@ export class TestContract extends Command {
 
     const contractNames = flags.all ? Object.keys(config.contracts) : args.contractName;
 
-    const testDir = path.resolve("test");
+    const testDir = path.resolve("tests");
     for (const contractName of contractNames) {
       console.log(`Testing contract: ${contractName}`);
       const contractInfo = config.contracts[contractName];

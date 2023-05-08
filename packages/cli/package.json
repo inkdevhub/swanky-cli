@@ -98,7 +98,7 @@
     "lint": "eslint . --ext .ts --quiet --config .eslintrc",
     "postpack": "shx rm -f oclif.manifest.json",
     "prepack": "yarn build && oclif manifest && oclif readme",
-    "test": "mocha --require mocha-suppress-logs --forbid-only -r ts-node/register \"test/**/*.test.ts\"",
+    "test": "mocha --require mocha-suppress-logs --forbid-only -r ts-node/register \"tests/**/*.test.ts\"",
     "version": "oclif readme && git add README.md",
     "tarball:macos": "oclif pack tarballs --targets=darwin-x64 --no-xz",
     "tarball:linux": "oclif pack tarballs --targets=linux-x64 --no-xz",

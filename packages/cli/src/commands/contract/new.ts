@@ -111,7 +111,7 @@ export class NewContract extends Command {
     );
 
     await ensureDir(path.resolve(projectPath, "artifacts", args.contractName));
-    await ensureDir(path.resolve(projectPath, "test", args.contractName));
+    await ensureDir(path.resolve(projectPath, "tests", args.contractName));
     if (contractLanguage === "ask") {
       await spinner.runCommand(async () => {
         const pjson = await readJSON("package.json");

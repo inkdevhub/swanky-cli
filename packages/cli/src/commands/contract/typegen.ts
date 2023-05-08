@@ -42,7 +42,7 @@ export class CompileContract extends Command {
       this.error(`Path to contract ${args.contractName} does not exist: ${contractPath}`);
     }
 
-    const testPath = path.resolve(`test/${args.contractName}`);
+    const testPath = path.resolve(`tests/${args.contractName}`);
 
     if (!contractInfo.build) {
       this.error(`No build data for contract "${args.contractName}"`);

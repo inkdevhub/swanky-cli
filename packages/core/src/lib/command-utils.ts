@@ -145,8 +145,8 @@ export async function moveArtifacts(contractName: string): Promise<BuildData> {
       ),
     ]);
     // move both to test/contract_name/artifacts
-    const testArtifacts = path.resolve("test", contractName, "artifacts");
-    const testTypedContracts = path.resolve("test", contractName, "typedContract");
+    const testArtifacts = path.resolve("tests", contractName, "artifacts");
+    const testTypedContracts = path.resolve("tests", contractName, "typedContract");
     await fs.ensureDir(testArtifacts);
     await fs.ensureDir(testTypedContracts);
     await Promise.all([
