@@ -17,7 +17,7 @@ $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
 running command...
 $ swanky (--version|-V|-v)
-@astar-network/swanky-cli/2.1.1 darwin-x64 node-v18.2.0
+@astar-network/swanky-cli/2.1.2 darwin-arm64 node-v18.10.0
 $ swanky --help [COMMAND]
 USAGE
   $ swanky COMMAND
@@ -114,7 +114,7 @@ DESCRIPTION
   Check installed package versions and compatibility
 ```
 
-_See code: [dist/commands/check/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v2.1.1/dist/commands/check/index.js)_
+_See code: [dist/commands/check/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v2.1.2/dist/commands/check/index.js)_
 
 ## `swanky contract compile [CONTRACTNAME]`
 
@@ -316,7 +316,7 @@ DESCRIPTION
   Generate a new smart contract environment
 ```
 
-_See code: [dist/commands/init/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v2.1.1/dist/commands/init/index.js)_
+_See code: [dist/commands/init/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v2.1.2/dist/commands/init/index.js)_
 
 ## `swanky node install`
 
@@ -351,11 +351,14 @@ Start a local node
 
 ```
 USAGE
-  $ swanky node start [-t] [--rpcCors <value>]
+  $ swanky node start [-t] [--rpcCors <value>] [--finalizeDelaySec <value>]
 
 FLAGS
   -t, --tmp
       Run node with non-persistent mode
+
+  --finalizeDelaySec=<value>
+      Delay time in seconds after blocks being sealed
 
   --rpcCors=<value>
       [default: http://localhost:*,http://127.0.0.1:*,https://localhost:*,https://127.0.0.1:*,https://polkadot.js.org,http
