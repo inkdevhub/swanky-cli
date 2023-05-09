@@ -80,8 +80,7 @@ export class CompileContract extends Command {
     await ensureSwankyProject();
     const config = await getSwankyConfig();
 
-    const contractNames = flags.all ? Object.keys(config.contracts) : args.contractName;
-
+    const contractNames = flags.all ? Object.keys(config.contracts) : [args.contractName];
     const spinner = new Spinner();
 
     for (const contractName of contractNames) {
