@@ -140,11 +140,7 @@ export async function printContractInfo(metadataPath: string) {
   }
 }
 
-export async function generateTypes(
-  inputAbsPath: string,
-  contractName: string,
-  outputAbsPath: string
-) {
+export async function generateTypes(inputPath: string, contractName: string, outputPath: string) {
   await fs.ensureDir(TEMP_ARTIFACTS_PATH);
 
   // Getting error if typechain-polkadot takes folder with unnecessary files/folders as inputs.
@@ -160,11 +156,11 @@ export async function generateTypes(
   // Cannot generate typedContract directly to `outputAbsPath`
   // because relative path of typechain-polkadot input and output folder does matter for later use.
   await fs.copyFile(
-    path.resolve(inputAbsPath, `${contractName}.contract`),
+    path.resolve(inputPath, `${contractName}.contract`),
     path.resolve(TEMP_ARTIFACTS_PATH, `${contractName}.contract`)
   ),
     await fs.copyFile(
-      path.resolve(inputAbsPath, `${contractName}.json`),
+      path.resolve(inputPath, `${contractName}.json`),
       path.resolve(TEMP_ARTIFACTS_PATH, `${contractName}.json`)
     );
 
@@ -172,5 +168,5 @@ export async function generateTypes(
     `npx typechain-polkadot --in ${TEMP_ARTIFACTS_PATH} --out ${TEMP_TYPED_CONTRACT_PATH}`
   );
 
-  await fs.move(path.resolve(TEMP_TYPED_CONTRACT_PATH), outputAbsPath);
+  await fs.move(path.resolve(TEMP_TYPED_CONTRACT_PATH), outputPath, { overwrite: true });
 }
