@@ -158,11 +158,11 @@ export async function generateTypes(inputPath: string, contractName: string, out
   await fs.copyFile(
     path.resolve(inputPath, `${contractName}.contract`),
     path.resolve(TEMP_ARTIFACTS_PATH, `${contractName}.contract`)
-  ),
-    await fs.copyFile(
-      path.resolve(inputPath, `${contractName}.json`),
-      path.resolve(TEMP_ARTIFACTS_PATH, `${contractName}.json`)
-    );
+  );
+  await fs.copyFile(
+    path.resolve(inputPath, `${contractName}.json`),
+    path.resolve(TEMP_ARTIFACTS_PATH, `${contractName}.json`)
+  );
 
   await execa.command(
     `npx typechain-polkadot --in ${TEMP_ARTIFACTS_PATH} --out ${TEMP_TYPED_CONTRACT_PATH}`
