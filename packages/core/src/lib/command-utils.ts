@@ -158,7 +158,7 @@ export async function generateTypes(inputPath: string, contractName: string, out
     path.resolve(TEMP_ARTIFACTS_PATH, `${contractName}.json`),
   )
 
-  await execa.command(`npx typechain-polkadot --in ${TEMP_ARTIFACTS_PATH} --out ${TEMP_TYPED_CONTRACT_PATH}`);
+  await execa.command(`npx @727-ventures/typechain-polkadot --in ${TEMP_ARTIFACTS_PATH} --out ${TEMP_TYPED_CONTRACT_PATH}`);
 
   await fs.move(path.resolve(TEMP_TYPED_CONTRACT_PATH), outputPath, { overwrite: true })
 }
