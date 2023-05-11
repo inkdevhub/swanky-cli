@@ -7,6 +7,7 @@ import {
   getSwankyConfig,
   Spinner,
   generateTypes,
+  consts,
 } from "@astar-network/swanky-core";
 
 export class TypegenCommand extends Command {
@@ -34,32 +35,25 @@ export class TypegenCommand extends Command {
 
     const spinner = new Spinner();
 
-    const contractList = readdirSync(path.resolve("contracts"));
+    const contractDirList = readdirSync(path.resolve("contracts"));
 
     const contractPath = path.resolve("contracts", args.contractName);
-    if (!contractList.includes(args.contractName)) {
+
+    if (!contractDirList.includes(args.contractName)) {
       this.error(`Path to contract ${args.contractName} does not exist: ${contractPath}`);
     }
 
-    const testPath = path.resolve(`tests/${args.contractName}`);
-
-    if (!contractInfo.build) {
-      this.error(`No build data for contract "${args.contractName}"`);
+    for (const artifact of [".json", ".contract"]) {
+      const artifactPath = path.resolve(
+        consts.ARTIFACTS_PATH,
+        `${contractInfo.moduleName}${artifact}`
+      );
+      if (!(await fs.pathExists(artifactPath)))
+        this.error(`No artifact file found at path: ${artifactPath}`);
     }
 
     await spinner.runCommand(async () => {
-      const destinationPath = path.resolve(testPath, "typedContract");
-      const destinationPathExists = await fs.pathExists(destinationPath);
-      if (destinationPathExists) {
-        await fs.remove(destinationPath);
-      }
-
-      const buildInfoArtifactsPath = contractInfo.build?.artifactsPath;
-      if (buildInfoArtifactsPath == undefined) {
-        throw new Error(`Invalid artifacts path "${buildInfoArtifactsPath}"`);
-      }
-
-      await generateTypes(buildInfoArtifactsPath, args.contractName, destinationPath)
+      await generateTypes(args.contractName);
     }, "Generating types");
   }
 }

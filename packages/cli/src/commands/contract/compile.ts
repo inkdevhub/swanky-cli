@@ -4,12 +4,11 @@ import {
   storeArtifacts,
   ensureSwankyProject,
   getSwankyConfig,
-  BuildData,
   Spinner,
   generateTypes,
 } from "@astar-network/swanky-core";
 import { spawn } from "node:child_process";
-import { writeJSON, existsSync } from "fs-extra";
+import { pathExists } from "fs-extra";
 
 export class CompileContract extends Command {
   static description = "Compile the smart contract(s) in your contracts directory";
@@ -60,8 +59,9 @@ export class CompileContract extends Command {
       if (!contractInfo) {
         this.error(`Cannot find contract info for ${contractName} contract in swanky.config.json`);
       }
-      const contractPath = path.resolve("contracts", contractName);
-      if (!existsSync(contractPath)) {
+      const contractPath = path.resolve("contracts", contractInfo.name);
+
+      if (!(await pathExists(contractPath))) {
         this.error(`Contract folder not found at expected path`);
       }
 
@@ -105,25 +105,15 @@ export class CompileContract extends Command {
 
       const artifactsPath = compilationResult as string;
 
-      const typedContractDestPath = path.resolve("typedContracts", contractName);
+      await spinner.runCommand(async () => {
+        return storeArtifacts(artifactsPath, contractInfo.name, contractInfo.moduleName);
+      }, "Moving artifacts");
+
       await spinner.runCommand(
-        async () =>
-          await generateTypes(artifactsPath, path.basename(artifactsPath), typedContractDestPath),
+        async () => await generateTypes(contractInfo.name),
         `Generating ${contractName} contract ts types`,
         `${contractName} contract's TS types Generated successfully`
       );
-
-      const buildData = (await spinner.runCommand(async () => {
-        return storeArtifacts(artifactsPath, contractInfo.name);
-      }, "Moving artifacts")) as BuildData;
-
-      contractInfo.build = buildData;
     }
-
-    await spinner.runCommand(async () => {
-      await writeJSON(path.resolve("swanky.config.json"), config, {
-        spaces: 2,
-      });
-    }, "Writing config");
   }
 }

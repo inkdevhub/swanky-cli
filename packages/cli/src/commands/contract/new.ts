@@ -1,6 +1,6 @@
 import { Args, Command, Flags } from "@oclif/core";
 import path = require("node:path");
-import { ensureDir, pathExistsSync, readJSON, writeJSON } from "fs-extra";
+import { ensureDir, pathExists, pathExistsSync, readJSON, writeJSON } from "fs-extra";
 import {
   getSwankyConfig,
   ensureSwankyProject,
@@ -43,14 +43,17 @@ export class NewContract extends Command {
 
     const config = await getSwankyConfig();
 
-    const projectPath = path.resolve();
+    const projectPath = process.cwd();
     const { args, flags } = await this.parse(NewContract);
 
-    if (
-      pathExistsSync(path.join(projectPath, "contracts", args.contractName)) ||
-      config.contracts[args.contractName]
-    ) {
+    if (await pathExists(path.resolve(projectPath, "contracts", args.contractName))) {
       throw new Error(`Contract folder '${args.contractName}' already exists`);
+    }
+
+    if (config.contracts[args.contractName]) {
+      throw new Error(
+        `Contract with a name '${args.contractName}' already exists in swanky.config`
+      );
     }
 
     const { contractLanguage } = flags.language
@@ -125,6 +128,7 @@ export class NewContract extends Command {
     await spinner.runCommand(async () => {
       config.contracts[args.contractName] = {
         name: args.contractName,
+        moduleName: args.contractName,
         language: contractLanguage,
         deployments: [],
       };

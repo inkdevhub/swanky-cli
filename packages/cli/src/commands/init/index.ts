@@ -60,6 +60,7 @@ type PathEntry = {
   dirent: Dirent;
   name: string;
   path: string;
+  moduleName?: string;
 };
 
 type CopyCandidates = {
@@ -289,7 +290,8 @@ export class Init extends BaseCommand {
 
     this.configBuilder.contracts = {
       [answers.contractName as string]: {
-        name: answers.contractName as string,
+        name: answers.contractName,
+        moduleName: answers.contractName,
         deployments: [],
         language: contractLanguage,
       },
@@ -333,7 +335,7 @@ export class Init extends BaseCommand {
       ? await getDirsAndFiles(pathToExistingProject, [testDir])
       : [];
 
-    const confirmedCopyList = await confirmCopyList(candidatesList);
+    const confirmedCopyList = await detectModuleNames(await confirmCopyList(candidatesList));
 
     this.taskQueue.push({
       task: copyWorkspaceContracts,
@@ -352,6 +354,7 @@ export class Init extends BaseCommand {
     for (const contract of confirmedCopyList.contracts) {
       this.configBuilder.contracts[contract.name] = {
         name: contract.name,
+        moduleName: contract.moduleName as string,
         deployments: [],
         language: "ink",
       };
@@ -406,21 +409,44 @@ export class Init extends BaseCommand {
   }
 }
 
-async function copyWorkspaceContracts(copyList: CopyCandidates, projectPath: string) {
-  const copyPaths = async (group: "contracts" | "tests" | "crates") => {
-    const destDir = path.resolve(projectPath, group);
-    await ensureDir(destDir);
-
-    for (const entry of copyList[group] as PathEntry[]) {
-      const basename = path.basename(entry.path);
-      const destPath = path.join(destDir, basename);
-      await copy(entry.path, destPath);
-    }
+async function detectModuleNames(copyList: CopyCandidates): Promise<CopyCandidates> {
+  const copyListWithModuleNames: CopyCandidates = {
+    contracts: [],
+    crates: [],
+    tests: copyList.tests ? [...copyList.tests] : [],
   };
 
-  await copyPaths("contracts");
-  await copyPaths("tests");
-  await copyPaths("crates");
+  for (const group of ["contracts", "crates"]) {
+    for (const entry of copyList[group] as PathEntry[]) {
+      const moduleName = path.basename(entry.path);
+      const extendedEntry = { ...entry, moduleName };
+      if (
+        entry.dirent.isDirectory() &&
+        (await pathExists(path.resolve(entry.path, "Cargo.toml")))
+      ) {
+        const fileData = await readFile(path.resolve(entry.path, "Cargo.toml"), "utf-8");
+        const toml: any = TOML.parse(fileData);
+        if (toml.package?.name) {
+          extendedEntry.moduleName = toml.package.name;
+        } else {
+          console.log(`Could not detect the contract name from Cargo.toml. Using [${moduleName}]`);
+        }
+      }
+      copyListWithModuleNames[group].push(extendedEntry);
+    }
+  }
+  return copyListWithModuleNames;
+}
+
+async function copyWorkspaceContracts(copyList: CopyCandidates, projectPath: string) {
+  for (const group of ["contracts", "crates", "tests"]) {
+    const destDir = path.resolve(projectPath, group);
+    await ensureDir(destDir);
+    for (const entry of copyList[group] as PathEntry[]) {
+      const destPath = path.join(destDir, entry.name);
+      await copy(entry.path, destPath);
+    }
+  }
 }
 
 async function confirmCopyList(candidatesList: CopyCandidates) {
