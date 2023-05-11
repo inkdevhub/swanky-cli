@@ -1,14 +1,11 @@
 import { Args, Command } from "@oclif/core";
-import * as fs from "fs-extra";
-import path = require("node:path");
-import { readdirSync } from "node:fs";
 import {
   ensureSwankyProject,
   getSwankyConfig,
   Spinner,
   generateTypes,
-  consts,
 } from "@astar-network/swanky-core";
+import { Contract } from "../../lib/contract";
 
 export class TypegenCommand extends Command {
   static description = "Generate types from compiled contract metadata";
@@ -28,32 +25,27 @@ export class TypegenCommand extends Command {
 
     const config = await getSwankyConfig();
 
-    const contractInfo = config.contracts[args.contractName];
-    if (!contractInfo) {
+    const contractRecord = config.contracts[args.contractName];
+    if (!contractRecord) {
       this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
     }
 
     const spinner = new Spinner();
 
-    const contractDirList = readdirSync(path.resolve("contracts"));
+    const contract = new Contract(contractRecord);
 
-    const contractPath = path.resolve("contracts", args.contractName);
-
-    if (!contractDirList.includes(args.contractName)) {
-      this.error(`Path to contract ${args.contractName} does not exist: ${contractPath}`);
+    if (!(await contract.pathExists())) {
+      this.error(`Path to contract ${args.contractName} does not exist: ${contract.contractPath}`);
     }
 
-    for (const artifact of [".json", ".contract"]) {
-      const artifactPath = path.resolve(
-        consts.ARTIFACTS_PATH,
-        `${contractInfo.moduleName}${artifact}`
-      );
-      if (!(await fs.pathExists(artifactPath)))
-        this.error(`No artifact file found at path: ${artifactPath}`);
+    const artifactsCheck = await contract.artifactsExist();
+
+    if (!artifactsCheck.result) {
+      this.error(`No artifact file found at path: ${artifactsCheck.missingPaths}`);
     }
 
     await spinner.runCommand(async () => {
-      await generateTypes(args.contractName);
+      await generateTypes(contract.name);
     }, "Generating types");
   }
 }

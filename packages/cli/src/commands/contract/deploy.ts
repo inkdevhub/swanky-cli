@@ -1,6 +1,6 @@
 import { Args, Command, Flags } from "@oclif/core";
 import path = require("node:path");
-import { readJSON, readFile, writeJSON } from "fs-extra";
+import { writeJSON } from "fs-extra";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import {
   ensureSwankyProject,
@@ -12,10 +12,11 @@ import {
   AccountData,
   Encrypted,
   decrypt,
-  AbiType as Abi,
+  AbiType,
 } from "@astar-network/swanky-core";
 import inquirer from "inquirer";
 import chalk = require("chalk");
+import { Contract } from "../../lib/contract";
 
 export class DeployContract extends Command {
   static description = "Deploy contract to a running node";
@@ -60,9 +61,21 @@ export class DeployContract extends Command {
 
     const spinner = new Spinner();
 
-    const contractInfo = config.contracts[args.contractName];
-    if (!contractInfo) {
+    const contractRecord = config.contracts[args.contractName];
+    if (!contractRecord) {
       this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
+    }
+
+    const contract = new Contract(contractRecord);
+
+    if (!(await contract.pathExists())) {
+      this.error(`Path to contract ${args.contractName} does not exist: ${contract.contractPath}`);
+    }
+
+    const artifactsCheck = await contract.artifactsExist();
+
+    if (!artifactsCheck.result) {
+      this.error(`No artifact file found at path: ${artifactsCheck.missingPaths}`);
     }
 
     const accountData = config.accounts.find(
@@ -93,18 +106,10 @@ export class DeployContract extends Command {
     }, "Initialising")) as ChainAccount;
 
     const { abi, wasm } = (await spinner.runCommand(async () => {
-      if (!contractInfo.build) {
-        this.error(`No build info found for contract named ${args.contractName}`);
-      }
-      const abi = (await readJSON(
-        path.resolve(contractInfo.build.artifactsPath, `${args.contractName}.json`)
-      )) as Abi;
-      const contract = await readJSON(
-        path.resolve(contractInfo.build.artifactsPath, `${args.contractName}.contract`)
-      );
-      const wasm = contract.source.wasm;
+      const abi = await contract.getABI();
+      const wasm = await contract.getWasm();
       return { abi, wasm };
-    }, "Getting WASM")) as { abi: Abi; wasm: Buffer };
+    }, "Getting WASM")) as { abi: AbiType; wasm: Buffer };
 
     const networkUrl = resolveNetworkUrl(config, flags.network ?? "");
 
@@ -132,8 +137,8 @@ export class DeployContract extends Command {
     }, "Deploying")) as string;
 
     await spinner.runCommand(async () => {
-      contractInfo.deployments = [
-        ...contractInfo.deployments,
+      contractRecord.deployments = [
+        ...contractRecord.deployments,
         {
           timestamp: Date.now(),
           address: contractAddress,

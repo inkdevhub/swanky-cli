@@ -1,5 +1,5 @@
-import { ContractData, DeploymentData, consts } from "@astar-network/swanky-core";
-import { pathExists } from "fs-extra";
+import { AbiType, ContractData, DeploymentData, consts } from "@astar-network/swanky-core";
+import { pathExists, readJson } from "fs-extra";
 import path from "node:path";
 
 export class Contract {
@@ -24,15 +24,43 @@ export class Contract {
   }
 
   async artifactsExist() {
-    const result: { result: boolean; missing: string[] } = { result: true, missing: [] };
+    const result: { result: boolean; missingPaths: string[]; missingTypes: string[] } = {
+      result: true,
+      missingPaths: [],
+      missingTypes: [],
+    };
     for (const artifactType of Contract.artifactTypes) {
       const artifactPath = path.resolve(this.artifactsPath, `${this.moduleName}${artifactType}`);
 
       if (!(await pathExists(artifactPath))) {
         result.result = false;
-        result.missing.push(artifactPath);
+        result.missingPaths.push(artifactPath);
+        result.missingTypes.push(artifactType);
       }
     }
     return result;
+  }
+
+  async getABI(): Promise<AbiType> {
+    const check = await this.artifactsExist();
+    if (!check.result && check.missingTypes.includes(".json")) {
+      throw new Error(`Cannot read ABI, path not found: ${check.missingPaths}`);
+    }
+    return readJson(path.resolve(this.artifactsPath, `${this.moduleName}.json`));
+  }
+
+  async getBundle() {
+    const check = await this.artifactsExist();
+    if (!check.result && check.missingTypes.includes(".contract")) {
+      throw new Error(`Cannot read .contract bundle, path not found: ${check.missingPaths}`);
+    }
+    return readJson(path.resolve(this.artifactsPath, `${this.moduleName}.contract`));
+  }
+
+  async getWasm(): Promise<Buffer> {
+    const bundle = await this.getBundle();
+    if (bundle.source?.wasm) return bundle.source.wasm;
+
+    throw new Error(`Cannot find wasm field in the .contract bundle!`);
   }
 }
