@@ -46,7 +46,7 @@ export async function copyContractTemplateFiles(
     path.resolve(projectPath, "contracts", contractName)
   );
   await copy(
-    path.resolve(contractTemplatePath, "tests"),
+    path.resolve(contractTemplatePath, "test"),
     path.resolve(projectPath, "tests", contractName)
   );
 }
