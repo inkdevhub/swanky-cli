@@ -360,11 +360,14 @@ Start a local node
 
 ```
 USAGE
-  $ swanky node start [-t] [--rpcCors <value>]
+  $ swanky node start [-t] [--rpcCors <value>] [--finalizeDelaySec <value>]
 
 FLAGS
   -t, --tmp
       Run node with non-persistent mode
+
+  --finalizeDelaySec=<value>
+      Delay time in seconds after blocks being sealed
 
   --rpcCors=<value>
       [default: http://localhost:*,http://127.0.0.1:*,https://localhost:*,https://127.0.0.1:*,https://polkadot.js.org,http
