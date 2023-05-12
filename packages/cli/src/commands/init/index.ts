@@ -525,7 +525,10 @@ async function detectTests(pathToExistingProject: string) {
       itemType: "directory",
       rootPath: pathToExistingProject,
       message: "Please enter the path to the contracts directory: ",
-      excludePath: (nodePath: string) => nodePath.startsWith("node_modules"),
+      excludePath: (nodePath: string) =>
+        nodePath.includes("node_modules") ||
+        nodePath.includes(".git") ||
+        nodePath.includes("target"),
     },
   ]);
   if (shouldOverwriteTestDir) {
@@ -565,7 +568,10 @@ async function getManualPaths(pathToProject: string) {
       itemType: "directory",
       rootPath: pathToProject,
       message: "Please enter the path to the contracts directory: ",
-      excludePath: (nodePath: string) => nodePath.startsWith("node_modules"),
+      excludePath: (nodePath: string) =>
+        nodePath.includes("node_modules") ||
+        nodePath.includes(".git") ||
+        nodePath.includes("target"),
     },
     {
       type: "confirm",
@@ -580,7 +586,10 @@ async function getManualPaths(pathToProject: string) {
       itemType: "directory",
       rootPath: pathToProject,
       message: "Please enter the path to the contracts directory: ",
-      excludePath: (nodePath: string) => nodePath.startsWith("node_modules"),
+      excludePath: (nodePath: string) =>
+        nodePath.includes("node_modules") ||
+        nodePath.includes(".git") ||
+        nodePath.includes("target"),
     },
   ]);
 
