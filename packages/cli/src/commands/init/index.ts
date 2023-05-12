@@ -69,6 +69,8 @@ type CopyCandidates = {
   tests?: PathEntry[];
 };
 
+type CopyPathsList = { contractsDirectories: string[]; cratesDirectories: string[] };
+
 inquirer.registerPrompt("fuzzypath", inquirerFuzzyPath);
 
 export class Init extends BaseCommand {
@@ -312,28 +314,68 @@ export class Init extends BaseCommand {
       throw error;
     }
 
-    let rootTomlPaths = await getRootCargoTomlPaths(pathToExistingProject);
+    const rootTomlPaths = await getRootCargoTomlPaths(pathToExistingProject);
 
-    if (rootTomlPaths) {
-      console.log("Workspaces detected in root Cargo.toml file.");
-      const { shouldKeepRootToml } = await inquirer.prompt([
-        choice("shouldKeepRootToml", "Do you want to use it to automatically copy contracts?"),
+    const copyGlobsList: CopyPathsList = {
+      contractsDirectories: [],
+      cratesDirectories: [],
+    };
+
+    if (rootTomlPaths.contractsDirectories.length) {
+      console.log("Detected a `workspace.members` field in Cargo.toml.");
+      const { shouldKeepRootTomlContracts } = await inquirer.prompt([
+        choice(
+          "shouldKeepRootTomlContracts",
+          "Do you want to use it to automatically copy contracts?"
+        ),
       ]);
-      rootTomlPaths = shouldKeepRootToml ? rootTomlPaths : null;
+      if (shouldKeepRootTomlContracts) {
+        copyGlobsList.contractsDirectories = rootTomlPaths.contractsDirectories;
+      }
     }
 
-    const candidatesList: CopyCandidates = rootTomlPaths
-      ? await getCopyCandidatesList(pathToExistingProject, rootTomlPaths)
-      : await getCopyCandidatesList(
-          pathToExistingProject,
-          await getManualPaths(pathToExistingProject)
-        );
+    if (!copyGlobsList.contractsDirectories.length) {
+      const manualContractsPath = await getManualPaths(pathToExistingProject, "contracts");
+      copyGlobsList.contractsDirectories.push(manualContractsPath);
+    }
+
+    if (rootTomlPaths.cratesDirectories.length) {
+      console.log("Detected a `workspace.exclude` field in Cargo.toml.");
+      const { shouldKeepRootTomlCrates } = await inquirer.prompt([
+        choice(
+          "shouldKeepRootTomlCrates",
+          "Do you want to use it to automatically copy additional crates?"
+        ),
+      ]);
+      if (shouldKeepRootTomlCrates) {
+        copyGlobsList.cratesDirectories = rootTomlPaths.cratesDirectories;
+      }
+    } else {
+      console.log("No `workspace.exclude` field detected in Cargo.toml.");
+    }
+
+    if (!copyGlobsList.cratesDirectories.length) {
+      const { shouldSpecifyCratesDir } = await inquirer.prompt([
+        choice("shouldSpecifyCratesDir", "Do you want to specify an additional crates directory?"),
+      ]);
+
+      if (shouldSpecifyCratesDir) {
+        const manualCratesPath = await getManualPaths(pathToExistingProject, "crates");
+        copyGlobsList.cratesDirectories.push(manualCratesPath);
+      }
+    }
+
+    const candidatesList: CopyCandidates = await getCopyCandidatesList(
+      pathToExistingProject,
+      copyGlobsList
+    );
 
     const testDir = await detectTests(pathToExistingProject);
 
-    candidatesList.tests = (await pathExists(testDir))
-      ? await getDirsAndFiles(pathToExistingProject, [testDir])
-      : [];
+    candidatesList.tests =
+      testDir && (await pathExists(testDir))
+        ? await getDirsAndFiles(pathToExistingProject, [testDir])
+        : [];
 
     const confirmedCopyList = await detectModuleNames(await confirmCopyList(candidatesList));
 
@@ -491,10 +533,10 @@ async function confirmCopyList(candidatesList: CopyCandidates) {
   return resultingList;
 }
 
-async function detectTests(pathToExistingProject: string) {
+async function detectTests(pathToExistingProject: string): Promise<string | undefined> {
   const testDirNames = ["test", "tests", "spec", "specs"];
 
-  let testDir = undefined;
+  let testDir: string | undefined = undefined;
 
   for (const testDirName of testDirNames) {
     const testDirCandidate = path.resolve(pathToExistingProject, testDirName);
@@ -505,46 +547,39 @@ async function detectTests(pathToExistingProject: string) {
     }
   }
 
-  const { shouldOverwriteTestDir, manualTestDir } = await inquirer.prompt([
+  const testDirDetected = Boolean(testDir);
+
+  const { shouldInputTestDir } = await inquirer.prompt([
     {
+      when: () => testDirDetected,
       type: "confirm",
-      name: "shouldOverwriteTestDir",
-      message: `${
-        testDir
-          ? `Detected test directory [${path.basename(
-              testDir
-            )}] will be copied. Do you want to override and`
-          : "No test directory detected, do you want to"
-      } specify it manually?`,
+      name: "shouldUseDetectedTestDir",
+      message: `Detected test directory [${path.basename(
+        testDir as string
+      )}]. Do you want to copy it to your new project?`,
+      default: true,
+    },
+    {
+      when: (answers) => (testDirDetected && !answers.shouldUseDetectedTestDir) || !testDirDetected,
+      name: "shouldInputTestDir",
+      type: "confirm",
+      message: "Do you want to specify a test directory to copy?",
       default: false,
     },
-    {
-      when: (answers) => answers.shouldOverwriteTestDir,
-      type: "fuzzypath",
-      name: "manualTestDir",
-      itemType: "directory",
-      rootPath: pathToExistingProject,
-      message: "Please enter the path to the contracts directory: ",
-      excludePath: (nodePath: string) =>
-        nodePath.includes("node_modules") ||
-        nodePath.includes(".git") ||
-        nodePath.includes("target"),
-    },
   ]);
-  if (shouldOverwriteTestDir) {
+  if (shouldInputTestDir) {
+    const manualTestDir = await getManualPaths(pathToExistingProject, "tests");
     return manualTestDir;
   }
   return testDir;
 }
 
-async function getRootCargoTomlPaths(pathToProject: string) {
+async function getRootCargoTomlPaths(pathToProject: string): Promise<CopyPathsList> {
   const toml = await readRootCargoToml(pathToProject);
 
-  if (!toml?.workspace.members) return null;
-
   return {
-    contractsDirectories: toml.workspace.members,
-    cratesDirectories: toml.workspace.exclude,
+    contractsDirectories: toml?.workspace?.members || [],
+    cratesDirectories: toml?.workspace?.exclude || [],
   };
 }
 
@@ -559,33 +594,17 @@ async function readRootCargoToml(pathToProject: string) {
   return toml;
 }
 
-async function getManualPaths(pathToProject: string) {
-  console.log("No Cargo.toml found in the provided directory, or no workspace field within it.");
-  const { contractsDirectory, cratesDirectory, useCrateDirectory } = await inquirer.prompt([
+async function getManualPaths(
+  pathToProject: string,
+  directoryType: "contracts" | "crates" | "tests"
+): Promise<string> {
+  const { selectedDirectory } = await inquirer.prompt([
     {
       type: "fuzzypath",
-      name: "contractsDirectory",
+      name: "selectedDirectory",
       itemType: "directory",
       rootPath: pathToProject,
-      message: "Please enter the path to the contracts directory: ",
-      excludePath: (nodePath: string) =>
-        nodePath.includes("node_modules") ||
-        nodePath.includes(".git") ||
-        nodePath.includes("target"),
-    },
-    {
-      type: "confirm",
-      name: "useCrateDirectory",
-      message: "Do you have an extra the crate directory?",
-      default: false,
-    },
-    {
-      when: (answers) => answers.useCrateDirectory,
-      type: "fuzzypath",
-      name: "cratesDirectory",
-      itemType: "directory",
-      rootPath: pathToProject,
-      message: "Please enter the path to the contracts directory: ",
+      message: `Please enter a path to your ${directoryType} directory:`,
       excludePath: (nodePath: string) =>
         nodePath.includes("node_modules") ||
         nodePath.includes(".git") ||
@@ -593,10 +612,7 @@ async function getManualPaths(pathToProject: string) {
     },
   ]);
 
-  return {
-    contractsDirectories: [contractsDirectory],
-    cratesDirectories: useCrateDirectory ? [cratesDirectory] : [],
-  };
+  return selectedDirectory;
 }
 
 async function getCopyCandidatesList(
