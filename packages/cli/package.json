@@ -1,6 +1,6 @@
 {
   "name": "@astar-network/swanky-cli",
-  "version": "2.2.0-alpha.0",
+  "version": "2.2.1-alpha.0",
   "description": "Astar network WASM contract CLI tool",
   "author": "Astar network",
   "bin": {
@@ -17,8 +17,8 @@
     "/oclif.manifest.json"
   ],
   "dependencies": {
-    "@astar-network/swanky-core": "^2.2.0-alpha.0",
-    "@astar-network/swanky-templates": "^2.0.0",
+    "@astar-network/swanky-core": "^2.2.1-alpha.0",
+    "@astar-network/swanky-templates": "^2.2.1-alpha.0",
     "@iarna/toml": "^2.2.5",
     "@oclif/core": "2.5.0",
     "@oclif/plugin-help": "5.2.7",

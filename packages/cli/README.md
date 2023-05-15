@@ -3,63 +3,58 @@
 [How to guide on Astar docs page](https://docs.astar.network/docs/wasm/sc-dev/swanky)
 
 <!-- toc -->
-
-- [Swanky CLI](#swanky-cli)
-- [Usage](#usage)
-- [Commands](#commands)
-- [Config](#config)
+* [Swanky CLI](#swanky-cli)
+* [Usage](#usage)
+* [Commands](#commands)
+* [Config](#config)
 <!-- tocstop -->
 
 # Usage
 
 <!-- usage -->
-
 ```sh-session
 $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
 running command...
 $ swanky (--version|-V|-v)
-@astar-network/swanky-cli/2.2.0-alpha.0 darwin-x64 node-v18.2.0
+@astar-network/swanky-cli/2.2.1-alpha.0 darwin-x64 node-v18.2.0
 $ swanky --help [COMMAND]
 USAGE
   $ swanky COMMAND
 ...
 ```
-
 <!-- usagestop -->
 
 # Commands
 
 <!-- commands -->
-
-- [`swanky account create`](#swanky-account-create)
-- [`swanky account list`](#swanky-account-list)
-- [`swanky account ls`](#swanky-account-ls)
-- [`swanky check`](#swanky-check)
-- [`swanky contract compile [CONTRACTNAME]`](#swanky-contract-compile-contractname)
-- [`swanky contract deploy CONTRACTNAME`](#swanky-contract-deploy-contractname)
-- [`swanky contract explain CONTRACTNAME`](#swanky-contract-explain-contractname)
-- [`swanky contract new CONTRACTNAME`](#swanky-contract-new-contractname)
-- [`swanky contract query CONTRACTNAME MESSAGENAME`](#swanky-contract-query-contractname-messagename)
-- [`swanky contract test [CONTRACTNAME]`](#swanky-contract-test-contractname)
-- [`swanky contract test [CONTRACTNAME]`](#swanky-contract-test-contractname)
-- [`swanky contract tx CONTRACTNAME MESSAGENAME`](#swanky-contract-tx-contractname-messagename)
-- [`swanky contract typegen CONTRACTNAME`](#swanky-contract-typegen-contractname)
-- [`swanky help [COMMANDS]`](#swanky-help-commands)
-- [`swanky init PROJECTNAME`](#swanky-init-projectname)
-- [`swanky node install`](#swanky-node-install)
-- [`swanky node purge`](#swanky-node-purge)
-- [`swanky node start`](#swanky-node-start)
-- [`swanky plugins`](#swanky-plugins)
-- [`swanky plugins:install PLUGIN...`](#swanky-pluginsinstall-plugin)
-- [`swanky plugins:inspect PLUGIN...`](#swanky-pluginsinspect-plugin)
-- [`swanky plugins:install PLUGIN...`](#swanky-pluginsinstall-plugin-1)
-- [`swanky plugins:link PLUGIN`](#swanky-pluginslink-plugin)
-- [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin)
-- [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin-1)
-- [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin-2)
-- [`swanky plugins update`](#swanky-plugins-update)
-- [`swanky version`](#swanky-version)
+* [`swanky account create`](#swanky-account-create)
+* [`swanky account list`](#swanky-account-list)
+* [`swanky account ls`](#swanky-account-ls)
+* [`swanky check`](#swanky-check)
+* [`swanky contract compile [CONTRACTNAME]`](#swanky-contract-compile-contractname)
+* [`swanky contract deploy CONTRACTNAME`](#swanky-contract-deploy-contractname)
+* [`swanky contract explain CONTRACTNAME`](#swanky-contract-explain-contractname)
+* [`swanky contract new CONTRACTNAME`](#swanky-contract-new-contractname)
+* [`swanky contract query CONTRACTNAME MESSAGENAME`](#swanky-contract-query-contractname-messagename)
+* [`swanky contract test [CONTRACTNAME]`](#swanky-contract-test-contractname)
+* [`swanky contract tx CONTRACTNAME MESSAGENAME`](#swanky-contract-tx-contractname-messagename)
+* [`swanky contract typegen CONTRACTNAME`](#swanky-contract-typegen-contractname)
+* [`swanky help [COMMANDS]`](#swanky-help-commands)
+* [`swanky init PROJECTNAME`](#swanky-init-projectname)
+* [`swanky node install`](#swanky-node-install)
+* [`swanky node purge`](#swanky-node-purge)
+* [`swanky node start`](#swanky-node-start)
+* [`swanky plugins`](#swanky-plugins)
+* [`swanky plugins:install PLUGIN...`](#swanky-pluginsinstall-plugin)
+* [`swanky plugins:inspect PLUGIN...`](#swanky-pluginsinspect-plugin)
+* [`swanky plugins:install PLUGIN...`](#swanky-pluginsinstall-plugin-1)
+* [`swanky plugins:link PLUGIN`](#swanky-pluginslink-plugin)
+* [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin)
+* [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin-1)
+* [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin-2)
+* [`swanky plugins update`](#swanky-plugins-update)
+* [`swanky version`](#swanky-version)
 
 ## `swanky account create`
 
@@ -119,7 +114,7 @@ DESCRIPTION
   Check installed package versions and compatibility
 ```
 
-_See code: [dist/commands/check/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v2.2.0-alpha.0/dist/commands/check/index.js)_
+_See code: [dist/commands/check/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v2.2.1-alpha.0/dist/commands/check/index.js)_
 
 ## `swanky contract compile [CONTRACTNAME]`
 
@@ -225,13 +220,10 @@ FLAGS
 
 ## `swanky contract test [CONTRACTNAME]`
 
-## `swanky contract test [CONTRACTNAME]`
-
 Run tests for a given contact
 
 ```
 USAGE
-  $ swanky contract test [CONTRACTNAME] [-a]
   $ swanky contract test [CONTRACTNAME] [-a]
 
 ARGUMENTS
@@ -325,7 +317,7 @@ DESCRIPTION
   Generate a new smart contract environment
 ```
 
-_See code: [dist/commands/init/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v2.2.0-alpha.0/dist/commands/init/index.js)_
+_See code: [dist/commands/init/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v2.2.1-alpha.0/dist/commands/init/index.js)_
 
 ## `swanky node install`
 
@@ -431,7 +423,7 @@ ALIASES
   $ swanky plugins add
 
 EXAMPLES
-  $ swanky plugins:install myplugin
+  $ swanky plugins:install myplugin 
 
   $ swanky plugins:install https://github.com/someuser/someplugin
 
@@ -494,7 +486,7 @@ ALIASES
   $ swanky plugins add
 
 EXAMPLES
-  $ swanky plugins:install myplugin
+  $ swanky plugins:install myplugin 
 
   $ swanky plugins:install https://github.com/someuser/someplugin
 
@@ -632,7 +624,6 @@ FLAG DESCRIPTIONS
 ```
 
 _See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.2.1/src/commands/version.ts)_
-
 <!-- commandsstop -->
 
 # Config
