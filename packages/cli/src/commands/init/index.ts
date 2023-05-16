@@ -105,20 +105,7 @@ export class Init extends BaseCommand {
       polkadotPalletVersions: swankyNode.polkadotPalletVersions,
       supportedInk: swankyNode.supportedInk,
     },
-    accounts: [
-      {
-        alias: "alice",
-        mnemonic: "//Alice",
-        isDev: true,
-        address: new ChainAccount("//Alice").pair.address,
-      },
-      {
-        alias: "bob",
-        mnemonic: "//Bob",
-        isDev: true,
-        address: new ChainAccount("//Bob").pair.address,
-      },
-    ],
+    accounts: [],
     networks: {
       local: { url: DEFAULT_NETWORK_URL },
       astar: { url: DEFAULT_ASTAR_NETWORK_URL },
@@ -198,6 +185,21 @@ export class Init extends BaseCommand {
         });
       }
     }
+
+    this.configBuilder.accounts = [
+      {
+        alias: "alice",
+        mnemonic: "//Alice",
+        isDev: true,
+        address: new ChainAccount("//Alice").pair.address,
+      },
+      {
+        alias: "bob",
+        mnemonic: "//Bob",
+        isDev: true,
+        address: new ChainAccount("//Bob").pair.address,
+      },
+    ];
 
     Object.keys(this.configBuilder.contracts as typeof this.swankyConfig.contracts).forEach(
       async (contractName) => {
