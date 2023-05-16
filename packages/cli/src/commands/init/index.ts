@@ -336,7 +336,7 @@ export class Init extends BaseCommand {
 
     if (!copyGlobsList.contractsDirectories.length) {
       const manualContractsPath = await getManualPaths(pathToExistingProject, "contracts");
-      copyGlobsList.contractsDirectories.push(manualContractsPath);
+      copyGlobsList.contractsDirectories.push(...manualContractsPath);
     }
 
     if (rootTomlPaths.cratesDirectories.length) {
@@ -361,7 +361,7 @@ export class Init extends BaseCommand {
 
       if (shouldSpecifyCratesDir) {
         const manualCratesPath = await getManualPaths(pathToExistingProject, "crates");
-        copyGlobsList.cratesDirectories.push(manualCratesPath);
+        copyGlobsList.cratesDirectories.push(...manualCratesPath);
       }
     }
 
@@ -569,7 +569,7 @@ async function detectTests(pathToExistingProject: string): Promise<string | unde
   ]);
   if (shouldInputTestDir) {
     const manualTestDir = await getManualPaths(pathToExistingProject, "tests");
-    return manualTestDir;
+    return manualTestDir[0];
   }
   return testDir;
 }
@@ -596,8 +596,9 @@ async function readRootCargoToml(pathToProject: string) {
 
 async function getManualPaths(
   pathToProject: string,
-  directoryType: "contracts" | "crates" | "tests"
-): Promise<string> {
+  directoryType: "contracts" | "crates" | "tests",
+  paths: string[] = []
+): Promise<string[]> {
   const { selectedDirectory } = await inquirer.prompt([
     {
       type: "fuzzypath",
@@ -612,7 +613,21 @@ async function getManualPaths(
     },
   ]);
 
-  return selectedDirectory;
+  if (directoryType !== "tests") {
+    const { hasMorePaths } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "hasMorePaths",
+        message: `Do you want to add more paths to ${directoryType}?`,
+        default: false,
+      },
+    ]);
+
+    if (hasMorePaths) {
+      return getManualPaths(pathToProject, directoryType, [...paths, selectedDirectory]);
+    }
+  }
+  return [...paths, selectedDirectory];
 }
 
 async function getCopyCandidatesList(
