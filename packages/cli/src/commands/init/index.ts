@@ -314,55 +314,18 @@ export class Init extends BaseCommand {
       throw error;
     }
 
-    const rootTomlPaths = await getRootCargoTomlPaths(pathToExistingProject);
-
     const copyGlobsList: CopyPathsList = {
-      contractsDirectories: [],
+      contractsDirectories: await getManualPaths(pathToExistingProject, "contracts"),
       cratesDirectories: [],
     };
 
-    if (rootTomlPaths.contractsDirectories.length) {
-      console.log("Detected a `workspace.members` field in Cargo.toml.");
-      const { shouldKeepRootTomlContracts } = await inquirer.prompt([
-        choice(
-          "shouldKeepRootTomlContracts",
-          "Do you want to use it to automatically copy contracts?"
-        ),
-      ]);
-      if (shouldKeepRootTomlContracts) {
-        copyGlobsList.contractsDirectories = rootTomlPaths.contractsDirectories;
-      }
-    }
+    const { shouldSpecifyCratesDir } = await inquirer.prompt([
+      choice("shouldSpecifyCratesDir", "Do you want to specify an additional crates directory?"),
+    ]);
 
-    if (!copyGlobsList.contractsDirectories.length) {
-      const manualContractsPath = await getManualPaths(pathToExistingProject, "contracts");
-      copyGlobsList.contractsDirectories.push(...manualContractsPath);
-    }
-
-    if (rootTomlPaths.cratesDirectories.length) {
-      console.log("Detected a `workspace.exclude` field in Cargo.toml.");
-      const { shouldKeepRootTomlCrates } = await inquirer.prompt([
-        choice(
-          "shouldKeepRootTomlCrates",
-          "Do you want to use it to automatically copy additional crates?"
-        ),
-      ]);
-      if (shouldKeepRootTomlCrates) {
-        copyGlobsList.cratesDirectories = rootTomlPaths.cratesDirectories;
-      }
-    } else {
-      console.log("No `workspace.exclude` field detected in Cargo.toml.");
-    }
-
-    if (!copyGlobsList.cratesDirectories.length) {
-      const { shouldSpecifyCratesDir } = await inquirer.prompt([
-        choice("shouldSpecifyCratesDir", "Do you want to specify an additional crates directory?"),
-      ]);
-
-      if (shouldSpecifyCratesDir) {
-        const manualCratesPath = await getManualPaths(pathToExistingProject, "crates");
-        copyGlobsList.cratesDirectories.push(...manualCratesPath);
-      }
+    if (shouldSpecifyCratesDir) {
+      const manualCratesPath = await getManualPaths(pathToExistingProject, "crates");
+      copyGlobsList.cratesDirectories.push(...manualCratesPath);
     }
 
     const candidatesList: CopyCandidates = await getCopyCandidatesList(
@@ -407,7 +370,6 @@ export class Init extends BaseCommand {
     if (!rootToml) rootToml = { workspace: {} };
 
     rootToml.workspace.members = ["contracts/*"];
-    rootToml.workspace.exclude = ["crates/*"];
 
     this.taskQueue.push({
       task: async (tomlObject, projectPath) => {
@@ -574,15 +536,6 @@ async function detectTests(pathToExistingProject: string): Promise<string | unde
   return testDir;
 }
 
-async function getRootCargoTomlPaths(pathToProject: string): Promise<CopyPathsList> {
-  const toml = await readRootCargoToml(pathToProject);
-
-  return {
-    contractsDirectories: toml?.workspace?.members || [],
-    cratesDirectories: toml?.workspace?.exclude || [],
-  };
-}
-
 async function readRootCargoToml(pathToProject: string) {
   const rootTomlPath = path.resolve(pathToProject, "Cargo.toml");
   if (!(await pathExists(rootTomlPath))) return null;
@@ -634,13 +587,13 @@ async function getCopyCandidatesList(
   projectPath: string,
   pathsToCopy: {
     contractsDirectories: string[];
-    cratesDirectories?: string[];
+    cratesDirectories: string[];
   }
 ) {
   const detectedPaths = {
     contracts: await getDirsAndFiles(projectPath, pathsToCopy.contractsDirectories),
     crates:
-      pathsToCopy.cratesDirectories && pathsToCopy.cratesDirectories.length > 0
+      pathsToCopy.cratesDirectories.length > 0
         ? await getDirsAndFiles(projectPath, pathsToCopy.cratesDirectories)
         : [],
   };
