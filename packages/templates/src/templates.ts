@@ -1,10 +1,10 @@
-import { readdir } from "fs-extra";
+import { readdirSync } from "fs-extra";
 import path = require("node:path");
 
-export async function getTemplates(language: "ink" = "ink") {
+export function getTemplates() {
   const templatesPath = path.resolve(__dirname, "templates");
-  const contractTemplatesPath = path.resolve(templatesPath, "contracts", language);
-  const fileList = await readdir(contractTemplatesPath, {
+  const contractTemplatesPath = path.resolve(templatesPath, "contracts");
+  const fileList = readdirSync(contractTemplatesPath, {
     withFileTypes: true,
   });
   const contractTemplatesList = fileList
