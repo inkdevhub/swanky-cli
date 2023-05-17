@@ -1,8 +1,6 @@
 import { Answers, ListQuestion, Question } from "inquirer";
 
-export function pickTemplate(
-  templateList: { message: string; value: string }[]
-): ListQuestion<Answers> {
+export function pickTemplate(templateList: string[]): ListQuestion<Answers> {
   if (!templateList || !templateList.length) throw new Error("Template list is empty!");
   return {
     name: "contractTemplate",
@@ -41,14 +39,5 @@ export function choice(subject: string, questionText: string): Question<Answers>
     name: subject,
     type: "confirm",
     message: questionText,
-  };
-}
-
-export function pickLanguage(): ListQuestion<Answers> {
-  return {
-    name: "contractLanguage",
-    type: "list",
-    choices: ["ink", "ask"],
-    message: "Which contract language should we use?",
   };
 }

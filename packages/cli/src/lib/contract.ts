@@ -6,14 +6,12 @@ export class Contract {
   static artifactTypes = [".json", ".contract"];
   name: string;
   moduleName: string;
-  language: string;
   deployments: DeploymentData[];
   contractPath: string;
   artifactsPath: string;
   constructor(contractRecord: ContractData) {
     this.name = contractRecord.name;
     this.moduleName = contractRecord.moduleName;
-    this.language = contractRecord.language;
     this.deployments = contractRecord.deployments;
     this.contractPath = path.resolve("contracts", contractRecord.name);
     this.artifactsPath = path.resolve(consts.ARTIFACTS_PATH, contractRecord.name);
