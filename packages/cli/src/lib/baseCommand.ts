@@ -1,15 +1,24 @@
-import { Command, Flags, Interfaces } from "@oclif/core";
+import { Command, Flags } from "@oclif/core";
 import { getSwankyConfig, Spinner, SwankyConfig } from "@astar-network/swanky-core";
 
-export abstract class BaseCommand<T extends typeof Command> extends Command {
+export abstract class BaseCommand extends Command {
   protected spinner!: Spinner;
   protected swankyConfig!: SwankyConfig;
-
+  static NO_CONFIG_COMMANDS = ["Init"];
   public async init(): Promise<void> {
     await super.init();
     this.spinner = new Spinner();
 
-    this.swankyConfig = await getSwankyConfig();
+    try {
+      this.swankyConfig = await getSwankyConfig();
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.includes("swanky.config.json") &&
+        !BaseCommand.NO_CONFIG_COMMANDS.includes(this.constructor.name)
+      )
+        throw error;
+    }
   }
 
   protected async catch(err: Error & { exitCode?: number }): Promise<any> {

@@ -17,7 +17,7 @@ $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
 running command...
 $ swanky (--version|-V|-v)
-@astar-network/swanky-cli/2.1.2 darwin-arm64 node-v18.10.0
+@astar-network/swanky-cli/2.2.2-alpha.0 darwin-x64 node-v18.2.0
 $ swanky --help [COMMAND]
 USAGE
   $ swanky COMMAND
@@ -114,7 +114,7 @@ DESCRIPTION
   Check installed package versions and compatibility
 ```
 
-_See code: [dist/commands/check/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v2.1.2/dist/commands/check/index.js)_
+_See code: [dist/commands/check/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v2.2.2-alpha.0/dist/commands/check/index.js)_
 
 ## `swanky contract compile [CONTRACTNAME]`
 
@@ -160,7 +160,7 @@ DESCRIPTION
 
 ## `swanky contract explain CONTRACTNAME`
 
-Explain contract messages based on thier metadata
+Explain contract messages based on the contracts' metadata
 
 ```
 USAGE
@@ -173,7 +173,7 @@ FLAGS
   -v, --verbose  Display more info in the result logs
 
 DESCRIPTION
-  Explain contract messages based on thier metadata
+  Explain contract messages based on the contracts' metadata
 ```
 
 ## `swanky contract new CONTRACTNAME`
@@ -300,23 +300,24 @@ Generate a new smart contract environment
 
 ```
 USAGE
-  $ swanky init PROJECTNAME [--swanky-node] [-t blank|erc20token|flipper|blank|flipper|psp22] [-l ask|ink]
-    [-v]
+  $ swanky init PROJECTNAME [-v] [--swanky-node] [-t blank|erc20token|flipper|blank|flipper|psp22] [-l
+    ask|ink] [-c <value>]
 
 ARGUMENTS
   PROJECTNAME  directory name of new project
 
 FLAGS
+  -c, --convert=<value>    Converts an existing smart contract into a Swanky project
   -l, --language=<option>  <options: ask|ink>
   -t, --template=<option>  <options: blank|erc20token|flipper|blank|flipper|psp22>
-  -v, --verbose
+  -v, --verbose            Display more info in the result logs
   --swanky-node
 
 DESCRIPTION
   Generate a new smart contract environment
 ```
 
-_See code: [dist/commands/init/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v2.1.2/dist/commands/init/index.js)_
+_See code: [dist/commands/init/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v2.2.2-alpha.0/dist/commands/init/index.js)_
 
 ## `swanky node install`
 

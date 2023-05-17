@@ -3,7 +3,7 @@ import { Listr } from "listr2";
 import { commandStdoutOrNull, ensureSwankyProject, SwankyConfig } from "@astar-network/swanky-core";
 import fs = require("fs-extra");
 import path = require("node:path");
-import toml = require("toml");
+import TOML from "@iarna/toml";
 import semver = require("semver");
 
 interface Ctx {
@@ -78,7 +78,7 @@ export default class Check extends Command {
               encoding: "utf8",
             });
 
-            const cargoToml = toml.parse(cargoTomlString);
+            const cargoToml = TOML.parse(cargoTomlString);
 
             const inkDependencies = Object.entries(cargoToml.dependencies)
               .filter((dependency) => dependency[0].includes("ink_"))

@@ -23,6 +23,7 @@ export interface AccountData {
 export interface ContractData {
   language: "ask" | "ink";
   name: string;
+  moduleName: string;
   build?: BuildData;
   deployments: DeploymentData[] | [];
 }

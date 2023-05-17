@@ -4,8 +4,9 @@ import path = require("node:path");
 import { ensureSwankyProject, getSwankyConfig } from "@astar-network/swanky-core";
 import globby from "globby";
 import Mocha from "mocha";
-import { ensureDir, readdirSync } from "fs-extra";
+import { emptyDir } from "fs-extra";
 import * as shell from "shelljs";
+import { Contract } from "../../lib/contract";
 
 declare global {
   var contractTypesPath: string; // eslint-disable-line no-var
@@ -40,32 +41,35 @@ export class TestContract extends Command {
     await ensureSwankyProject();
     const config = await getSwankyConfig();
 
-    const contractNames = [];
-    if (flags.all) {
-      for (const contractName of Object.keys(config.contracts)) {
-        console.log(`${contractName} contract is found`);
-        contractNames.push(contractName);
-      }
-    } else {
-      contractNames.push(args.contractName);
-    }
+    const contractNames = flags.all ? Object.keys(config.contracts) : [args.contractName];
 
-    const projectDir = path.resolve();
-    const testDir = path.resolve("test");
+    const testDir = path.resolve("tests");
+
     for (const contractName of contractNames) {
-      const contractInfo = config.contracts[contractName];
-      if (!contractInfo.build) {
-        this.error(`Cannot find build data for ${contractName} contract in swanky.config.json`);
+      const contractRecord = config.contracts[contractName];
+      if (!contractRecord) {
+        this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
       }
-      const buildData = contractInfo.build;
 
-      const reportDir = path.resolve(
-        projectDir,
-        buildData.artifactsPath,
-        "testReports",
-        Date.now().toString()
-      );
-      await ensureDir(reportDir);
+      const contract = new Contract(contractRecord);
+
+      if (!(await contract.pathExists())) {
+        this.error(
+          `Path to contract ${args.contractName} does not exist: ${contract.contractPath}`
+        );
+      }
+
+      const artifactsCheck = await contract.artifactsExist();
+
+      if (!artifactsCheck.result) {
+        this.error(`No artifact file found at path: ${artifactsCheck.missingPaths}`);
+      }
+
+      console.log(`Testing contract: ${contractName}`);
+
+      const reportDir = path.resolve(testDir, contract.name, "testReports");
+
+      await emptyDir(reportDir);
 
       const mocha = new Mocha({
         timeout: 200000,

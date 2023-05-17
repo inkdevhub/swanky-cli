@@ -25,12 +25,7 @@ export async function checkCliDependencies(spinner: Spinner) {
   }
 }
 
-export async function copyTemplateFiles(
-  templatesPath: string,
-  contractTemplatePath: string,
-  contractName: string,
-  projectPath: string
-) {
+export async function copyCommonTemplateFiles(templatesPath: string, projectPath: string) {
   await ensureDir(projectPath);
   const commonFiles = await globby(`*`, { cwd: templatesPath });
   await Promise.all(
@@ -39,11 +34,7 @@ export async function copyTemplateFiles(
     })
   );
   await rename(path.resolve(projectPath, "gitignore"), path.resolve(projectPath, ".gitignore"));
-  await copy(
-    path.resolve(templatesPath, "github"),
-    path.resolve(projectPath, ".github")
-  );
-  await copyContractTemplateFiles(contractTemplatePath, contractName, projectPath);
+  await copy(path.resolve(templatesPath, "github"), path.resolve(projectPath, ".github"));
 }
 
 export async function copyContractTemplateFiles(
@@ -57,7 +48,7 @@ export async function copyContractTemplateFiles(
   );
   await copy(
     path.resolve(contractTemplatePath, "test"),
-    path.resolve(projectPath, "test", contractName)
+    path.resolve(projectPath, "tests", contractName)
   );
 }
 
@@ -98,7 +89,9 @@ export async function downloadNode(projectPath: string, nodeInfo: nodeInfo, spin
 
   const dlUrl = platformDlUrls[process.arch];
   if (!dlUrl)
-    throw new Error(`Could not download swanky-node. Platform ${process.platform} Arch ${process.arch} not supported!`);
+    throw new Error(
+      `Could not download swanky-node. Platform ${process.platform} Arch ${process.arch} not supported!`
+    );
 
   const dlFileDetails = await new Promise<DownloadEndedStats>((resolve, reject) => {
     const dl = new DownloaderHelper(dlUrl, binPath);

@@ -1,10 +1,9 @@
 import execa from "execa";
-import fs = require("fs-extra");
+import { copy, emptyDir, ensureDir, pathExists, readJSON, readJson } from "fs-extra";
 import path = require("node:path");
-import { DEFAULT_NETWORK_URL, STORED_ARTIFACTS_PATH } from "./consts.js";
-import { BuildData, SwankyConfig } from "../types";
+import { DEFAULT_NETWORK_URL, ARTIFACTS_PATH, TYPED_CONTRACTS_PATH } from "./consts.js";
+import { SwankyConfig } from "../types";
 import { Abi } from "@polkadot/api-contract";
-import { TEMP_ARTIFACTS_PATH, TEMP_TYPED_CONTRACT_PATH } from "./consts";
 
 export async function commandStdoutOrNull(command: string): Promise<string | null> {
   try {
@@ -16,7 +15,7 @@ export async function commandStdoutOrNull(command: string): Promise<string | nul
 }
 
 export async function ensureSwankyProject(): Promise<void> {
-  const configExists = await fs.pathExists("swanky.config.json");
+  const configExists = await pathExists("swanky.config.json");
   if (!configExists) {
     throw new Error("No 'swanky.config.json' detected in current folder!");
   }
@@ -24,7 +23,7 @@ export async function ensureSwankyProject(): Promise<void> {
 
 export async function getSwankyConfig(): Promise<SwankyConfig> {
   try {
-    const config = await fs.readJSON("swanky.config.json");
+    const config = await readJSON("swanky.config.json");
     return config;
   } catch {
     throw new Error("No 'swanky.config.json' detected in current folder!");
@@ -45,54 +44,31 @@ export function resolveNetworkUrl(config: SwankyConfig, networkName: string): st
 
 export async function storeArtifacts(
   artifactsPath: string,
-  contractName: string,
-): Promise<BuildData> {
-  const ts = Date.now();
-  const fullPath = path.resolve(STORED_ARTIFACTS_PATH, contractName, ts.toString());
-  const relativePath = path.relative(path.resolve(), fullPath);
-  const buildData = {
-    timestamp: ts,
-    artifactsPath: relativePath,
-  };
+  contractAlias: string,
+  moduleName: string
+): Promise<void> {
+  const destArtifactsPath = path.resolve(ARTIFACTS_PATH, contractAlias);
+  const testArtifactsPath = path.resolve("tests", contractAlias, "artifacts");
 
-  await fs.ensureDir(buildData.artifactsPath);
+  await ensureDir(destArtifactsPath);
+  await emptyDir(destArtifactsPath);
 
-  // copy artifacts/contract_name.contract and .json to artifactsPath .contract and .json
+  await ensureDir(testArtifactsPath);
+  await emptyDir(testArtifactsPath);
+
   try {
-    await Promise.all([
-      fs.copyFile(
-        path.resolve(artifactsPath, `${contractName}.contract`),
-        `${buildData.artifactsPath}/${contractName}.contract`
-      ),
-      fs.copyFile(
-        path.resolve(artifactsPath, `${contractName}.json`),
-        `${buildData.artifactsPath}/${contractName}.json`
-      ),
-    ]);
-    // move both to test/contract_name/artifacts
-    const testArtifacts = path.resolve("test", contractName, "artifacts");
-    await fs.ensureDir(testArtifacts);
-    await Promise.all([
-      fs.move(
-        path.resolve(artifactsPath, `${contractName}.contract`),
-        `${testArtifacts}/${contractName}.contract`,
-        { overwrite: true }
-      ),
-      fs.move(
-        path.resolve(artifactsPath, `${contractName}.json`),
-        `${testArtifacts}/${contractName}.json`,
-        { overwrite: true }
-      ),
-    ]);
-  } catch (e) {
-    console.error(e);
+    for (const fileName of [`${moduleName}.contract`, `${moduleName}.json`]) {
+      const artifactFileToCopy = path.resolve(artifactsPath, fileName);
+      await copy(artifactFileToCopy, path.resolve(destArtifactsPath, fileName));
+      await copy(artifactFileToCopy, path.resolve(testArtifactsPath, fileName));
+    }
+  } catch (error) {
+    console.error(error);
   }
-
-  return buildData;
 }
 
 export async function printContractInfo(metadataPath: string) {
-  const abi = new Abi((await fs.readJson(metadataPath)));
+  const abi = new Abi(await readJson(metadataPath));
 
   // TODO: Use templating, colorize.
 
@@ -102,63 +78,55 @@ export async function printContractInfo(metadataPath: string) {
     Hash: ${abi.info.source.hash}
     Language: ${abi.info.source.language}
     Compiler: ${abi.info.source.compiler}
-  `)
+  `);
 
-  console.log(`    === Constructors ===\n`)
+  console.log(`    === Constructors ===\n`);
   for (const constructor of abi.constructors) {
     console.log(`    * ${constructor.method}:
-        Args: ${constructor.args.length > 0 ? constructor.args.map((arg) => {
-          return `\n        - ${arg.name} (${arg.type.displayName})`
-        }) : "None"}
+        Args: ${
+          constructor.args.length > 0
+            ? constructor.args.map((arg) => {
+                return `\n        - ${arg.name} (${arg.type.displayName})`;
+              })
+            : "None"
+        }
         Description: ${constructor.docs.map((line) => {
           if (line != "") {
-            return `\n         ` + line
+            return `\n         ` + line;
           }
         })}
-    `)
+    `);
   }
 
-  console.log(`    === Messages ===\n`)
+  console.log(`    === Messages ===\n`);
   for (const message of abi.messages) {
     console.log(`    * ${message.method}:
         Payable: ${message.isPayable}
-        Args: ${message.args.length > 0 ? message.args.map((arg) => {
-          return `\n        - ${arg.name} (${arg.type.displayName})`
-        }) : "None"}
+        Args: ${
+          message.args.length > 0
+            ? message.args.map((arg) => {
+                return `\n        - ${arg.name} (${arg.type.displayName})`;
+              })
+            : "None"
+        }
         Description: ${message.docs.map((line) => {
           if (line != "") {
-            return `\n         ` + line
+            return `\n         ` + line;
           }
         })}
-    `)
+    `);
   }
 }
 
-export async function generateTypes(inputPath: string, contractName: string, outputPath: string) {
-  await fs.ensureDir(TEMP_ARTIFACTS_PATH);
+export async function generateTypes(contractName: string) {
+  const relativeInputPath = `${ARTIFACTS_PATH}/${contractName}`;
+  const relativeOutputPath = `${TYPED_CONTRACTS_PATH}/${contractName}`;
+  const outputPath = path.resolve(process.cwd(), relativeOutputPath);
 
-  // Getting error if typechain-polkadot takes folder with unnecessary files/folders as inputs.
-  // So, need to copy artifacts to empty temp folder and use it as input.
-  (await fs.readdir(TEMP_ARTIFACTS_PATH)).forEach(async (file) => {
-    const filepath = path.resolve(TEMP_ARTIFACTS_PATH, file);
-    const filestat = await fs.stat(filepath);
-    if (!filestat.isDirectory()) {
-      await fs.remove(filepath);
-    }
-  });
+  ensureDir(outputPath);
+  emptyDir(outputPath);
 
-  // Cannot generate typedContract directly to `outputAbsPath`
-  // because relative path of typechain-polkadot input and output folder does matter for later use.
-  await fs.copyFile(
-    path.resolve(inputPath, `${contractName}.contract`),
-    path.resolve(TEMP_ARTIFACTS_PATH, `${contractName}.contract`),
-  ),
-  await fs.copyFile(
-    path.resolve(inputPath, `${contractName}.json`),
-    path.resolve(TEMP_ARTIFACTS_PATH, `${contractName}.json`),
-  )
-
-  await execa.command(`npx typechain-polkadot --in ${TEMP_ARTIFACTS_PATH} --out ${TEMP_TYPED_CONTRACT_PATH}`);
-
-  await fs.move(path.resolve(TEMP_TYPED_CONTRACT_PATH), outputPath, { overwrite: true })
+  await execa.command(
+    `npx typechain-polkadot --in ${relativeInputPath} --out ${relativeOutputPath}`
+  );
 }

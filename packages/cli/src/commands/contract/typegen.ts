@@ -1,13 +1,11 @@
 import { Args, Command } from "@oclif/core";
-import * as fs from "fs-extra";
-import path = require("node:path");
-import { readdirSync } from "node:fs";
 import {
   ensureSwankyProject,
   getSwankyConfig,
   Spinner,
   generateTypes,
 } from "@astar-network/swanky-core";
+import { Contract } from "../../lib/contract";
 
 export class TypegenCommand extends Command {
   static description = "Generate types from compiled contract metadata";
@@ -27,39 +25,27 @@ export class TypegenCommand extends Command {
 
     const config = await getSwankyConfig();
 
-    const contractInfo = config.contracts[args.contractName];
-    if (!contractInfo) {
+    const contractRecord = config.contracts[args.contractName];
+    if (!contractRecord) {
       this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
     }
 
     const spinner = new Spinner();
 
-    const contractList = readdirSync(path.resolve("contracts"));
+    const contract = new Contract(contractRecord);
 
-    const contractPath = path.resolve("contracts", args.contractName);
-    if (!contractList.includes(args.contractName)) {
-      this.error(`Path to contract ${args.contractName} does not exist: ${contractPath}`);
+    if (!(await contract.pathExists())) {
+      this.error(`Path to contract ${args.contractName} does not exist: ${contract.contractPath}`);
     }
 
-    const testPath = path.resolve(`test/${args.contractName}`);
+    const artifactsCheck = await contract.artifactsExist();
 
-    if (!contractInfo.build) {
-      this.error(`No build data for contract "${args.contractName}"`);
+    if (!artifactsCheck.result) {
+      this.error(`No artifact file found at path: ${artifactsCheck.missingPaths}`);
     }
 
     await spinner.runCommand(async () => {
-      const destinationPath = path.resolve(testPath, "typedContract");
-      const destinationPathExists = await fs.pathExists(destinationPath);
-      if (destinationPathExists) {
-        await fs.remove(destinationPath);
-      }
-
-      const buildInfoArtifactsPath = contractInfo.build?.artifactsPath;
-      if (buildInfoArtifactsPath == undefined) {
-        throw new Error(`Invalid artifacts path "${buildInfoArtifactsPath}"`);
-      }
-
-      await generateTypes(buildInfoArtifactsPath, args.contractName, destinationPath)
+      await generateTypes(contract.name);
     }, "Generating types");
   }
 }
