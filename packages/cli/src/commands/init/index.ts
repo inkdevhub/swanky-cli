@@ -295,7 +295,7 @@ export class Init extends BaseCommand {
     this.configBuilder.contracts = {
       [answers.contractName as string]: {
         name: answers.contractName,
-        moduleName: answers.contractName,
+        moduleName: snakeCase(answers.contractName),
         deployments: [],
         language: contractLanguage,
       },

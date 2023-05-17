@@ -128,7 +128,7 @@ export class NewContract extends Command {
     await spinner.runCommand(async () => {
       config.contracts[args.contractName] = {
         name: args.contractName,
-        moduleName: args.contractName,
+        moduleName: snakeCase(args.contractName),
         language: contractLanguage,
         deployments: [],
       };
