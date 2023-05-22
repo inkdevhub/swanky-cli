@@ -17,7 +17,7 @@ $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
 running command...
 $ swanky (--version|-V|-v)
-@astar-network/swanky-cli/2.2.2 darwin-x64 node-v18.2.0
+@astar-network/swanky-cli/2.2.3 darwin-x64 node-v18.2.0
 $ swanky --help [COMMAND]
 USAGE
   $ swanky COMMAND
@@ -114,7 +114,7 @@ DESCRIPTION
   Check installed package versions and compatibility
 ```
 
-_See code: [dist/commands/check/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v2.2.2/dist/commands/check/index.js)_
+_See code: [dist/commands/check/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v2.2.3/dist/commands/check/index.js)_
 
 ## `swanky contract compile [CONTRACTNAME]`
 
@@ -182,14 +182,15 @@ Generate a new smart contract template inside a project
 
 ```
 USAGE
-  $ swanky contract new CONTRACTNAME [--template blank|flipper|psp22] [-v]
+  $ swanky contract new CONTRACTNAME [--template blank|erc20token|flipper|blank|flipper|psp22] [-l ink|ask] [-v]
 
 ARGUMENTS
   CONTRACTNAME  Name of the new contract
 
 FLAGS
+  -l, --language=<option>  <options: ink|ask>
   -v, --verbose
-  --template=<option>  <options: blank|flipper|psp22>
+  --template=<option>      <options: blank|erc20token|flipper|blank|flipper|psp22>
 
 DESCRIPTION
   Generate a new smart contract template inside a project
@@ -299,14 +300,16 @@ Generate a new smart contract environment
 
 ```
 USAGE
-  $ swanky init PROJECTNAME [-v] [--swanky-node] [-t blank|flipper|psp22] [-c <value>]
+  $ swanky init PROJECTNAME [-v] [--swanky-node] [-t blank|erc20token|flipper|blank|flipper|psp22] [-l
+    ask|ink] [-c <value>]
 
 ARGUMENTS
   PROJECTNAME  directory name of new project
 
 FLAGS
   -c, --convert=<value>    Converts an existing smart contract into a Swanky project
-  -t, --template=<option>  <options: blank|flipper|psp22>
+  -l, --language=<option>  <options: ask|ink>
+  -t, --template=<option>  <options: blank|erc20token|flipper|blank|flipper|psp22>
   -v, --verbose            Display more info in the result logs
   --swanky-node
 
@@ -314,7 +317,7 @@ DESCRIPTION
   Generate a new smart contract environment
 ```
 
-_See code: [dist/commands/init/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v2.2.2/dist/commands/init/index.js)_
+_See code: [dist/commands/init/index.js](https://github.com/AstarNetwork/swanky-cli/blob/v2.2.3/dist/commands/init/index.js)_
 
 ## `swanky node install`
 
