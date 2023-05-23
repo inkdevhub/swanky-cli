@@ -242,18 +242,32 @@ export class Init extends BaseCommand {
   async generate(projectName: string) {
     const templates = getTemplates();
 
-    const questions = [
+    let gitUser;
+
+    try {
+      const detectedGitUser = execa.commandSync("git config --get user.name").stdout;
+      gitUser = detectedGitUser;
+    } catch (error) {
+      gitUser = undefined;
+    }
+
+    const {
+      contractTemplate,
+      contractName,
+      authorName,
+      email: authorEmail,
+    } = await inquirer.prompt([
       pickTemplate(templates.contractTemplatesList),
       name("contract", (ans) => ans.contractTemplate, "What should we name your initial contract?"),
-      name(
-        "author",
-        () => execa.commandSync("git config --get user.name").stdout,
-        "What is your name?"
-      ),
+      {
+        name: "authorName",
+        type: "input",
+        message: "What is your name?",
+        default: gitUser,
+        validate: (answer) => answer && answer.length > 0,
+      },
       email(),
-    ];
-
-    const answers = await inquirer.prompt(questions);
+    ]);
 
     this.taskQueue.push({
       task: checkCliDependencies,
@@ -264,8 +278,8 @@ export class Init extends BaseCommand {
     this.taskQueue.push({
       task: copyContractTemplateFiles,
       args: [
-        path.resolve(templates.contractTemplatesPath, answers.contractTemplate),
-        answers.contractName,
+        path.resolve(templates.contractTemplatesPath, contractTemplate),
+        contractName,
         this.projectPath,
       ],
       runningMessage: "Copying contract template files",
@@ -277,21 +291,21 @@ export class Init extends BaseCommand {
         this.projectPath,
         {
           project_name: paramCase(projectName),
-          author_name: answers.authorName,
-          author_email: answers.email,
+          author_name: authorName,
+          author_email: authorEmail,
           swanky_version: this.config.pjson.version,
-          contract_name: answers.contractName,
-          contract_name_snake: snakeCase(answers.contractName),
-          contract_name_pascal: pascalCase(answers.contractName),
+          contract_name: contractName,
+          contract_name_snake: snakeCase(contractName),
+          contract_name_pascal: pascalCase(contractName),
         },
       ],
       runningMessage: "Processing contract template",
     });
 
     this.configBuilder.contracts = {
-      [answers.contractName as string]: {
-        name: answers.contractName,
-        moduleName: snakeCase(answers.contractName),
+      [contractName as string]: {
+        name: contractName,
+        moduleName: snakeCase(contractName),
         deployments: [],
       },
     };
