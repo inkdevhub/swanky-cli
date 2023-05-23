@@ -1,0 +1,21 @@
+{
+  "name": "swanky-env",
+  "image": "ghcr.io/astarnetwork/swanky-cli/swanky-base:swanky2.2.3_v1.1.4",
+
+  // Mount the workspace volume
+  "mounts": ["source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"],
+  "workspaceFolder": "/workspace",
+
+  "containerEnv": {
+    "CARGO_TARGET_DIR": "/tmp"
+  },
+
+  // Configure tool-specific properties.
+  "customizations": {
+    "vscode": {
+      "extensions": ["esbenp.prettier-vscode", "dtsvet.vscode-wasm", "redhat.vscode-yaml"]
+    }
+  },
+
+  "remoteUser": "root"
+}
