@@ -10,13 +10,11 @@ describe("Prompts", function () {
       expect(() => pickTemplate([])).to.throw("Template list is empty!");
     });
     it("Returns a question object", function () {
-      const templatesList = [
-        { message: "Template 1", value: "temp1" },
-        { message: "Template 2", value: "temp2" },
-      ];
+      const templatesList = ["TemplateOne", "TemplateTwo"];
       const result = pickTemplate(templatesList);
-      expect(result).to.have.nested.property("choices[0].message", "Template 1");
-      expect(result).to.have.nested.property("choices[0].value", "temp1");
+      console.log("AAAAAA", result);
+      expect(result).to.have.nested.property("choices[0]", "TemplateOne");
+      expect(result).to.have.nested.property("choices[1]", "TemplateTwo");
     });
   });
 

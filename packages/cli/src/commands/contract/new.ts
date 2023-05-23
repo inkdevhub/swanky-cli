@@ -1,6 +1,6 @@
 import { Args, Command, Flags } from "@oclif/core";
 import path = require("node:path");
-import { ensureDir, pathExists, readJSON, writeJSON } from "fs-extra";
+import { ensureDir, pathExists, writeJSON } from "fs-extra";
 import {
   getSwankyConfig,
   ensureSwankyProject,
@@ -9,8 +9,8 @@ import {
   copyContractTemplateFiles,
   processTemplates,
 } from "@astar-network/swanky-core";
-import { getAllTemplateNames, getTemplates } from "@astar-network/swanky-templates";
-import { email, name, pickLanguage, pickTemplate } from "../../lib/prompts";
+import { getTemplates } from "@astar-network/swanky-templates";
+import { email, name, pickTemplate } from "../../lib/prompts";
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import execa = require("execa");
 import inquirer = require("inquirer");
@@ -20,12 +20,7 @@ export class NewContract extends Command {
 
   static flags = {
     template: Flags.string({
-      options: getAllTemplateNames(),
-    }),
-    language: Flags.string({
-      options: ["ink", "ask"],
-      char: "l",
-      required: false,
+      options: getTemplates().contractTemplatesList,
     }),
     verbose: Flags.boolean({ char: "v" }),
   };
@@ -56,22 +51,11 @@ export class NewContract extends Command {
       );
     }
 
-    const { contractLanguage } = flags.language
-      ? { contractLanguage: flags.language }
-      : await inquirer.prompt([pickLanguage()]);
-
-    const templates = getTemplates(contractLanguage);
+    const templates = getTemplates();
 
     const { contractTemplate } = flags.template
       ? { contractTemplate: flags.template }
-      : await inquirer.prompt([pickTemplate(templates.contractTemplatesQueryPairs)]);
-
-    // passing language and template by flags can result in a non-existing combination
-    if (!templates.contractTemplateNames.includes(contractTemplate)) {
-      this.error(
-        `Selected template [${contractLanguage}] does not exist for selected language [${contractLanguage}]`
-      );
-    }
+      : await inquirer.prompt([pickTemplate(templates.contractTemplatesList)]);
 
     const questions = [
       name(
@@ -108,28 +92,17 @@ export class NewContract extends Command {
           contract_name: args.contractName,
           contract_name_snake: snakeCase(args.contractName),
           contract_name_pascal: pascalCase(args.contractName),
-          contract_language: contractLanguage,
         }),
       "Processing contract templates"
     );
 
     await ensureDir(path.resolve(projectPath, "artifacts", args.contractName));
     await ensureDir(path.resolve(projectPath, "tests", args.contractName));
-    if (contractLanguage === "ask") {
-      await spinner.runCommand(async () => {
-        const pjson = await readJSON("package.json");
-        const deps = Object.keys(pjson.dependencies || {});
-        if (!deps.includes("ask-lang")) {
-          await execa.command("yarn add ask-lang");
-          await execa.command("yarn add ask-transform assemblyscript@0.19 -D");
-        }
-      }, "Installing Ask!");
-    }
+
     await spinner.runCommand(async () => {
       config.contracts[args.contractName] = {
         name: args.contractName,
         moduleName: snakeCase(args.contractName),
-        language: contractLanguage,
         deployments: [],
       };
 

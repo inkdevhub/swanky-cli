@@ -1,4 +1,5 @@
 # How to use
+
 swanky-cli installation and how-to-use guides are available in the official swanky suite [docs](https://docs.astar.network/docs/build/wasm/swanky-suite/).
 
 # Repository Structure
@@ -17,8 +18,7 @@ Look here if you're developing a plugin.
 
 ## `templates`
 
-Holds templates for instantiating a new project,
-as well as ink! and ask! contract templates.
+Holds templates for instantiating a new project, and adding new contracts.
 
 # Local development
 

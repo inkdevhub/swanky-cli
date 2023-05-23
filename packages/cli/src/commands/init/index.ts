@@ -18,7 +18,7 @@ import execa = require("execa");
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer = require("inquirer");
 import TOML from "@iarna/toml";
-import { choice, email, name, pickLanguage, pickTemplate } from "../../lib/prompts";
+import { choice, email, name, pickTemplate } from "../../lib/prompts";
 import {
   checkCliDependencies,
   copyCommonTemplateFiles,
@@ -31,7 +31,7 @@ import {
   consts,
   swankyNode,
 } from "@astar-network/swanky-core";
-import { getAllTemplateNames, getTemplates } from "@astar-network/swanky-templates";
+import { getTemplates } from "@astar-network/swanky-templates";
 import { BaseCommand } from "../../lib/baseCommand";
 import globby = require("globby");
 import { merge } from "lodash";
@@ -79,10 +79,9 @@ export class Init extends BaseCommand {
   static flags = {
     "swanky-node": Flags.boolean(),
     template: Flags.string({
-      options: getAllTemplateNames(),
+      options: getTemplates().contractTemplatesList,
       char: "t",
     }),
-    language: Flags.string({ options: ["ask", "ink"], char: "l" }),
     convert: Flags.string({
       char: "c",
       description: "Converts an existing smart contract into a Swanky project",
@@ -134,7 +133,7 @@ export class Init extends BaseCommand {
       if (!(error instanceof Error) || !error.message.includes("ENOENT")) throw error;
     }
 
-    const templates = getTemplates("ink");
+    const templates = getTemplates();
     this.taskQueue.push({
       task: copyCommonTemplateFiles,
       args: [templates.templatesPath, this.projectPath],
@@ -241,9 +240,7 @@ export class Init extends BaseCommand {
   }
 
   async generate(projectName: string) {
-    const { contractLanguage } = await inquirer.prompt([pickLanguage()]);
-
-    const templates = getTemplates(contractLanguage);
+    const templates = getTemplates();
 
     let gitUser;
 
@@ -260,7 +257,7 @@ export class Init extends BaseCommand {
       authorName,
       email: authorEmail,
     } = await inquirer.prompt([
-      pickTemplate(templates.contractTemplatesQueryPairs),
+      pickTemplate(templates.contractTemplatesList),
       name("contract", (ans) => ans.contractTemplate, "What should we name your initial contract?"),
       {
         name: "authorName",
@@ -300,7 +297,6 @@ export class Init extends BaseCommand {
           contract_name: contractName,
           contract_name_snake: snakeCase(contractName),
           contract_name_pascal: pascalCase(contractName),
-          contract_language: contractLanguage,
         },
       ],
       runningMessage: "Processing contract template",
@@ -311,7 +307,6 @@ export class Init extends BaseCommand {
         name: contractName,
         moduleName: snakeCase(contractName),
         deployments: [],
-        language: contractLanguage,
       },
     };
   }
@@ -377,7 +372,6 @@ export class Init extends BaseCommand {
         name: contract.name,
         moduleName: contract.moduleName as string,
         deployments: [],
-        language: "ink",
       };
     }
 

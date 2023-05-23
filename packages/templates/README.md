@@ -1,6 +1,6 @@
 # Swanky templates
 
-Templates used to generate Swanky projects as well as new `ink!` and `ask!` language contracts.
+Templates used to generate Swanky projects and `ink!` language contracts.
 Templates are parsed using [Handlebars](https://handlebarsjs.com/) templating engine, and are passed the following object:
 
 ```ts
@@ -12,7 +12,6 @@ Templates are parsed using [Handlebars](https://handlebarsjs.com/) templating en
   contract_name: string;
   contract_name_snake: string;
   contract_name_pascal: string;
-  contract_language: "ask" | "ink";
 }
 ```
 
@@ -26,11 +25,6 @@ General config templates used by every generated project:
 - `gitignore`
 
 ## Contract templates
-
-Contract-specific templates are grouped by language:
-
-- ask
-- ink
 
 Each contract directory must contain `contract` and `tests` subdirectories.
 
