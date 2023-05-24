@@ -6,7 +6,7 @@ import { pathExistsSync, readJSON } from "fs-extra/esm";
 import { readFileSync } from "fs";
 import path from "node:path";
 import TOML from "@iarna/toml";
-import semver = require("semver");
+import semver from "semver";
 
 interface Ctx {
   versions: {
