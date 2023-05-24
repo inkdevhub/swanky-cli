@@ -8,7 +8,7 @@ import {
   generateTypes,
 } from "../../lib/index.js";
 import { spawn } from "node:child_process";
-import { pathExists } from "fs-extra";
+import { pathExists } from "fs-extra/esm";
 
 export class CompileContract extends Command {
   static description = "Compile the smart contract(s) in your contracts directory";

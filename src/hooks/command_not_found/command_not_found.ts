@@ -1,6 +1,6 @@
 import { Hook } from "@oclif/core";
 import chalk = require("chalk");
-
+import process from "node:process";
 const hook: Hook<"command_not_found"> = async function (opts) {
   if (opts.id === "compile" || opts.id === "deploy") {
     process.stdout.write(
@@ -10,7 +10,9 @@ const hook: Hook<"command_not_found"> = async function (opts) {
       `You can use it like: ${chalk.greenBright(`swanky contract ${opts.id} contract_name`)}\n`
     );
   } else {
-    process.stdin.write(`${opts.id} is not known swanky command. Run swanky help to list known commands.\n`)
+    process.stdin.write(
+      `${opts.id} is not known swanky command. Run swanky help to list known commands.\n`
+    );
   }
 };
 

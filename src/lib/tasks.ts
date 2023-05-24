@@ -1,5 +1,6 @@
 import execa from "execa";
-import { ensureDir, rename, copy, readFile, rm, writeFile, remove } from "fs-extra";
+import { ensureDir, copy, remove } from "fs-extra/esm";
+import { rename, readFile, rm, writeFile } from "fs/promises";
 import path from "node:path";
 import globby from "globby";
 import handlebars from "handlebars";

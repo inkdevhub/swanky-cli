@@ -6,7 +6,7 @@ import inquirer from "inquirer";
 import chalk = require("chalk");
 import { BaseCommand } from "./baseCommand.js";
 import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
-import { readJSON } from "fs-extra";
+import { readJSON } from "fs-extra/esm";
 
 export type JoinedFlagsType<T extends typeof Command> = Interfaces.InferredFlags<
   (typeof BaseCommand)["baseFlags"] & (typeof ContractCall)["baseFlags"] & T["flags"]

@@ -1,5 +1,5 @@
 import execa from "execa";
-import { copy, emptyDir, ensureDir, pathExists, readJSON, readJson } from "fs-extra";
+import { copy, emptyDir, ensureDir, pathExists, readJSON } from "fs-extra/esm";
 import path = require("node:path");
 import { DEFAULT_NETWORK_URL, ARTIFACTS_PATH, TYPED_CONTRACTS_PATH } from "./consts.js";
 import { SwankyConfig } from "../types/index.js";
@@ -68,7 +68,7 @@ export async function storeArtifacts(
 }
 
 export async function printContractInfo(metadataPath: string) {
-  const abi = new Abi(await readJson(metadataPath));
+  const abi = new Abi(await readJSON(metadataPath));
 
   // TODO: Use templating, colorize.
 

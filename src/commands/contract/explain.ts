@@ -1,5 +1,5 @@
 import { BaseCommand } from "../../lib/baseCommand.js";
-import * as fs from "fs-extra";
+import { pathExistsSync } from "fs-extra/esm";
 import path = require("node:path");
 import { readdirSync } from "node:fs";
 import { printContractInfo } from "../../lib/index.js";
@@ -39,7 +39,7 @@ export class ExplainContract extends BaseCommand {
       contractInfo.build?.artifactsPath,
       `${args.contractName}.json`
     );
-    if (!fs.existsSync(metadataPath)) {
+    if (!pathExistsSync(metadataPath)) {
       this.error(`Metadata json file for ${args.contractName} contract not found`);
     }
 
