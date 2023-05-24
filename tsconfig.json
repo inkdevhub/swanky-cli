@@ -2,16 +2,18 @@
   "compilerOptions": {
     "declaration": true,
     "importHelpers": true,
-    "module": "commonjs",
+    "module": "NodeNext",
     "strict": true,
     "target": "es2020",
     "resolveJsonModule": true,
-    "suppressImplicitAnyIndexErrors": true,
     "composite": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "outDir": "dist",
     "rootDir": "src"
   },
-  "include": ["src/**/*", "src/test"]
+  "include": ["src/**/*", "src/test"],
+  "ts-node": {
+    "esm": true
+  }
 }

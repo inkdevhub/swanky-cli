@@ -7,8 +7,9 @@
   "repository": "https://github.com/AstarNetwork/swanky-cli",
   "homepage": "https://github.com/AstarNetwork/swanky-cli",
   "bugs": "https://github.com/AstarNetwork/swanky-cli/issues",
+  "type": "module",
   "bin": {
-    "swanky": "./bin/run"
+    "swanky": "./bin/run.js"
   },
   "main": "dist/index.js",
   "files": [
