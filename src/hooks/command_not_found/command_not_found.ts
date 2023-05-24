@@ -1,5 +1,5 @@
 import { Hook } from "@oclif/core";
-import chalk = require("chalk");
+import chalk from "chalk";
 import process from "node:process";
 const hook: Hook<"command_not_found"> = async function (opts) {
   if (opts.id === "compile" || opts.id === "deploy") {

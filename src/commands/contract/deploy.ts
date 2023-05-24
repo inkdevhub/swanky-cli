@@ -14,7 +14,7 @@ import {
 } from "../../lib/index.js";
 import { AccountData, Encrypted } from "../../types/index.js";
 import inquirer from "inquirer";
-import chalk = require("chalk");
+import chalk from "chalk";
 import { Contract } from "../../lib/contract.js";
 
 export class DeployContract extends Command {

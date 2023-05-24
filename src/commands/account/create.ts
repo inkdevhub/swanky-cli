@@ -1,5 +1,5 @@
 import { Command, Flags } from "@oclif/core";
-import chalk = require("chalk");
+import chalk from "chalk";
 import { writeJSON } from "fs-extra/esm";
 import { ensureSwankyProject, getSwankyConfig, ChainAccount, encrypt } from "../../lib/index.js";
 import { AccountData } from "../../types/index.js";
