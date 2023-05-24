@@ -1,5 +1,5 @@
 import { Args, Command, Flags } from "@oclif/core";
-import path = require("node:path");
+import path from "node:path";
 import { writeJSON } from "fs-extra/esm";
 import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
 import {

@@ -1,5 +1,5 @@
 import { Args, Flags } from "@oclif/core";
-import path = require("node:path");
+import path from "node:path";
 import {
   ensureDir,
   writeJSON,

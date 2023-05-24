@@ -1,6 +1,6 @@
 import { AbiType, ChainAccount, ChainApi, decrypt, resolveNetworkUrl } from "./index.js";
 import { AccountData, ContractData, DeploymentData, Encrypted } from "../types/index.js";
-import path = require("node:path");
+import path from "node:path";
 import { Args, Command, Flags, Interfaces } from "@oclif/core";
 import inquirer from "inquirer";
 import chalk = require("chalk");

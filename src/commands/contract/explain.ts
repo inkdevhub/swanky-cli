@@ -1,6 +1,6 @@
 import { BaseCommand } from "../../lib/baseCommand.js";
 import { pathExistsSync } from "fs-extra/esm";
-import path = require("node:path");
+import path from "node:path";
 import { readdirSync } from "node:fs";
 import { printContractInfo } from "../../lib/index.js";
 import { Args } from "@oclif/core";
