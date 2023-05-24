@@ -3,7 +3,7 @@ import { AccountData, ContractData, DeploymentData, Encrypted } from "../types/i
 import path from "node:path";
 import { Args, Command, Flags, Interfaces } from "@oclif/core";
 import inquirer from "inquirer";
-import chalk = require("chalk");
+import chalk from "chalk";
 import { BaseCommand } from "./baseCommand.js";
 import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
 import { readJSON } from "fs-extra/esm";
