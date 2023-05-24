@@ -1,4 +1,4 @@
-import execa from "execa";
+import { execaCommand } from "execa";
 import { copy, emptyDir, ensureDir, pathExists, readJSON } from "fs-extra/esm";
 import path from "node:path";
 import { DEFAULT_NETWORK_URL, ARTIFACTS_PATH, TYPED_CONTRACTS_PATH } from "./consts.js";
@@ -7,7 +7,7 @@ import { Abi } from "@polkadot/api-contract";
 
 export async function commandStdoutOrNull(command: string): Promise<string | null> {
   try {
-    const result = await execa.command(command);
+    const result = await execaCommand(command);
     return result.stdout;
   } catch {
     return null;
@@ -126,7 +126,7 @@ export async function generateTypes(contractName: string) {
   ensureDir(outputPath);
   emptyDir(outputPath);
 
-  await execa.command(
+  await execaCommand(
     `npx typechain-polkadot --in ${relativeInputPath} --out ${relativeOutputPath}`
   );
 }
