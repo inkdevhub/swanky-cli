@@ -14,7 +14,7 @@ import { stat, readdir, readFile } from "fs/promises";
 import { Dirent } from "fs";
 import { execaCommand, execaCommandSync } from "execa";
 import { paramCase, pascalCase, snakeCase } from "change-case";
-import inquirer = require("inquirer");
+import inquirer from "inquirer";
 import TOML from "@iarna/toml";
 import { choice, email, name, pickTemplate } from "../../lib/prompts.js";
 import {
