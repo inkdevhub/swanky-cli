@@ -1,11 +1,11 @@
-import { AbiType, ChainAccount, ChainApi, decrypt, resolveNetworkUrl } from "../lib";
-import { AccountData, ContractData, DeploymentData, Encrypted } from "../types";
+import { AbiType, ChainAccount, ChainApi, decrypt, resolveNetworkUrl } from "./index.js";
+import { AccountData, ContractData, DeploymentData, Encrypted } from "../types/index.js";
 import path = require("node:path");
 import { Args, Command, Flags, Interfaces } from "@oclif/core";
 import inquirer from "inquirer";
 import chalk = require("chalk");
-import { BaseCommand } from "./baseCommand";
-import { cryptoWaitReady } from "@polkadot/util-crypto";
+import { BaseCommand } from "./baseCommand.js";
+import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
 import { readJSON } from "fs-extra";
 
 export type JoinedFlagsType<T extends typeof Command> = Interfaces.InferredFlags<
@@ -47,7 +47,9 @@ export abstract class ContractCall<T extends typeof Command> extends BaseCommand
     this.contractInfo = contractInfo;
 
     const deploymentData = flags.address
-      ? contractInfo.deployments.find((deployment) => deployment.address === flags.address)
+      ? contractInfo.deployments.find(
+          (deployment: DeploymentData) => deployment.address === flags.address
+        )
       : contractInfo.deployments[0];
 
     if (!deploymentData?.address)

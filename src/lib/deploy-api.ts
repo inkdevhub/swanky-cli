@@ -1,7 +1,7 @@
 import { CodePromise, Abi } from "@polkadot/api-contract";
 import { KeyringPair } from "@polkadot/keyring/types";
 
-import { ChainApi } from "./substrate-api";
+import { ChainApi } from "./substrate-api.js";
 
 export type AbiType = Abi;
 
@@ -31,7 +31,7 @@ export class DeployApi extends ChainApi {
     return new Promise((resolve, reject) => {
       this.signAndSend(signerPair, tx, {}, ({ status, events }) => {
         if (status.isInBlock || status.isFinalized) {
-          const instantiateEvent = events.find(({ event }) => event.method === "Instantiated");
+          const instantiateEvent = events.find(({ event }: any) => event.method === "Instantiated");
 
           const addresses = instantiateEvent?.event.data.toHuman() as {
             contract: string;

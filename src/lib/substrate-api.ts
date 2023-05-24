@@ -1,11 +1,13 @@
-import { ApiPromise, WsProvider } from "@polkadot/api";
+import { ApiPromise } from "@polkadot/api/promise";
+import { WsProvider } from "@polkadot/api";
 import { SignerOptions } from "@polkadot/api/types";
-import { Codec, ISubmittableResult, ITuple } from "@polkadot/types/types";
+import { Codec, ITuple } from "@polkadot/types-codec/types";
+import { ISubmittableResult } from "@polkadot/types/types";
 import { TypeRegistry } from "@polkadot/types";
 import { DispatchError, BlockHash } from "@polkadot/types/interfaces";
-import { ChainAccount } from "./account";
+import { ChainAccount } from "./account.js";
 import BN from "bn.js";
-import { ChainProperty, ExtrinsicPayload } from "../types";
+import { ChainProperty, ExtrinsicPayload } from "../types/index.js";
 
 import { KeyringPair } from "@polkadot/keyring/types";
 

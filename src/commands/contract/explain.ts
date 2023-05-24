@@ -1,8 +1,8 @@
-import { BaseCommand } from "../../lib/baseCommand";
+import { BaseCommand } from "../../lib/baseCommand.js";
 import * as fs from "fs-extra";
 import path = require("node:path");
 import { readdirSync } from "node:fs";
-import { printContractInfo } from "../../lib";
+import { printContractInfo } from "../../lib/index.js";
 import { Args } from "@oclif/core";
 
 export class ExplainContract extends BaseCommand {

@@ -1,8 +1,8 @@
 import { Flags } from "@oclif/core";
-import { ContractPromise } from "@polkadot/api-contract";
-import { cryptoWaitReady } from "@polkadot/util-crypto";
+import { ContractPromise } from "@polkadot/api-contract/promise";
+import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
 
-import { ContractCall } from "../../lib/contractCall";
+import { ContractCall } from "../../lib/contractCall.js";
 
 export class Tx extends ContractCall<typeof Tx> {
   static summary = "Call a Tx message on smart contract";

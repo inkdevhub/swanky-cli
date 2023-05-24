@@ -8,9 +8,9 @@ import {
   checkCliDependencies,
   copyContractTemplateFiles,
   processTemplates,
-} from "../../lib";
-import { getTemplates } from "../../lib";
-import { email, name, pickTemplate } from "../../lib/prompts";
+  getTemplates,
+} from "../../lib/index.js";
+import { email, name, pickTemplate } from "../../lib/prompts.js";
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import execa = require("execa");
 import inquirer = require("inquirer");

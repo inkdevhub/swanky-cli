@@ -2,7 +2,7 @@ import execa from "execa";
 import { copy, emptyDir, ensureDir, pathExists, readJSON, readJson } from "fs-extra";
 import path = require("node:path");
 import { DEFAULT_NETWORK_URL, ARTIFACTS_PATH, TYPED_CONTRACTS_PATH } from "./consts.js";
-import { SwankyConfig } from "../types";
+import { SwankyConfig } from "../types/index.js";
 import { Abi } from "@polkadot/api-contract";
 
 export async function commandStdoutOrNull(command: string): Promise<string | null> {

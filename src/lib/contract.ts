@@ -1,5 +1,5 @@
-import { AbiType, consts } from "../lib";
-import { ContractData, DeploymentData } from "../types";
+import { AbiType, consts } from "./index.js";
+import { ContractData, DeploymentData } from "../types/index.js";
 import { pathExists, readJson } from "fs-extra";
 import path from "node:path";
 

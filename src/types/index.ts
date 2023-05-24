@@ -52,3 +52,6 @@ export interface SwankyConfig {
     };
   };
 }
+
+export type SupportedPlatforms = "darwin" | "linux";
+export type SupportedArch = "arm64" | "x64";

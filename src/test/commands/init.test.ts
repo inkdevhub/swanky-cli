@@ -1,1 +1,1 @@
-import { Init } from "../../commands/init";
+import { Init } from "../../commands/init/index.js";

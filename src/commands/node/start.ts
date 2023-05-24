@@ -1,6 +1,6 @@
 import { Command, Flags } from "@oclif/core";
 import execa from "execa";
-import { ensureSwankyProject, getSwankyConfig } from "../../lib";
+import { ensureSwankyProject, getSwankyConfig } from "../../lib/index.js";
 export class StartNode extends Command {
   static description = "Start a local node";
 
