@@ -36,7 +36,7 @@ import {
 } from "../../lib/consts.js";
 import { BaseCommand } from "../../lib/baseCommand.js";
 import globby = require("globby");
-import { merge } from "lodash";
+import { merge } from "lodash-es";
 import inquirerFuzzyPath from "inquirer-fuzzy-path";
 import { SwankyConfig } from "../../types/index.js";
 
