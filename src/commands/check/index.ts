@@ -1,7 +1,7 @@
 import { Command } from "@oclif/core";
 import { Listr } from "listr2";
-import { commandStdoutOrNull, ensureSwankyProject } from "../../lib";
-import { SwankyConfig } from "../../types";
+import { commandStdoutOrNull, ensureSwankyProject } from "../../lib/index.js";
+import { SwankyConfig } from "../../types/index.js";
 import fs = require("fs-extra");
 import path = require("node:path");
 import TOML from "@iarna/toml";
@@ -66,12 +66,11 @@ export default class Check extends Command {
         task: async (ctx) => {
           const swankyConfig = await fs.readJSON("swanky.config.json");
           ctx.swankyConfig = swankyConfig;
-          const contractInkVersions = {};
+
           for (const contract in swankyConfig.contracts) {
             const tomlPath = path.resolve(`contracts/${contract}/Cargo.toml`);
             const doesCargoTomlExist = fs.pathExistsSync(tomlPath);
             if (!doesCargoTomlExist) {
-              contractInkVersions[contract] = null;
               continue;
             }
 
@@ -96,7 +95,7 @@ export default class Check extends Command {
         task: async (ctx) => {
           const supportedInk = ctx.swankyConfig?.node.supportedInk;
 
-          const mismatched = {};
+          const mismatched: { [contractVersion: string]: string } = {};
           Object.entries(ctx.versions.contracts).forEach(([contract, inkPackages]) => {
             Object.entries(inkPackages).forEach(([inkPackage, version]) => {
               if (semver.gt(version, supportedInk as string)) {

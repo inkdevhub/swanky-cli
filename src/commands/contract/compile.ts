@@ -6,7 +6,7 @@ import {
   getSwankyConfig,
   Spinner,
   generateTypes,
-} from "../../lib";
+} from "../../lib/index.js";
 import { spawn } from "node:child_process";
 import { pathExists } from "fs-extra";
 

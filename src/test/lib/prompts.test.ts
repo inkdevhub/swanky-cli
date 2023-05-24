@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { choice, email, name, pickTemplate } from "../../lib/prompts";
+import { choice, email, name, pickTemplate } from "../../lib/prompts.js";
 
 describe("Prompts", function () {
   describe("Template", function () {

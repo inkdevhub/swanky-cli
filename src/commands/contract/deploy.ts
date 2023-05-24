@@ -1,7 +1,7 @@
 import { Args, Command, Flags } from "@oclif/core";
 import path = require("node:path");
 import { writeJSON } from "fs-extra";
-import { cryptoWaitReady } from "@polkadot/util-crypto";
+import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
 import {
   ensureSwankyProject,
   getSwankyConfig,
@@ -11,11 +11,11 @@ import {
   Spinner,
   decrypt,
   AbiType,
-} from "../../lib";
-import { AccountData, Encrypted } from "../../types";
+} from "../../lib/index.js";
+import { AccountData, Encrypted } from "../../types/index.js";
 import inquirer from "inquirer";
 import chalk = require("chalk");
-import { Contract } from "../../lib/contract";
+import { Contract } from "../../lib/contract.js";
 
 export class DeployContract extends Command {
   static description = "Deploy contract to a running node";
