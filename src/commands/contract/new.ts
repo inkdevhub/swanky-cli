@@ -13,7 +13,7 @@ import {
 import { email, name, pickTemplate } from "../../lib/prompts.js";
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import { execaCommandSync } from "execa";
-import inquirer = require("inquirer");
+import inquirer from "inquirer";
 
 export class NewContract extends Command {
   static description = "Generate a new smart contract template inside a project";
