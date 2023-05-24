@@ -1,5 +1,5 @@
-import { readdirSync } from "fs-extra";
-import path = require("node:path");
+import { readdirSync } from "fs";
+import path from "node:path";
 
 export function getTemplates() {
   const templatesPath = path.resolve(__dirname, "templates");

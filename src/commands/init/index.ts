@@ -3,17 +3,15 @@ import path = require("node:path");
 import {
   ensureDir,
   writeJSON,
-  stat,
-  readdir,
   pathExists,
-  readFile,
-  Dirent,
   copy,
   outputFile,
   readJSON,
   writeJson,
   remove,
-} from "fs-extra";
+} from "fs-extra/esm";
+import { stat, readdir, readFile } from "fs/promises";
+import { Dirent } from "fs";
 import execa = require("execa");
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer = require("inquirer");

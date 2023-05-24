@@ -2,7 +2,8 @@ import { Command } from "@oclif/core";
 import { Listr } from "listr2";
 import { commandStdoutOrNull, ensureSwankyProject } from "../../lib/index.js";
 import { SwankyConfig } from "../../types/index.js";
-import fs = require("fs-extra");
+import { pathExistsSync, readJSON } from "fs-extra/esm";
+import { readFileSync } from "fs";
 import path = require("node:path");
 import TOML from "@iarna/toml";
 import semver = require("semver");
@@ -64,17 +65,17 @@ export default class Check extends Command {
       {
         title: "Read ink dependencies",
         task: async (ctx) => {
-          const swankyConfig = await fs.readJSON("swanky.config.json");
+          const swankyConfig = await readJSON("swanky.config.json");
           ctx.swankyConfig = swankyConfig;
 
           for (const contract in swankyConfig.contracts) {
             const tomlPath = path.resolve(`contracts/${contract}/Cargo.toml`);
-            const doesCargoTomlExist = fs.pathExistsSync(tomlPath);
+            const doesCargoTomlExist = pathExistsSync(tomlPath);
             if (!doesCargoTomlExist) {
               continue;
             }
 
-            const cargoTomlString = fs.readFileSync(tomlPath, {
+            const cargoTomlString = readFileSync(tomlPath, {
               encoding: "utf8",
             });
 

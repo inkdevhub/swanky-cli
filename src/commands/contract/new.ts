@@ -1,6 +1,6 @@
 import { Args, Command, Flags } from "@oclif/core";
 import path = require("node:path");
-import { ensureDir, pathExists, writeJSON } from "fs-extra";
+import { ensureDir, pathExists, writeJSON } from "fs-extra/esm";
 import {
   getSwankyConfig,
   ensureSwankyProject,
