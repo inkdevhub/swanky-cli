@@ -12,7 +12,7 @@ import {
 } from "../../lib/index.js";
 import { email, name, pickTemplate } from "../../lib/prompts.js";
 import { paramCase, pascalCase, snakeCase } from "change-case";
-import execa = require("execa");
+import { execaCommandSync } from "execa";
 import inquirer = require("inquirer");
 
 export class NewContract extends Command {
@@ -60,7 +60,7 @@ export class NewContract extends Command {
     const questions = [
       name(
         "author",
-        () => execa.commandSync("git config --get user.name").stdout,
+        () => execaCommandSync("git config --get user.name").stdout,
         "What is your name?"
       ),
       email(),

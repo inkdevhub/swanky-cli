@@ -12,7 +12,7 @@ import {
 } from "fs-extra/esm";
 import { stat, readdir, readFile } from "fs/promises";
 import { Dirent } from "fs";
-import execa = require("execa");
+import { execaCommand, execaCommandSync } from "execa";
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer = require("inquirer");
 import TOML from "@iarna/toml";
@@ -161,7 +161,7 @@ export class Init extends BaseCommand {
     });
 
     this.taskQueue.push({
-      task: execa.command,
+      task: execaCommand,
       args: ["git init", { cwd: this.projectPath }],
       runningMessage: "Initializing git",
     });
@@ -241,7 +241,7 @@ export class Init extends BaseCommand {
     let gitUser;
 
     try {
-      const detectedGitUser = execa.commandSync("git config --get user.name").stdout;
+      const detectedGitUser = execaCommandSync("git config --get user.name").stdout;
       gitUser = detectedGitUser;
     } catch (error) {
       gitUser = undefined;
