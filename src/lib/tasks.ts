@@ -2,7 +2,7 @@ import { execaCommand } from "execa";
 import { ensureDir, copy, remove } from "fs-extra/esm";
 import { rename, readFile, rm, writeFile } from "fs/promises";
 import path from "node:path";
-import globby from "globby";
+import { globby } from "globby";
 import handlebars from "handlebars";
 import { DownloadEndedStats, DownloaderHelper } from "node-downloader-helper";
 import process from "node:process";
