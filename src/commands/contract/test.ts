@@ -5,7 +5,7 @@ import { ensureSwankyProject, getSwankyConfig } from "../../lib/index.js";
 import { globby } from "globby";
 import Mocha from "mocha";
 import { emptyDir } from "fs-extra/esm";
-import * as shell from "shelljs";
+import shell from "shelljs";
 import { Contract } from "../../lib/contract.js";
 
 declare global {
