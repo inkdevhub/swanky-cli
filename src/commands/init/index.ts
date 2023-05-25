@@ -136,19 +136,8 @@ export class Init extends BaseCommand {
       runningMessage: "Copying common template files",
     });
 
-    this.taskQueue.push({
-      task: processTemplates,
-      args: [
-        this.projectPath,
-        {
-          project_name: paramCase(args.projectName),
-        },
-      ],
-      runningMessage: "Processing common templates",
-    });
-
     if (flags.convert) {
-      await this.convert(flags.convert);
+      await this.convert(flags.convert, args.projectName);
     } else {
       await this.generate(args.projectName);
     }
@@ -295,7 +284,7 @@ export class Init extends BaseCommand {
           contract_name_pascal: pascalCase(contractName),
         },
       ],
-      runningMessage: "Processing contract template",
+      runningMessage: "Processing templates",
     });
 
     this.configBuilder.contracts = {
@@ -307,7 +296,7 @@ export class Init extends BaseCommand {
     };
   }
 
-  async convert(pathToExistingProject: string) {
+  async convert(pathToExistingProject: string, projectName: string) {
     try {
       const pathStat = await stat(pathToExistingProject);
       if (pathStat.isDirectory()) {
@@ -348,6 +337,18 @@ export class Init extends BaseCommand {
         : [];
 
     const confirmedCopyList = await detectModuleNames(await confirmCopyList(candidatesList));
+
+    this.taskQueue.push({
+      task: processTemplates,
+      args: [
+        this.projectPath,
+        {
+          project_name: paramCase(projectName),
+          swanky_version: this.config.pjson.version,
+        },
+      ],
+      runningMessage: "Processing templates",
+    });
 
     this.taskQueue.push({
       task: copyWorkspaceContracts,
