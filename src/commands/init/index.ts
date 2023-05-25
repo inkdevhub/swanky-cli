@@ -35,7 +35,7 @@ import {
   DEFAULT_SHIDEN_NETWORK_URL,
 } from "../../lib/consts.js";
 import { BaseCommand } from "../../lib/baseCommand.js";
-import globby from "globby";
+import { globby } from "globby";
 import { merge } from "lodash-es";
 import inquirerFuzzyPath from "inquirer-fuzzy-path";
 import { SwankyConfig } from "../../types/index.js";
