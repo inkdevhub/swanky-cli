@@ -116,7 +116,7 @@
     "tarball:macos": "oclif pack tarballs --targets=darwin-x64 --no-xz",
     "tarball:linux": "oclif pack tarballs --targets=linux-x64 --no-xz",
     "tarball:all": "oclif pack tarballs --targets=darwin-x64,linux-x64 --no-xz",
-    "copy-templates": "cp -R ./src/templates ./dist/lib"
+    "copy-templates": "cp -R ./src/templates ./dist"
   },
   "engines": {
     "node": ">=18.0.0"
