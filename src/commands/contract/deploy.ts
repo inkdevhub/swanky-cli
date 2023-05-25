@@ -26,7 +26,6 @@ export class DeployContract extends Command {
       description: "Alias of account to be used",
     }),
     gas: Flags.integer({
-      required: true,
       char: "g",
     }),
     args: Flags.string({
@@ -125,8 +124,8 @@ export class DeployContract extends Command {
           wasm,
           flags.constructorName,
           account.pair,
-          flags.gas,
-          flags.args as string[]
+          flags.args as string[],
+          flags.gas
         );
         return contractAddress;
       } catch (e) {
