@@ -36,6 +36,10 @@ export async function copyCommonTemplateFiles(templatesPath: string, projectPath
     })
   );
   await rename(path.resolve(projectPath, "gitignore"), path.resolve(projectPath, ".gitignore"));
+  await rename(
+    path.resolve(projectPath, "mocharc.json"),
+    path.resolve(projectPath, ".mocharc.json")
+  );
   await copy(path.resolve(templatesPath, "github"), path.resolve(projectPath, ".github"));
 }
 
