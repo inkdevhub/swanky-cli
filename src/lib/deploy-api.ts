@@ -4,24 +4,21 @@ import { KeyringPair } from "@polkadot/keyring/types";
 import { ChainApi } from "./substrate-api.js";
 
 export type AbiType = Abi;
-
+const TEN_B = 10_000_000_000;
 export class DeployApi extends ChainApi {
-  // eslint-disable-next-line no-useless-constructor
-  constructor(endpoint: string) {
-    super(endpoint);
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  public async getGasCost() {}
-
   public async deploy(
     abi: Abi,
     wasm: Buffer,
     constructorName: string,
     signerPair: KeyringPair,
-    gasLimit: number,
-    args: string[]
+    args: string[],
+    customGas?: number
   ) {
+    const gasLimit = this.apiInst.registry.createType("WeightV2", {
+      refTime: BigInt(TEN_B),
+      proofSize: BigInt(customGas || 10_000_000_000),
+    });
+
     const code = new CodePromise(this._api, abi, wasm);
     const storageDepositLimit = null;
     if (typeof code.tx[constructorName] !== "function") {
