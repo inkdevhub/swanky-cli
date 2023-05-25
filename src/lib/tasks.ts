@@ -63,25 +63,13 @@ export async function processTemplates(projectPath: string, templateData: Record
     expandDirectories: { extensions: ["hbs"] },
   });
 
-  handlebars.registerHelper("if_eq", function (a, b, options): boolean {
-    if (a === b) {
-      // @ts-ignore
-      return options.fn(this);
-    } else {
-      // @ts-ignore
-      return options.inverse(this);
-    }
-  });
-
-  await Promise.all(
-    templateFiles.map(async (tplFilePath) => {
-      const rawTemplate = await readFile(tplFilePath, "utf8");
-      const template = handlebars.compile(rawTemplate);
-      const compiledFile = template(templateData);
-      await rm(tplFilePath);
-      await writeFile(tplFilePath.split(".hbs")[0], compiledFile);
-    })
-  );
+  for (const tplFilePath of templateFiles) {
+    const rawTemplate = await readFile(tplFilePath, "utf8");
+    const template = handlebars.compile(rawTemplate);
+    const compiledFile = template(templateData);
+    await rm(tplFilePath);
+    await writeFile(tplFilePath.split(".hbs")[0], compiledFile);
+  }
 }
 
 export async function downloadNode(projectPath: string, nodeInfo: nodeInfo, spinner: Spinner) {
