@@ -81,8 +81,8 @@
     "typescript": "5.0.4"
   },
   "peerDependencies": {
-    "@polkadot/util": "10.4.2",
-    "@polkadot/util-crypto": "10.4.2"
+    "@polkadot/util": "12.2.1",
+    "@polkadot/util-crypto": "12.2.1"
   },
   "oclif": {
     "bin": "swanky",
