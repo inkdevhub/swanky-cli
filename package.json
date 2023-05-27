@@ -72,6 +72,7 @@
     "eslint": "8.41.0",
     "eslint-config-prettier": "8.8.0",
     "eslint-plugin-prettier": "4.2.1",
+    "nodemon": "^2.0.22",
     "oclif": "3.9.0",
     "prettier": "2.8.8",
     "shx": "0.3.4",
@@ -107,7 +108,6 @@
     }
   },
   "scripts": {
-    "build": "shx rm -rf dist && rm -f tsconfig.tsbuildinfo && tsc -b && yarn copy-templates",
     "lint": "eslint . --ext .ts --quiet --config .eslintrc",
     "postpack": "shx rm -f oclif.manifest.json",
     "prepack": "yarn build && oclif manifest && oclif readme",
@@ -116,7 +116,13 @@
     "tarball:macos": "oclif pack tarballs --targets=darwin-x64 --no-xz",
     "tarball:linux": "oclif pack tarballs --targets=linux-x64 --no-xz",
     "tarball:all": "oclif pack tarballs --targets=darwin-x64,linux-x64 --no-xz",
-    "copy-templates": "cp -R ./src/templates ./dist"
+    "build:clean": "shx rm -rf dist && rm -f tsconfig.tsbuildinfo",
+    "build:ts": "tsc -b",
+    "build:templates": "cp -R ./src/templates ./dist",
+    "build": "yarn build:clean && yarn build:ts && yarn build:templates",
+    "dev:ts": "tsc --watch",
+    "dev:templates": "nodemon --watch ./src/templates --ext '*' --exec yarn build:templates",
+    "dev": "yarn dev:ts & yarn dev:templates"
   },
   "engines": {
     "node": ">=18.0.0"
