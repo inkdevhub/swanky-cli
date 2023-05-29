@@ -3,8 +3,8 @@
   "image": "ghcr.io/astarnetwork/swanky-cli/swanky-base:swanky3.0.0-alpha.0_v2.0.0",
 
   // Mount the workspace volume
-  "mounts": ["source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"],
-  "workspaceFolder": "/workspace",
+  "mounts": ["source=${localWorkspaceFolder},target=/workspaces,type=bind,consistency=cached"],
+  "workspaceFolder": "/workspaces",
 
   "containerEnv": {
     "CARGO_TARGET_DIR": "/tmp"
