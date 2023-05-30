@@ -16,7 +16,7 @@ export class DeployApi extends ChainApi {
   ) {
     const gasLimit = this.apiInst.registry.createType("WeightV2", {
       refTime: BigInt(TEN_B),
-      proofSize: BigInt(customGas || 10_000_000_000),
+      proofSize: BigInt(customGas || TEN_B),
     });
 
     const code = new CodePromise(this._api, abi, wasm);
