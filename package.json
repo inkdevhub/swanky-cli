@@ -1,31 +1,124 @@
 {
-  "name": "@astar-network/swanky-suite",
-  "version": "1.0.0",
-  "private": true,
+  "name": "@astar-network/swanky-cli",
+  "version": "2.2.3",
   "description": "All in one WASM smart contract development toolset",
   "author": "Astar network",
   "license": "MIT",
   "repository": "https://github.com/AstarNetwork/swanky-cli",
-  "dependencies": {},
+  "homepage": "https://github.com/AstarNetwork/swanky-cli",
+  "bugs": "https://github.com/AstarNetwork/swanky-cli/issues",
+  "bin": {
+    "swanky": "./bin/run"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "/bin",
+    "/dist",
+    "/npm-shrinkwrap.json",
+    "/oclif.manifest.json"
+  ],
+  "dependencies": {
+    "@iarna/toml": "^2.2.5",
+    "@oclif/core": "2.8.5",
+    "@oclif/plugin-help": "5.2.9",
+    "@oclif/plugin-plugins": "3.0.1",
+    "@oclif/plugin-version": "1.3.4",
+    "bn.js": "5.2.1",
+    "chalk": "4",
+    "change-case": "4.1.2",
+    "decompress": "4.2.1",
+    "enquirer": "^2.3.6",
+    "execa": "5.1.1",
+    "fs-extra": "10.1.0",
+    "globby": "11",
+    "handlebars": "4.7.7",
+    "inquirer": "8.2.5",
+    "inquirer-fuzzy-path": "^2.3.0",
+    "listr2": "5.0.7",
+    "lodash": "^4.17.21",
+    "mocha": "10.2.0",
+    "mocha-suppress-logs": "0.3.1",
+    "mochawesome": "7.1.3",
+    "node-downloader-helper": "2.1.4",
+    "ora": "5.4.1",
+    "semver": "7.3.8",
+    "shelljs": "0.8.5",
+    "ts-mocha": "^10.0.0"
+  },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "5.43.0",
-    "@typescript-eslint/parser": "5.43.0",
-    "eslint": "8.26.0",
-    "eslint-config-prettier": "8.5.0",
+    "@oclif/test": "2.3.9",
+    "@polkadot/api": "9.14.2",
+    "@polkadot/api-augment": "9.14.2",
+    "@polkadot/api-contract": "9.14.2",
+    "@polkadot/keyring": "10.4.2",
+    "@polkadot/types": "9.14.2",
+    "@polkadot/util": "10.4.2",
+    "@polkadot/util-crypto": "10.4.2",
+    "@types/chai": "4",
+    "@types/decompress": "4.2.4",
+    "@types/fs-extra": "9.0.13",
+    "@types/iarna__toml": "^2.0.2",
+    "@types/inquirer": "8.2.5",
+    "@types/inquirer-fuzzy-path": "^2.3.6",
+    "@types/mocha": "9.0.0",
+    "@types/node": "^18",
+    "@types/semver": "7.3.10",
+    "@types/shelljs": "0.8.11",
+    "@typescript-eslint/eslint-plugin": "5.59.7",
+    "@typescript-eslint/parser": "5.59.7",
+    "chai": "4",
+    "eslint": "8.41.0",
+    "eslint-config-prettier": "8.8.0",
     "eslint-plugin-prettier": "4.2.1",
-    "lerna": "6.0.3",
-    "prettier": "2.7.1",
-    "typescript": "4.8.4"
+    "oclif": "3.9.0",
+    "prettier": "2.8.8",
+    "shx": "0.3.4",
+    "ts-node": "10.9.1",
+    "tslib": "2.5.2",
+    "typescript": "4.9.5"
+  },
+  "peerDependencies": {
+    "@polkadot/util": "10.4.2",
+    "@polkadot/util-crypto": "10.4.2"
+  },
+  "oclif": {
+    "bin": "swanky",
+    "dirname": "swanky",
+    "commands": "./dist/commands",
+    "topicSeparator": " ",
+    "additionalHelpFlags": [
+      "-h"
+    ],
+    "additionalVersionFlags": [
+      "-v",
+      "-V"
+    ],
+    "plugins": [
+      "@oclif/plugin-help",
+      "@oclif/plugin-version",
+      "@oclif/plugin-plugins"
+    ],
+    "hooks": {
+      "command_not_found": [
+        "./dist/hooks/command_not_found/command_not_found"
+      ]
+    }
   },
   "scripts": {
-    "lint": "lerna run lint",
-    "test": "lerna run test",
-    "build": "lerna run build"
+    "build": "shx rm -rf dist && rm -f tsconfig.tsbuildinfo && tsc -b && yarn copy-templates",
+    "lint": "eslint . --ext .ts --quiet --config .eslintrc",
+    "postpack": "shx rm -f oclif.manifest.json",
+    "prepack": "yarn build && oclif manifest && oclif readme",
+    "test": "mocha --require mocha-suppress-logs --forbid-only -r ts-node/register \"src/test/**/*.test.ts\"",
+    "version": "oclif readme && git add README.md",
+    "tarball:macos": "oclif pack tarballs --targets=darwin-x64 --no-xz",
+    "tarball:linux": "oclif pack tarballs --targets=linux-x64 --no-xz",
+    "tarball:all": "oclif pack tarballs --targets=darwin-x64,linux-x64 --no-xz",
+    "copy-templates": "cp -R ./src/templates ./dist/lib"
   },
   "engines": {
     "node": ">=18.0.0"
   },
-  "bugs": "https://github.com/AstarNetwork/swanky-cli/issues",
   "keywords": [
     "oclif",
     "swanky",
@@ -34,16 +127,9 @@
     "shiden",
     "wasm"
   ],
-  "workspaces": [
-    "packages/*"
-  ],
-  "resolutions": {
-    "@polkadot/api": "10.0.1",
-    "@polkadot/api-contract": "10.0.1",
-    "@polkadot/util": "11.0.1",
-    "@polkadot/util-crypto": "11.0.1",
-    "@polkadot/keyring": "11.0.1",
-    "@polkadot/api-augment": "10.0.1",
-    "@polkadot/types": "10.0.1"
+  "types": "dist/index.d.ts",
+  "gitHead": "cccb996036cf2b6fbbe4e1f02c31079ba99fc517",
+  "publishConfig": {
+    "access": "public"
   }
 }

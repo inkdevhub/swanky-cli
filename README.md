@@ -33,7 +33,7 @@ npx lerna run build
 To build individual projects, provide the `scope` argument:
 
 ```
-npx lerna run build --scope=@astar-network/swanky-core
+npx lerna run build --scope=../../lib
 ```
 
 Oclif provides a `dev` script to run the cli without building it, but beware, the dependencies need to be built nevertheless.
