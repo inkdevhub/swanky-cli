@@ -121,7 +121,7 @@
     "build:templates": "cp -R ./src/templates ./dist",
     "build": "yarn build:clean && yarn build:ts && yarn build:templates",
     "dev:ts": "tsc --watch",
-    "dev:templates": "nodemon --watch ./src/templates --ext '*' --exec yarn build:templates",
+    "dev:templates": "yarn build:templates && nodemon --watch ./src/templates --ext '*' --exec yarn build:templates",
     "dev": "yarn dev:ts & yarn dev:templates",
     "dev:run": "./bin/run.js"
   },
