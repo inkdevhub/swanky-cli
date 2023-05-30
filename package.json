@@ -81,8 +81,8 @@
     "typescript": "5.0.4"
   },
   "peerDependencies": {
-    "@polkadot/util": "10.4.2",
-    "@polkadot/util-crypto": "10.4.2"
+    "@polkadot/util": "12.2.1",
+    "@polkadot/util-crypto": "12.2.1"
   },
   "oclif": {
     "bin": "swanky",
@@ -111,7 +111,7 @@
     "lint": "eslint . --ext .ts --quiet --config .eslintrc",
     "postpack": "shx rm -f oclif.manifest.json",
     "prepack": "yarn build && oclif manifest && oclif readme",
-    "test": "mocha --require mocha-suppress-logs --forbid-only -r ts-node/register \"src/test/**/*.test.ts\"",
+    "test": "mocha --config .mocharc.json",
     "version": "oclif readme && git add README.md",
     "tarball:macos": "oclif pack tarballs --targets=darwin-x64 --no-xz",
     "tarball:linux": "oclif pack tarballs --targets=linux-x64 --no-xz",

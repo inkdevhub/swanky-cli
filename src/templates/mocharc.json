@@ -1,0 +1,6 @@
+{
+  "require": "ts-node/register",
+  "spec": "tests/**/*.test.ts",
+  "exit": true,
+  "timeout": 20000
+}
