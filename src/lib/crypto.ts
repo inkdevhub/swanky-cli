@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 const ALGO = "aes-256-cbc";
 
-import { Encrypted } from "../types";
+import { Encrypted } from "../types/index.js";
 
 export function encrypt(text: string, password: string): Encrypted {
   const iv = crypto.randomBytes(16);

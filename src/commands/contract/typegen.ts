@@ -1,6 +1,6 @@
 import { Args, Command } from "@oclif/core";
-import { ensureSwankyProject, getSwankyConfig, Spinner, generateTypes } from "../../lib";
-import { Contract } from "../../lib/contract";
+import { ensureSwankyProject, getSwankyConfig, Spinner, generateTypes } from "../../lib/index.js";
+import { Contract } from "../../lib/contract.js";
 
 export class TypegenCommand extends Command {
   static description = "Generate types from compiled contract metadata";

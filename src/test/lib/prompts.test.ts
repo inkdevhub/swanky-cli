@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { choice, email, name, pickTemplate } from "../../lib/prompts";
+import { choice, email, name, pickTemplate } from "../../lib/prompts.js";
 
 describe("Prompts", function () {
   describe("Template", function () {
@@ -12,7 +12,6 @@ describe("Prompts", function () {
     it("Returns a question object", function () {
       const templatesList = ["TemplateOne", "TemplateTwo"];
       const result = pickTemplate(templatesList);
-      console.log("AAAAAA", result);
       expect(result).to.have.nested.property("choices[0]", "TemplateOne");
       expect(result).to.have.nested.property("choices[1]", "TemplateTwo");
     });

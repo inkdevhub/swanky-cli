@@ -1,6 +1,6 @@
 import { Args, Command, Flags } from "@oclif/core";
-import path = require("node:path");
-import { ensureDir, pathExists, writeJSON } from "fs-extra";
+import path from "node:path";
+import { ensureDir, pathExists, writeJSON } from "fs-extra/esm";
 import {
   getSwankyConfig,
   ensureSwankyProject,
@@ -8,12 +8,12 @@ import {
   checkCliDependencies,
   copyContractTemplateFiles,
   processTemplates,
-} from "../../lib";
-import { getTemplates } from "../../lib";
-import { email, name, pickTemplate } from "../../lib/prompts";
+  getTemplates,
+} from "../../lib/index.js";
+import { email, name, pickTemplate } from "../../lib/prompts.js";
 import { paramCase, pascalCase, snakeCase } from "change-case";
-import execa = require("execa");
-import inquirer = require("inquirer");
+import { execaCommandSync } from "execa";
+import inquirer from "inquirer";
 
 export class NewContract extends Command {
   static description = "Generate a new smart contract template inside a project";
@@ -60,7 +60,7 @@ export class NewContract extends Command {
     const questions = [
       name(
         "author",
-        () => execa.commandSync("git config --get user.name").stdout,
+        () => execaCommandSync("git config --get user.name").stdout,
         "What is your name?"
       ),
       email(),

@@ -1,12 +1,12 @@
-require("ts-mocha");
+import "ts-mocha";
 import { Command, Flags, Args } from "@oclif/core";
-import path = require("node:path");
-import { ensureSwankyProject, getSwankyConfig } from "../../lib";
-import globby from "globby";
+import path from "node:path";
+import { ensureSwankyProject, getSwankyConfig } from "../../lib/index.js";
+import { globby } from "globby";
 import Mocha from "mocha";
-import { emptyDir } from "fs-extra";
-import * as shell from "shelljs";
-import { Contract } from "../../lib/contract";
+import { emptyDir } from "fs-extra/esm";
+import shell from "shelljs";
+import { Contract } from "../../lib/contract.js";
 
 declare global {
   var contractTypesPath: string; // eslint-disable-line no-var

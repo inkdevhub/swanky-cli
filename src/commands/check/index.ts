@@ -1,11 +1,12 @@
 import { Command } from "@oclif/core";
 import { Listr } from "listr2";
-import { commandStdoutOrNull, ensureSwankyProject } from "../../lib";
-import { SwankyConfig } from "../../types";
-import fs = require("fs-extra");
-import path = require("node:path");
+import { commandStdoutOrNull, ensureSwankyProject } from "../../lib/index.js";
+import { SwankyConfig } from "../../types/index.js";
+import { pathExistsSync, readJSON } from "fs-extra/esm";
+import { readFileSync } from "fs";
+import path from "node:path";
 import TOML from "@iarna/toml";
-import semver = require("semver");
+import semver from "semver";
 
 interface Ctx {
   versions: {
@@ -64,18 +65,17 @@ export default class Check extends Command {
       {
         title: "Read ink dependencies",
         task: async (ctx) => {
-          const swankyConfig = await fs.readJSON("swanky.config.json");
+          const swankyConfig = await readJSON("swanky.config.json");
           ctx.swankyConfig = swankyConfig;
-          const contractInkVersions = {};
+
           for (const contract in swankyConfig.contracts) {
             const tomlPath = path.resolve(`contracts/${contract}/Cargo.toml`);
-            const doesCargoTomlExist = fs.pathExistsSync(tomlPath);
+            const doesCargoTomlExist = pathExistsSync(tomlPath);
             if (!doesCargoTomlExist) {
-              contractInkVersions[contract] = null;
               continue;
             }
 
-            const cargoTomlString = fs.readFileSync(tomlPath, {
+            const cargoTomlString = readFileSync(tomlPath, {
               encoding: "utf8",
             });
 
@@ -96,7 +96,7 @@ export default class Check extends Command {
         task: async (ctx) => {
           const supportedInk = ctx.swankyConfig?.node.supportedInk;
 
-          const mismatched = {};
+          const mismatched: { [contractVersion: string]: string } = {};
           Object.entries(ctx.versions.contracts).forEach(([contract, inkPackages]) => {
             Object.entries(inkPackages).forEach(([inkPackage, version]) => {
               if (semver.gt(version, supportedInk as string)) {

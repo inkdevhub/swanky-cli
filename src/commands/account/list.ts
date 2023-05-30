@@ -1,7 +1,7 @@
 import { Command } from "@oclif/core";
-import chalk = require("chalk");
-import { ensureSwankyProject, getSwankyConfig } from "../../lib";
-import { AccountData } from "../../types";
+import chalk from "chalk";
+import { ensureSwankyProject, getSwankyConfig } from "../../lib/index.js";
+import { AccountData } from "../../types/index.js";
 
 export class CreateAccount extends Command {
   static description = "List dev accounts stored in config";

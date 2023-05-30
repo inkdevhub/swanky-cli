@@ -1,13 +1,15 @@
-import execa from "execa";
-import { ensureDir, rename, copy, readFile, rm, writeFile, remove } from "fs-extra";
+import { execaCommand } from "execa";
+import { ensureDir, copy, remove } from "fs-extra/esm";
+import { rename, readFile, rm, writeFile } from "fs/promises";
 import path from "node:path";
-import globby from "globby";
+import { globby } from "globby";
 import handlebars from "handlebars";
 import { DownloadEndedStats, DownloaderHelper } from "node-downloader-helper";
 import process from "node:process";
-import { nodeInfo } from "./nodeInfo";
+import { nodeInfo } from "./nodeInfo.js";
 import decompress from "decompress";
-import { Spinner } from "./spinner";
+import { Spinner } from "./spinner.js";
+import { SupportedPlatforms, SupportedArch } from "../types/index.js";
 
 export async function checkCliDependencies(spinner: Spinner) {
   const dependencyList = [
@@ -21,7 +23,7 @@ export async function checkCliDependencies(spinner: Spinner) {
 
   for (const dep of dependencyList) {
     spinner.text(`  Checking ${dep.dependencyName}`);
-    await execa.command(dep.versionCommand);
+    await execaCommand(dep.versionCommand);
   }
 }
 
@@ -55,7 +57,6 @@ export async function copyContractTemplateFiles(
 export async function processTemplates(projectPath: string, templateData: Record<string, string>) {
   const templateFiles = await globby(projectPath, {
     expandDirectories: { extensions: ["hbs"] },
-    gitignore: true,
   });
 
   handlebars.registerHelper("if_eq", function (a, b, options): boolean {
@@ -83,11 +84,11 @@ export async function downloadNode(projectPath: string, nodeInfo: nodeInfo, spin
   const binPath = path.resolve(projectPath, "bin");
   await ensureDir(binPath);
 
-  const platformDlUrls = nodeInfo.downloadUrl[process.platform];
+  const platformDlUrls = nodeInfo.downloadUrl[process.platform as SupportedPlatforms];
   if (!platformDlUrls)
     throw new Error(`Could not download swanky-node. Platform ${process.platform} not supported!`);
 
-  const dlUrl = platformDlUrls[process.arch];
+  const dlUrl = platformDlUrls[process.arch as SupportedArch];
   if (!dlUrl)
     throw new Error(
       `Could not download swanky-node. Platform ${process.platform} Arch ${process.arch} not supported!`
@@ -118,7 +119,7 @@ export async function downloadNode(projectPath: string, nodeInfo: nodeInfo, spin
     const decompressed = await decompress(compressedFilePath, binPath);
     const nodePath = path.resolve(binPath, decompressed[0].path);
     await remove(compressedFilePath);
-    await execa.command(`chmod +x ${nodePath}`);
+    await execaCommand(`chmod +x ${nodePath}`);
 
     return nodePath;
   }
@@ -130,11 +131,11 @@ export async function installDeps(projectPath: string) {
   let installCommand = "npm install";
 
   try {
-    await execa.command("yarn --version");
+    await execaCommand("yarn --version");
     installCommand = "yarn install";
   } catch (_error) {
     console.log("\n\t >>Yarn not detected, using NPM");
   } finally {
-    await execa.command(installCommand, { cwd: projectPath });
+    await execaCommand(installCommand, { cwd: projectPath });
   }
 }

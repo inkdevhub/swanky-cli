@@ -1,8 +1,8 @@
 import { Command, Flags } from "@oclif/core";
-import chalk = require("chalk");
-import { writeJSON } from "fs-extra";
-import { ensureSwankyProject, getSwankyConfig, ChainAccount, encrypt } from "../../lib";
-import { AccountData } from "../../types";
+import chalk from "chalk";
+import { writeJSON } from "fs-extra/esm";
+import { ensureSwankyProject, getSwankyConfig, ChainAccount, encrypt } from "../../lib/index.js";
+import { AccountData } from "../../types/index.js";
 import inquirer from "inquirer";
 export class CreateAccount extends Command {
   static description = "Create a new dev account in config";

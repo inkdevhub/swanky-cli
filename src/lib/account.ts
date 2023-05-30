@@ -1,7 +1,7 @@
 import { mnemonicGenerate } from "@polkadot/util-crypto";
 import { Keyring } from "@polkadot/keyring";
 import { KeyringPair } from "@polkadot/keyring/types";
-import { ChainProperty, KeypairType } from "../types";
+import { ChainProperty, KeypairType } from "../types/index.js";
 
 interface IChainAccount {
   pair: KeyringPair;

@@ -1,6 +1,6 @@
 import { Command, Flags } from "@oclif/core";
-import { getSwankyConfig, Spinner } from "../lib";
-import { SwankyConfig } from "../types";
+import { getSwankyConfig, Spinner } from "./index.js";
+import { SwankyConfig } from "../types/index.js";
 export abstract class BaseCommand extends Command {
   protected spinner!: Spinner;
   protected swankyConfig!: SwankyConfig;

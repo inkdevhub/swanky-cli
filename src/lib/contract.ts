@@ -1,6 +1,6 @@
-import { AbiType, consts } from "../lib";
-import { ContractData, DeploymentData } from "../types";
-import { pathExists, readJson } from "fs-extra";
+import { AbiType, consts } from "./index.js";
+import { ContractData, DeploymentData } from "../types/index.js";
+import { pathExists, readJSON } from "fs-extra/esm";
 import path from "node:path";
 
 export class Contract {
@@ -45,7 +45,7 @@ export class Contract {
     if (!check.result && check.missingTypes.includes(".json")) {
       throw new Error(`Cannot read ABI, path not found: ${check.missingPaths}`);
     }
-    return readJson(path.resolve(this.artifactsPath, `${this.moduleName}.json`));
+    return readJSON(path.resolve(this.artifactsPath, `${this.moduleName}.json`));
   }
 
   async getBundle() {
@@ -53,7 +53,7 @@ export class Contract {
     if (!check.result && check.missingTypes.includes(".contract")) {
       throw new Error(`Cannot read .contract bundle, path not found: ${check.missingPaths}`);
     }
-    return readJson(path.resolve(this.artifactsPath, `${this.moduleName}.contract`));
+    return readJSON(path.resolve(this.artifactsPath, `${this.moduleName}.contract`));
   }
 
   async getWasm(): Promise<Buffer> {

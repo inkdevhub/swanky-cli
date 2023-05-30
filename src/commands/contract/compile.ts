@@ -1,14 +1,14 @@
 import { Args, Command, Flags } from "@oclif/core";
-import path = require("node:path");
+import path from "node:path";
 import {
   storeArtifacts,
   ensureSwankyProject,
   getSwankyConfig,
   Spinner,
   generateTypes,
-} from "../../lib";
+} from "../../lib/index.js";
 import { spawn } from "node:child_process";
-import { pathExists } from "fs-extra";
+import { pathExists } from "fs-extra/esm";
 
 export class CompileContract extends Command {
   static description = "Compile the smart contract(s) in your contracts directory";

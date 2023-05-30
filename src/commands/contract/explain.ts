@@ -1,8 +1,8 @@
-import { BaseCommand } from "../../lib/baseCommand";
-import * as fs from "fs-extra";
-import path = require("node:path");
+import { BaseCommand } from "../../lib/baseCommand.js";
+import { pathExistsSync } from "fs-extra/esm";
+import path from "node:path";
 import { readdirSync } from "node:fs";
-import { printContractInfo } from "../../lib";
+import { printContractInfo } from "../../lib/index.js";
 import { Args } from "@oclif/core";
 
 export class ExplainContract extends BaseCommand {
@@ -39,7 +39,7 @@ export class ExplainContract extends BaseCommand {
       contractInfo.build?.artifactsPath,
       `${args.contractName}.json`
     );
-    if (!fs.existsSync(metadataPath)) {
+    if (!pathExistsSync(metadataPath)) {
       this.error(`Metadata json file for ${args.contractName} contract not found`);
     }
 

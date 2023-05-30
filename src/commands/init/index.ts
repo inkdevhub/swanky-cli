@@ -1,24 +1,22 @@
 import { Args, Flags } from "@oclif/core";
-import path = require("node:path");
+import path from "node:path";
 import {
   ensureDir,
   writeJSON,
-  stat,
-  readdir,
   pathExists,
-  readFile,
-  Dirent,
   copy,
   outputFile,
   readJSON,
   writeJson,
   remove,
-} from "fs-extra";
-import execa = require("execa");
+} from "fs-extra/esm";
+import { stat, readdir, readFile } from "fs/promises";
+import { Dirent } from "fs";
+import { execaCommand, execaCommandSync } from "execa";
 import { paramCase, pascalCase, snakeCase } from "change-case";
-import inquirer = require("inquirer");
+import inquirer from "inquirer";
 import TOML from "@iarna/toml";
-import { choice, email, name, pickTemplate } from "../../lib/prompts";
+import { choice, email, name, pickTemplate } from "../../lib/prompts.js";
 import {
   checkCliDependencies,
   copyCommonTemplateFiles,
@@ -28,19 +26,19 @@ import {
   ChainAccount,
   processTemplates,
   swankyNode,
-} from "../../lib";
+  getTemplates,
+} from "../../lib/index.js";
 import {
   DEFAULT_ASTAR_NETWORK_URL,
   DEFAULT_NETWORK_URL,
   DEFAULT_SHIBUYA_NETWORK_URL,
   DEFAULT_SHIDEN_NETWORK_URL,
-} from "../../lib/consts";
-import { getTemplates } from "../../lib";
-import { BaseCommand } from "../../lib/baseCommand";
-import globby = require("globby");
-import { merge } from "lodash";
+} from "../../lib/consts.js";
+import { BaseCommand } from "../../lib/baseCommand.js";
+import { globby } from "globby";
+import { merge } from "lodash-es";
 import inquirerFuzzyPath from "inquirer-fuzzy-path";
-import { SwankyConfig } from "../../types";
+import { SwankyConfig } from "../../types/index.js";
 
 type TaskFunction = (...args: any[]) => any;
 
@@ -163,7 +161,7 @@ export class Init extends BaseCommand {
     });
 
     this.taskQueue.push({
-      task: execa.command,
+      task: execaCommand,
       args: ["git init", { cwd: this.projectPath }],
       runningMessage: "Initializing git",
     });
@@ -243,7 +241,7 @@ export class Init extends BaseCommand {
     let gitUser;
 
     try {
-      const detectedGitUser = execa.commandSync("git config --get user.name").stdout;
+      const detectedGitUser = execaCommandSync("git config --get user.name").stdout;
       gitUser = detectedGitUser;
     } catch (error) {
       gitUser = undefined;
@@ -429,7 +427,7 @@ async function detectModuleNames(copyList: CopyCandidates): Promise<CopyCandidat
   };
 
   for (const group of ["contracts", "crates"]) {
-    for (const entry of copyList[group] as PathEntry[]) {
+    for (const entry of copyList[group as keyof CopyCandidates] as PathEntry[]) {
       const moduleName = path.basename(entry.path);
       const extendedEntry = { ...entry, moduleName };
       if (
@@ -444,7 +442,7 @@ async function detectModuleNames(copyList: CopyCandidates): Promise<CopyCandidat
           console.log(`Could not detect the contract name from Cargo.toml. Using [${moduleName}]`);
         }
       }
-      copyListWithModuleNames[group].push(extendedEntry);
+      copyListWithModuleNames[group as "contracts" | "crates"].push(extendedEntry);
     }
   }
   return copyListWithModuleNames;
@@ -454,7 +452,7 @@ async function copyWorkspaceContracts(copyList: CopyCandidates, projectPath: str
   for (const group of ["contracts", "crates", "tests"]) {
     const destDir = path.resolve(projectPath, group);
     await ensureDir(destDir);
-    for (const entry of copyList[group] as PathEntry[]) {
+    for (const entry of copyList[group as keyof CopyCandidates] as PathEntry[]) {
       const destPath = path.join(destDir, entry.name);
       await copy(entry.path, destPath);
     }

@@ -1,6 +1,6 @@
 import { Command, Flags } from "@oclif/core";
-import execa from "execa";
-import { ensureSwankyProject, getSwankyConfig } from "../../lib";
+import { execaCommand } from "execa";
+import { ensureSwankyProject, getSwankyConfig } from "../../lib/index.js";
 export class StartNode extends Command {
   static description = "Start a local node";
 
@@ -33,7 +33,7 @@ export class StartNode extends Command {
     const config = await getSwankyConfig();
     // Run persistent mode by default. non-persistent mode in case flag is provided.
     // Non-Persistent mode (`--dev`) allows all CORS origin, without `--dev`, users need to specify origins by `--rpc-cors`.
-    await execa.command(
+    await execaCommand(
       `${config.node.localPath} \
       --finalize-delay-sec ${flags.finalizeDelaySec} \
       ${flags.tmp ? "--dev" : `--rpc-cors ${flags.rpcCors}`}`,
