@@ -115,7 +115,7 @@
     "version": "oclif readme && git add README.md",
     "tarball:macos": "oclif pack tarballs --targets=darwin-x64 --no-xz",
     "tarball:linux": "oclif pack tarballs --targets=linux-x64 --no-xz",
-    "tarball:all": "oclif pack tarballs --targets=darwin-x64,linux-x64 --no-xz",
+    "tarball:all": "oclif pack tarballs --targets=linux-x64,linux-arm64,darwin-x64,darwin-arm64 --no-xz",
     "build:clean": "shx rm -rf dist && rm -f tsconfig.tsbuildinfo",
     "build:ts": "tsc -b",
     "build:templates": "cp -R ./src/templates ./dist",
