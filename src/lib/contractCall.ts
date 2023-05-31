@@ -7,6 +7,7 @@ import chalk from "chalk";
 import { BaseCommand } from "./baseCommand.js";
 import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
 import { readJSON } from "fs-extra/esm";
+import { Contract } from "./contract.js";
 
 export type JoinedFlagsType<T extends typeof Command> = Interfaces.InferredFlags<
   (typeof BaseCommand)["baseFlags"] & (typeof ContractCall)["baseFlags"] & T["flags"]
@@ -40,22 +41,35 @@ export abstract class ContractCall<T extends typeof Command> extends BaseCommand
     const { flags, args } = await this.parse(this.ctor);
     // this.flags = flags as JoinedFlagsType<typeof ContractCall>;
     this.args = args;
-    const contractInfo = this.swankyConfig.contracts[args.contractName];
-    if (!contractInfo) {
+
+    const contractRecord = this.swankyConfig.contracts[args.contractName];
+    if (!contractRecord) {
       this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
     }
-    this.contractInfo = contractInfo;
+
+    const contract = new Contract(contractRecord);
+
+    if (!(await contract.pathExists())) {
+      this.error(`Path to contract ${args.contractName} does not exist: ${contract.contractPath}`);
+    }
+
+    const artifactsCheck = await contract.artifactsExist();
+
+    if (!artifactsCheck.result) {
+      this.error(`No artifact file found at path: ${artifactsCheck.missingPaths}`);
+    }
 
     const deploymentData = flags.address
-      ? contractInfo.deployments.find(
+      ? contract.deployments.find(
           (deployment: DeploymentData) => deployment.address === flags.address
         )
-      : contractInfo.deployments[0];
+      : contract.deployments[0];
 
     if (!deploymentData?.address)
       throw new Error(
         `Cannot find a deployment with address: ${flags.address} in swanky.config.json`
       );
+
     this.deploymentInfo = deploymentData;
 
     const accountData = this.swankyConfig.accounts.find(
@@ -91,16 +105,10 @@ export abstract class ContractCall<T extends typeof Command> extends BaseCommand
     }, "Initialising")) as ChainAccount;
     this.account = account;
 
-    const metadata = (await this.spinner.runCommand(async () => {
-      if (!contractInfo.build) {
-        this.error(`No build info found for contract named ${args.contractName}`);
-      }
-      const metadata = await readJSON(
-        path.resolve(contractInfo.build.artifactsPath, `${args.contractName}.json`)
-      );
-      return metadata;
+    this.metadata = (await this.spinner.runCommand(async () => {
+      const abi = await contract.getABI();
+      return abi;
     }, "Getting metadata")) as AbiType;
-    this.metadata = metadata;
   }
 
   protected async catch(err: Error & { exitCode?: number }): Promise<any> {
