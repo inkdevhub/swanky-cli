@@ -151,7 +151,33 @@ To add networks or change endpoint to interact with, you need to update `swanky.
 
 # Development and contributing
 
+To work on swanky-cli itself, you'll need nodeJs, `yarn`, and `ts-node` installed globally.
+
+Running `yarn dev` will start a watch process for both `ts` files and `/templates`, and you can run it by calling:
+
+```
+yarn dev:run COMMAND
+```
+
+or directly
+
+```
+./bin/run.js COMMAND
+```
+
+Directory names `temp_project`, `temp_proj`, and `test_project` are ignored by git so it's safe to test in the root directory of the project.
+
+For example
+
+```
+./bin/run.js init temp_project
+cd temp_project
+../bin/run.js contract compile flipper
+```
+
 # Reporting issues
+
+Please report any issue or bug you encounter, as well as any feature and improvement requests to the [issues section](https://github.com/AstarNetwork/swanky-cli/issues)
 
 # Command help
 
