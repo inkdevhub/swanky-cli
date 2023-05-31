@@ -1,6 +1,6 @@
 {
   "name": "@astar-network/swanky-cli",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "All in one WASM smart contract development toolset",
   "author": "Astar network",
   "license": "MIT",
