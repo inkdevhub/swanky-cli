@@ -1,12 +1,10 @@
 import { AbiType, ChainAccount, ChainApi, decrypt, resolveNetworkUrl } from "./index.js";
 import { AccountData, ContractData, DeploymentData, Encrypted } from "../types/index.js";
-import path from "node:path";
 import { Args, Command, Flags, Interfaces } from "@oclif/core";
 import inquirer from "inquirer";
 import chalk from "chalk";
 import { BaseCommand } from "./baseCommand.js";
 import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
-import { readJSON } from "fs-extra/esm";
 import { Contract } from "./contract.js";
 
 export type JoinedFlagsType<T extends typeof Command> = Interfaces.InferredFlags<
