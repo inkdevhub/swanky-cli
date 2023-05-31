@@ -1,6 +1,6 @@
 {
   "name": "swanky-env",
-  "image": "ghcr.io/astarnetwork/swanky-cli/swanky-base:swanky2.2.3_v1.1.4",
+  "image": "ghcr.io/astarnetwork/swanky-cli/swanky-base:swanky3.0.3_v2.0.2",
 
   // Mount the workspace volume
   "mounts": ["source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"],
