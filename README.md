@@ -2,13 +2,117 @@
 <img src="https://github.com/AstarNetwork/swanky-cli/blob/chore/update-readme/logo.png" width=300/>
 </p>
 
-# What is Swanky
+<!-- toc -->
 
-# Instalation
+- [Swanky CLI](#swanky-cli)
+- [Base image and dev container](#base-image-and-dev-container)
+- [Config](#config)
+- [Network Management](#network-management)
+- [Development and contributing](#development-and-contributing)
+- [Command help](#command-help)
+<!-- tocstop -->
 
-# Usage
+# Docs and guide
+
+You can find more detailed info on installing and using Swanky CLI on [official astar docks page](https://docs.astar.network/docs/build/wasm/swanky-suite/cli/)
+
+# Swanky CLI
 
 # Base image and dev container
+
+# Config
+
+A newly generated project will have a `swanky.config.json` file that will get populated as you interact with your contracts and accounts.
+
+## Example:
+
+```json
+{
+  "node": {
+    "localPath": "/my_proj_path/bin/swanky-node",
+    "polkadotPalletVersions": "polkadot-v0.9.27",
+    "supportedInk": "v3.3.1"
+  },
+  "accounts": [
+    {
+      "alias": "alice",
+      "mnemonic": "//Alice",
+      "isDev": true,
+      "address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+    },
+    {
+      "alias": "bob",
+      "mnemonic": "//Bob",
+      "isDev": true,
+      "address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+    }
+  ],
+  "contracts": {
+    "flipper": {
+      "name": "flipper",
+      "deployments": [
+        {
+          "timestamp": 1670919679024,
+          "address": "5FmKC2NZNChwuxCAWCHQbevi5xXn8gaSGcafbuvcxwMbpMyd",
+          "networkUrl": "ws://127.0.0.1:9944",
+          "deployerAlias": "alice"
+        }
+      ],
+      "language": "ink",
+      "build": {
+        "timestamp": 1670841378836,
+        "artifactsPath": "/my_proj_path/artifacts/flipper/1670841378836"
+      }
+    },
+    "psp22": {
+      "name": "psp22",
+      "language": "ink",
+      "deployments": [],
+      "build": {
+        "timestamp": 1670861915076,
+        "artifactsPath": "/my_proj_path/artifacts/psp22/1670861915076"
+      }
+    }
+  },
+  "networks": {
+    "local": {
+      "url": "ws://127.0.0.1:9944"
+    },
+    "astar": {
+      "url": "wss://rpc.astar.network"
+    },
+    "shiden": {
+      "url": "wss://rpc.shiden.astar.network"
+    },
+    "shibuya": {
+      "url": "wss://rpc.shibuya.astar.network"
+    }
+  }
+}
+```
+
+# Network Management
+
+You can deploy/call wasm smart contracts on any chains supporting the substrate contracts module ([`pallet-contracts`](https://github.com/paritytech/substrate/tree/master/frame/contracts)) by swanky-cli.
+`--network` flag is available for `deploy` and `call` commands. For example,
+
+```
+swanky contract deploy flipper --account alice --gas 100000000000 --args true --network shibuya
+```
+
+By default, `swanky init` prepares local/astar/shiden/shibuya endpoint for you.
+To add networks or change endpoint to interact with, you need to update `swanky.config.json` `networks` section.
+
+```
+"networks": {
+  "local": {
+    "url": "ws://127.0.0.1:9944"
+  },
+  "your_network": {
+    "url": "wss://your.network"
+  }
+}
+```
 
 # Development and contributing
 
