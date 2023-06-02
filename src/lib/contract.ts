@@ -1,4 +1,4 @@
-import { AbiType, consts } from "./index.js";
+import { AbiType, consts, printContractInfo } from "./index.js";
 import { ContractData, DeploymentData } from "../types/index.js";
 import { pathExists, readJSON } from "fs-extra/esm";
 import path from "node:path";
@@ -61,5 +61,10 @@ export class Contract {
     if (bundle.source?.wasm) return bundle.source.wasm;
 
     throw new Error(`Cannot find wasm field in the .contract bundle!`);
+  }
+
+  async printInfo(): Promise<void> {
+    const abi = await this.getABI();
+    printContractInfo(abi);
   }
 }

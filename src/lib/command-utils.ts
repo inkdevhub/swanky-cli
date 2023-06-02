@@ -66,31 +66,28 @@ export async function storeArtifacts(
     console.error(error);
   }
 }
-
-export async function printContractInfo(metadataPath: string) {
-  const abi = new Abi(await readJSON(metadataPath));
-
+// TODO: Use the Abi type (optionally, support legacy types version)
+export async function printContractInfo(abi: any) {
   // TODO: Use templating, colorize.
-
   console.log(`
-    😎 ${abi.info.contract.name} Contract 😎
+    😎 ${abi.contract.name} Contract 😎
 
-    Hash: ${abi.info.source.hash}
-    Language: ${abi.info.source.language}
-    Compiler: ${abi.info.source.compiler}
+    Hash: ${abi.source.hash}
+    Language: ${abi.source.language}
+    Compiler: ${abi.source.compiler}
   `);
 
   console.log(`    === Constructors ===\n`);
-  for (const constructor of abi.constructors) {
-    console.log(`    * ${constructor.method}:
+  for (const constructor of abi.spec.constructors) {
+    console.log(`    * ${constructor.label}:
         Args: ${
           constructor.args.length > 0
-            ? constructor.args.map((arg) => {
-                return `\n        - ${arg.name} (${arg.type.displayName})`;
+            ? constructor.args.map((arg: any) => {
+                return `\n        - ${arg.label} (${arg.type.displayName})`;
               })
             : "None"
         }
-        Description: ${constructor.docs.map((line) => {
+        Description: ${constructor.docs.map((line: any) => {
           if (line != "") {
             return `\n         ` + line;
           }
@@ -99,17 +96,17 @@ export async function printContractInfo(metadataPath: string) {
   }
 
   console.log(`    === Messages ===\n`);
-  for (const message of abi.messages) {
-    console.log(`    * ${message.method}:
-        Payable: ${message.isPayable}
+  for (const message of abi.spec.messages) {
+    console.log(`    * ${message.label}:
+        Payable: ${message.payable}
         Args: ${
           message.args.length > 0
-            ? message.args.map((arg) => {
-                return `\n        - ${arg.name} (${arg.type.displayName})`;
+            ? message.args.map((arg: any) => {
+                return `\n        - ${arg.label} (${arg.type.displayName})`;
               })
             : "None"
         }
-        Description: ${message.docs.map((line) => {
+        Description: ${message.docs.map((line: any) => {
           if (line != "") {
             return `\n         ` + line;
           }

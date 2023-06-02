@@ -1,9 +1,6 @@
 import { BaseCommand } from "../../lib/baseCommand.js";
-import { pathExistsSync } from "fs-extra/esm";
-import path from "node:path";
-import { readdirSync } from "node:fs";
-import { printContractInfo } from "../../lib/index.js";
 import { Args } from "@oclif/core";
+import { Contract } from "../../lib/contract.js";
 
 export class ExplainContract extends BaseCommand {
   static description = "Explain contract messages based on the contracts' metadata";
@@ -19,30 +16,23 @@ export class ExplainContract extends BaseCommand {
   async run(): Promise<void> {
     const { args } = await this.parse(ExplainContract);
 
-    const contractInfo = this.swankyConfig.contracts[args.contractName];
-    if (!contractInfo) {
+    const contractRecord = this.swankyConfig.contracts[args.contractName];
+    if (!contractRecord) {
       this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
     }
 
-    const contractList = readdirSync(path.resolve("contracts"));
+    const contract = new Contract(contractRecord);
 
-    const contractPath = path.resolve("contracts", args.contractName);
-    if (!contractList.includes(args.contractName)) {
-      this.error(`Path to contract ${args.contractName} does not exist: ${contractPath}`);
+    if (!(await contract.pathExists())) {
+      this.error(`Path to contract ${args.contractName} does not exist: ${contract.contractPath}`);
     }
 
-    if (!contractInfo.build) {
-      this.error(`No build data for contract "${args.contractName}"`);
+    const artifactsCheck = await contract.artifactsExist();
+
+    if (!artifactsCheck.result) {
+      this.error(`No artifact file found at path: ${artifactsCheck.missingPaths}`);
     }
 
-    const metadataPath = path.resolve(
-      contractInfo.build?.artifactsPath,
-      `${args.contractName}.json`
-    );
-    if (!pathExistsSync(metadataPath)) {
-      this.error(`Metadata json file for ${args.contractName} contract not found`);
-    }
-
-    printContractInfo(metadataPath);
+    await contract.printInfo();
   }
 }
