@@ -21,7 +21,7 @@ You can find more detailed info on installing and using Swanky CLI on [official 
 
 If you use a devcontainer (see next section), or a [`swanky-base`](https://github.com/AstarNetwork/swanky-cli/pkgs/container/swanky-cli%2Fswanky-base) image, swanky will be preinstalled and globally available and you can use it to generate and develop smart contracts right away.
 
-Otherwise, you can install it from [`npm`](https://www.npmjs.com/package/@astar-network/swanky-cli), or download the [binaries for your system]
+Otherwise, you can install it from [`npm`](https://www.npmjs.com/package/@astar-network/swanky-cli), or download the [binaries for your system](https://github.com/AstarNetwork/swanky-cli/releases/tag/v3.0.4)
 
 For a quick start, you can run
 
