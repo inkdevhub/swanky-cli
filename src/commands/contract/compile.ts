@@ -9,16 +9,12 @@ import {
 } from "../../lib/index.js";
 import { spawn } from "node:child_process";
 import { pathExists } from "fs-extra/esm";
+import { SwankyCommand } from "../../lib/swankyCommand.js";
 
-export class CompileContract extends Command {
+export class CompileContract extends SwankyCommand {
   static description = "Compile the smart contract(s) in your contracts directory";
 
   static flags = {
-    verbose: Flags.boolean({
-      default: false,
-      char: "v",
-      description: "Display additional compilation output",
-    }),
     release: Flags.boolean({
       default: false,
       char: "r",

@@ -1,7 +1,9 @@
 import { Command, Flags } from "@oclif/core";
 import { getSwankyConfig, Spinner } from "./index.js";
 import { SwankyConfig } from "../types/index.js";
-export abstract class BaseCommand extends Command {
+import { writeJSON } from "fs-extra/esm";
+
+export abstract class SwankyCommand extends Command {
   protected spinner!: Spinner;
   protected swankyConfig!: SwankyConfig;
   static NO_CONFIG_COMMANDS = ["Init"];
@@ -15,10 +17,14 @@ export abstract class BaseCommand extends Command {
       if (
         error instanceof Error &&
         error.message.includes("swanky.config.json") &&
-        !BaseCommand.NO_CONFIG_COMMANDS.includes(this.constructor.name)
+        !SwankyCommand.NO_CONFIG_COMMANDS.includes(this.constructor.name)
       )
         throw error;
     }
+  }
+
+  protected async storeConfig() {
+    await writeJSON("swanky.config.json", this.swankyConfig, { spaces: 2 });
   }
 
   protected async catch(err: Error & { exitCode?: number }): Promise<any> {
@@ -35,7 +41,7 @@ export abstract class BaseCommand extends Command {
 
 // Static property baseFlags needs to be defined like this (for now) because of the way TS transpiles ESNEXT code
 // https://github.com/oclif/oclif/issues/1100#issuecomment-1454910926
-BaseCommand.baseFlags = {
+SwankyCommand.baseFlags = {
   verbose: Flags.boolean({
     required: false,
     description: "Display more info in the result logs",

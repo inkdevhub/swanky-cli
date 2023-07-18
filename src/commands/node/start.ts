@@ -1,7 +1,8 @@
-import { Command, Flags } from "@oclif/core";
+import { Flags } from "@oclif/core";
 import { execaCommand } from "execa";
-import { ensureSwankyProject, getSwankyConfig } from "../../lib/index.js";
-export class StartNode extends Command {
+import { ensureSwankyProject } from "../../lib/index.js";
+import { SwankyCommand } from "../../lib/swankyCommand.js";
+export class StartNode extends SwankyCommand {
   static description = "Start a local node";
 
   static flags = {
@@ -20,7 +21,7 @@ export class StartNode extends Command {
     }),
     finalizeDelaySec: Flags.integer({
       required: false,
-      default: 0, // 0 means instant finalitization
+      default: 0, // 0 means instant finalization
       description: "Delay time in seconds after blocks being sealed",
     }),
   };
@@ -30,11 +31,10 @@ export class StartNode extends Command {
 
     const { flags } = await this.parse(StartNode);
 
-    const config = await getSwankyConfig();
     // Run persistent mode by default. non-persistent mode in case flag is provided.
     // Non-Persistent mode (`--dev`) allows all CORS origin, without `--dev`, users need to specify origins by `--rpc-cors`.
     await execaCommand(
-      `${config.node.localPath} \
+      `${this.swankyConfig.node.localPath} \
       --finalize-delay-sec ${flags.finalizeDelaySec} \
       ${flags.tmp ? "--dev" : `--rpc-cors ${flags.rpcCors}`}`,
       {

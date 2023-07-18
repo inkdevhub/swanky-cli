@@ -3,15 +3,15 @@ import { AccountData, ContractData, DeploymentData, Encrypted } from "../types/i
 import { Args, Command, Flags, Interfaces } from "@oclif/core";
 import inquirer from "inquirer";
 import chalk from "chalk";
-import { BaseCommand } from "./baseCommand.js";
+import { SwankyCommand } from "./swankyCommand.js";
 import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
 import { Contract } from "./contract.js";
 
 export type JoinedFlagsType<T extends typeof Command> = Interfaces.InferredFlags<
-  (typeof BaseCommand)["baseFlags"] & (typeof ContractCall)["baseFlags"] & T["flags"]
+  (typeof SwankyCommand)["baseFlags"] & (typeof ContractCall)["baseFlags"] & T["flags"]
 >;
 
-export abstract class ContractCall<T extends typeof Command> extends BaseCommand {
+export abstract class ContractCall<T extends typeof Command> extends SwankyCommand {
   static callArgs = {
     contractName: Args.string({
       name: "Contract name",
@@ -124,7 +124,7 @@ export abstract class ContractCall<T extends typeof Command> extends BaseCommand
 // Static property baseFlags needs to be defined like this (for now) because of the way TS transpiles ESNEXT code
 // https://github.com/oclif/oclif/issues/1100#issuecomment-1454910926
 ContractCall.baseFlags = {
-  ...BaseCommand.baseFlags,
+  ...SwankyCommand.baseFlags,
   params: Flags.string({
     required: false,
     description: "Arguments supplied to the message",

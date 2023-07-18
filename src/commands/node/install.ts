@@ -1,10 +1,10 @@
-import { BaseCommand } from "../../lib/baseCommand.js";
+import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { ux } from "@oclif/core";
 import { ensureSwankyProject, downloadNode, swankyNode } from "../../lib/index.js";
 import path from "node:path";
 import { writeJSON } from "fs-extra/esm";
 
-export class InstallNode extends BaseCommand {
+export class InstallNode extends SwankyCommand {
   static description = "Install swanky node binary";
 
   async run(): Promise<void> {

@@ -1,5 +1,5 @@
 import "ts-mocha";
-import { Command, Flags, Args } from "@oclif/core";
+import { Flags, Args } from "@oclif/core";
 import path from "node:path";
 import { ensureSwankyProject, getSwankyConfig } from "../../lib/index.js";
 import { globby } from "globby";
@@ -7,12 +7,13 @@ import Mocha from "mocha";
 import { emptyDir } from "fs-extra/esm";
 import shell from "shelljs";
 import { Contract } from "../../lib/contract.js";
+import { SwankyCommand } from "../../lib/swankyCommand.js";
 
 declare global {
   var contractTypesPath: string; // eslint-disable-line no-var
 }
 
-export class TestContract extends Command {
+export class TestContract extends SwankyCommand {
   static description = "Run tests for a given contact";
 
   static flags = {

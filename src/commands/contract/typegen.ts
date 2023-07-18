@@ -1,8 +1,9 @@
-import { Args, Command } from "@oclif/core";
-import { ensureSwankyProject, getSwankyConfig, Spinner, generateTypes } from "../../lib/index.js";
+import { Args } from "@oclif/core";
+import { ensureSwankyProject, generateTypes } from "../../lib/index.js";
 import { Contract } from "../../lib/contract.js";
+import { SwankyCommand } from "../../lib/swankyCommand.js";
 
-export class TypegenCommand extends Command {
+export class TypegenCommand extends SwankyCommand {
   static description = "Generate types from compiled contract metadata";
 
   static args = {
@@ -18,14 +19,10 @@ export class TypegenCommand extends Command {
 
     await ensureSwankyProject();
 
-    const config = await getSwankyConfig();
-
-    const contractRecord = config.contracts[args.contractName];
+    const contractRecord = this.swankyConfig.contracts[args.contractName];
     if (!contractRecord) {
       this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
     }
-
-    const spinner = new Spinner();
 
     const contract = new Contract(contractRecord);
 
@@ -39,7 +36,7 @@ export class TypegenCommand extends Command {
       this.error(`No artifact file found at path: ${artifactsCheck.missingPaths}`);
     }
 
-    await spinner.runCommand(async () => {
+    await this.spinner.runCommand(async () => {
       await generateTypes(contract.name);
     }, "Generating types");
   }

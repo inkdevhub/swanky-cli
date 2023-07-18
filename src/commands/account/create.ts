@@ -1,10 +1,10 @@
-import { Command, Flags } from "@oclif/core";
+import { Flags } from "@oclif/core";
 import chalk from "chalk";
-import { writeJSON } from "fs-extra/esm";
-import { ensureSwankyProject, getSwankyConfig, ChainAccount, encrypt } from "../../lib/index.js";
+import { ChainAccount, encrypt } from "../../lib/index.js";
 import { AccountData } from "../../types/index.js";
 import inquirer from "inquirer";
-export class CreateAccount extends Command {
+import { SwankyCommand } from "../../lib/swankyCommand.js";
+export class CreateAccount extends SwankyCommand {
   static description = "Create a new dev account in config";
 
   static flags = {
@@ -17,7 +17,6 @@ export class CreateAccount extends Command {
   };
 
   async run(): Promise<void> {
-    await ensureSwankyProject();
     const { flags } = await this.parse(CreateAccount);
 
     const isDev =
@@ -76,11 +75,9 @@ export class CreateAccount extends Command {
       accountData.mnemonic = tmpMnemonic;
     }
 
-    const config = await getSwankyConfig();
+    this.swankyConfig.accounts.push(accountData);
 
-    config.accounts.push(accountData);
-
-    await writeJSON("swanky.config.json", config, { spaces: 2 });
+    await this.storeConfig();
 
     this.log(
       `${chalk.greenBright("✔")} Account with alias ${chalk.yellowBright(

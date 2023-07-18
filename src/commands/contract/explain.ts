@@ -1,8 +1,8 @@
-import { BaseCommand } from "../../lib/baseCommand.js";
+import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { Args } from "@oclif/core";
 import { Contract } from "../../lib/contract.js";
 
-export class ExplainContract extends BaseCommand {
+export class ExplainContract extends SwankyCommand {
   static description = "Explain contract messages based on the contracts' metadata";
 
   static args = {

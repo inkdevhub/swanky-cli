@@ -1,15 +1,6 @@
 import { Args, Flags } from "@oclif/core";
 import path from "node:path";
-import {
-  ensureDir,
-  writeJSON,
-  pathExists,
-  copy,
-  outputFile,
-  readJSON,
-  writeJson,
-  remove,
-} from "fs-extra/esm";
+import { ensureDir, writeJSON, pathExists, copy, outputFile, readJSON, remove } from "fs-extra/esm";
 import { stat, readdir, readFile } from "fs/promises";
 import { Dirent } from "fs";
 import { execaCommand, execaCommandSync } from "execa";
@@ -34,7 +25,7 @@ import {
   DEFAULT_SHIBUYA_NETWORK_URL,
   DEFAULT_SHIDEN_NETWORK_URL,
 } from "../../lib/consts.js";
-import { BaseCommand } from "../../lib/baseCommand.js";
+import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { globby } from "globby";
 import { merge } from "lodash-es";
 import inquirerFuzzyPath from "inquirer-fuzzy-path";
@@ -69,7 +60,7 @@ type CopyPathsList = { contractsDirectories: string[]; cratesDirectories: string
 
 inquirer.registerPrompt("fuzzypath", inquirerFuzzyPath);
 
-export class Init extends BaseCommand {
+export class Init extends SwankyCommand {
   static description = "Generate a new smart contract environment";
 
   static flags = {
@@ -411,7 +402,7 @@ export class Init extends BaseCommand {
           const templatePJson = await readJSON(templatePJsonPath);
           const mergedJson = merge(templatePJson, existingPJson);
           await remove(templatePJsonPath);
-          await writeJson(templatePJsonPath, mergedJson, { spaces: 2 });
+          await writeJSON(templatePJsonPath, mergedJson, { spaces: 2 });
         },
         args: [existingPJsonPath, this.projectPath],
         runningMessage: "Merging package.json",

@@ -1,4 +1,3 @@
-import { Command } from "@oclif/core";
 import { Listr } from "listr2";
 import { commandStdoutOrNull, ensureSwankyProject } from "../../lib/index.js";
 import { SwankyConfig } from "../../types/index.js";
@@ -7,6 +6,7 @@ import { readFileSync } from "fs";
 import path from "node:path";
 import TOML from "@iarna/toml";
 import semver from "semver";
+import { SwankyCommand } from "../../lib/swankyCommand.js";
 
 interface Ctx {
   versions: {
@@ -26,7 +26,7 @@ interface Ctx {
   looseDefinitionDetected: boolean;
 }
 
-export default class Check extends Command {
+export default class Check extends SwankyCommand {
   static description = "Check installed package versions and compatibility";
 
   public async run(): Promise<void> {
