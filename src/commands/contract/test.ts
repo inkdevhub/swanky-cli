@@ -1,7 +1,6 @@
 import "ts-mocha";
 import { Flags, Args } from "@oclif/core";
 import path from "node:path";
-import { ensureSwankyProject, getSwankyConfig } from "../../lib/index.js";
 import { globby } from "globby";
 import Mocha from "mocha";
 import { emptyDir } from "fs-extra/esm";
@@ -39,15 +38,14 @@ export class TestContract extends SwankyCommand {
       this.error("No contracts were selected to compile");
     }
 
-    await ensureSwankyProject();
-    const config = await getSwankyConfig();
-
-    const contractNames = flags.all ? Object.keys(config.contracts) : [args.contractName];
+    const contractNames = flags.all
+      ? Object.keys(this.swankyConfig.contracts)
+      : [args.contractName];
 
     const testDir = path.resolve("tests");
 
     for (const contractName of contractNames) {
-      const contractRecord = config.contracts[contractName];
+      const contractRecord = this.swankyConfig.contracts[contractName];
       if (!contractRecord) {
         this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
       }

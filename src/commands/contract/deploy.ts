@@ -2,14 +2,7 @@ import { Args, Flags } from "@oclif/core";
 import path from "node:path";
 import { writeJSON } from "fs-extra/esm";
 import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
-import {
-  ensureSwankyProject,
-  resolveNetworkUrl,
-  DeployApi,
-  ChainAccount,
-  decrypt,
-  AbiType,
-} from "../../lib/index.js";
+import { resolveNetworkUrl, DeployApi, ChainAccount, decrypt, AbiType } from "../../lib/index.js";
 import { AccountData, Encrypted } from "../../types/index.js";
 import inquirer from "inquirer";
 import chalk from "chalk";
@@ -51,7 +44,6 @@ export class DeployContract extends SwankyCommand {
   };
 
   async run(): Promise<void> {
-    await ensureSwankyProject();
     const { args, flags } = await this.parse(DeployContract);
 
     const contractRecord = this.swankyConfig.contracts[args.contractName];

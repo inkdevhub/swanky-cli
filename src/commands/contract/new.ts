@@ -2,7 +2,6 @@ import { Args, Flags } from "@oclif/core";
 import path from "node:path";
 import { ensureDir, pathExists, writeJSON } from "fs-extra/esm";
 import {
-  ensureSwankyProject,
   checkCliDependencies,
   copyContractTemplateFiles,
   processTemplates,
@@ -33,8 +32,6 @@ export class NewContract extends SwankyCommand {
   };
 
   async run(): Promise<void> {
-    await ensureSwankyProject();
-
     const projectPath = process.cwd();
     const { args, flags } = await this.parse(NewContract);
 

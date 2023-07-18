@@ -83,6 +83,10 @@ export class Init extends SwankyCommand {
     }),
   };
 
+  constructor(argv: string[], config: any) {
+    super(argv, config);
+    (this.constructor as typeof SwankyCommand).ENSURE_SWANKY_CONFIG = false;
+  }
   projectPath = "";
 
   configBuilder: Partial<SwankyConfig> = {

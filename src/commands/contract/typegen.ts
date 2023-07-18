@@ -1,5 +1,5 @@
 import { Args } from "@oclif/core";
-import { ensureSwankyProject, generateTypes } from "../../lib/index.js";
+import { generateTypes } from "../../lib/index.js";
 import { Contract } from "../../lib/contract.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 
@@ -16,8 +16,6 @@ export class TypegenCommand extends SwankyCommand {
 
   async run(): Promise<void> {
     const { args } = await this.parse(TypegenCommand);
-
-    await ensureSwankyProject();
 
     const contractRecord = this.swankyConfig.contracts[args.contractName];
     if (!contractRecord) {

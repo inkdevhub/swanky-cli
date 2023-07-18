@@ -1,12 +1,6 @@
-import { Args, Command, Flags } from "@oclif/core";
+import { Args, Flags } from "@oclif/core";
 import path from "node:path";
-import {
-  storeArtifacts,
-  ensureSwankyProject,
-  getSwankyConfig,
-  Spinner,
-  generateTypes,
-} from "../../lib/index.js";
+import { storeArtifacts, Spinner, generateTypes } from "../../lib/index.js";
 import { spawn } from "node:child_process";
 import { pathExists } from "fs-extra/esm";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
@@ -44,14 +38,13 @@ export class CompileContract extends SwankyCommand {
       this.error("No contracts were selected to compile");
     }
 
-    await ensureSwankyProject();
-    const config = await getSwankyConfig();
-
-    const contractNames = flags.all ? Object.keys(config.contracts) : [args.contractName];
+    const contractNames = flags.all
+      ? Object.keys(this.swankyConfig.contracts)
+      : [args.contractName];
     const spinner = new Spinner();
 
     for (const contractName of contractNames) {
-      const contractInfo = config.contracts[contractName];
+      const contractInfo = this.swankyConfig.contracts[contractName];
       if (!contractInfo) {
         this.error(`Cannot find contract info for ${contractName} contract in swanky.config.json`);
       }

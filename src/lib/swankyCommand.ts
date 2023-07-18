@@ -6,7 +6,8 @@ import { writeJSON } from "fs-extra/esm";
 export abstract class SwankyCommand extends Command {
   protected spinner!: Spinner;
   protected swankyConfig!: SwankyConfig;
-  static NO_CONFIG_COMMANDS = ["Init"];
+  static ENSURE_SWANKY_CONFIG = true;
+
   public async init(): Promise<void> {
     await super.init();
     this.spinner = new Spinner();
@@ -17,7 +18,7 @@ export abstract class SwankyCommand extends Command {
       if (
         error instanceof Error &&
         error.message.includes("swanky.config.json") &&
-        !SwankyCommand.NO_CONFIG_COMMANDS.includes(this.constructor.name)
+        (this.constructor as typeof SwankyCommand).ENSURE_SWANKY_CONFIG
       )
         throw error;
     }

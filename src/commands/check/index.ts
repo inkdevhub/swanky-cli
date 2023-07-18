@@ -1,5 +1,5 @@
 import { Listr } from "listr2";
-import { commandStdoutOrNull, ensureSwankyProject } from "../../lib/index.js";
+import { commandStdoutOrNull } from "../../lib/index.js";
 import { SwankyConfig } from "../../types/index.js";
 import { pathExistsSync, readJSON } from "fs-extra/esm";
 import { readFileSync } from "fs";
@@ -30,7 +30,6 @@ export default class Check extends SwankyCommand {
   static description = "Check installed package versions and compatibility";
 
   public async run(): Promise<void> {
-    await ensureSwankyProject();
     const tasks = new Listr<Ctx>([
       {
         title: "Check Rust",

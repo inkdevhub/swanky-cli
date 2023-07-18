@@ -1,5 +1,4 @@
 import chalk from "chalk";
-import { ensureSwankyProject } from "../../lib/index.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 
 export class CreateAccount extends SwankyCommand {
@@ -7,8 +6,6 @@ export class CreateAccount extends SwankyCommand {
   static aliases = [`account:ls`];
 
   async run(): Promise<void> {
-    await ensureSwankyProject();
-
     this.log(`${chalk.greenBright("✔")} Stored dev accounts:`);
 
     for (const account of this.swankyConfig.accounts) {

@@ -14,13 +14,6 @@ export async function commandStdoutOrNull(command: string): Promise<string | nul
   }
 }
 
-export async function ensureSwankyProject(): Promise<void> {
-  const configExists = await pathExists("swanky.config.json");
-  if (!configExists) {
-    throw new Error("No 'swanky.config.json' detected in current folder!");
-  }
-}
-
 export async function getSwankyConfig(): Promise<SwankyConfig> {
   try {
     const config = await readJSON("swanky.config.json");

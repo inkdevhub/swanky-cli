@@ -1,6 +1,5 @@
 import { Flags } from "@oclif/core";
 import { execaCommand } from "execa";
-import { ensureSwankyProject } from "../../lib/index.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 export class StartNode extends SwankyCommand {
   static description = "Start a local node";
@@ -27,8 +26,6 @@ export class StartNode extends SwankyCommand {
   };
 
   async run(): Promise<void> {
-    ensureSwankyProject();
-
     const { flags } = await this.parse(StartNode);
 
     // Run persistent mode by default. non-persistent mode in case flag is provided.
