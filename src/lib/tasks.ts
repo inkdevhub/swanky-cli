@@ -99,7 +99,7 @@ export async function downloadNode(projectPath: string, nodeInfo: nodeInfo, spin
       reject(new Error(`Error downloading node: , ${error.message}`));
     });
 
-    dl.start().catch((error) => reject(new Error(`Error downloading node: , ${error.message}`)));
+    dl.start().catch((error: Error) => reject(new Error(`Error downloading node: , ${error.message}`)));
   });
 
   if (dlFileDetails.incomplete) {

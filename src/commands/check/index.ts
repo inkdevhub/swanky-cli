@@ -17,12 +17,10 @@ interface Ctx {
       cargoDylint?: string | null;
       cargoContract?: string | null;
     };
-    contracts: { [key: string]: { [key: string]: string } };
+    contracts: Record<string, Record<string, string>>;
   };
   swankyConfig?: SwankyConfig;
-  mismatchedVersions?: {
-    [key: string]: string;
-  };
+  mismatchedVersions?: Record<string, string>;
   looseDefinitionDetected: boolean;
 }
 
@@ -83,8 +81,8 @@ export default class Check extends SwankyCommand {
             const inkDependencies = Object.entries(cargoToml.dependencies)
               .filter((dependency) => dependency[0].includes("ink_"))
               .map(([depName, depInfo]) => {
-                const dependency = <Dependency>depInfo;
-                return [depName, dependency.version || dependency.tag];
+                const dependency = depInfo as Dependency;
+                return [depName, dependency.version ?? dependency.tag];
               });
             ctx.versions.contracts[contract] = Object.fromEntries(inkDependencies);
           }
@@ -95,16 +93,16 @@ export default class Check extends SwankyCommand {
         task: async (ctx) => {
           const supportedInk = ctx.swankyConfig?.node.supportedInk;
 
-          const mismatched: { [contractVersion: string]: string } = {};
+          const mismatched:Record<string, string> = {};
           Object.entries(ctx.versions.contracts).forEach(([contract, inkPackages]) => {
             Object.entries(inkPackages).forEach(([inkPackage, version]) => {
-              if (semver.gt(version, supportedInk as string)) {
+              if (semver.gt(version, supportedInk!)) {
                 mismatched[
                   `${contract}-${inkPackage}`
                 ] = `Version of ${inkPackage} (${version}) in ${contract} is higher than supported ink version (${supportedInk})`;
               }
 
-              if (!(version.charAt(0) === "=" || version.charAt(0) === "v")) {
+              if (!(version.startsWith("=") || version.startsWith("v"))) {
                 ctx.looseDefinitionDetected = true;
               }
             });
@@ -120,7 +118,7 @@ export default class Check extends SwankyCommand {
     });
     console.log(context.versions);
     Object.values(context.mismatchedVersions as any).forEach((mismatch) =>
-      console.error(`[ERROR] ${mismatch}`)
+      console.error(`[ERROR] ${mismatch as string}`)
     );
     if (context.looseDefinitionDetected) {
       console.log(`\n[WARNING]Some of the ink dependencies do not have a fixed version.

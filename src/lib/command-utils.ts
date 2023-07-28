@@ -1,9 +1,8 @@
 import { execaCommand } from "execa";
-import { copy, emptyDir, ensureDir, pathExists, readJSON } from "fs-extra/esm";
+import { copy, emptyDir, ensureDir, readJSON } from "fs-extra/esm";
 import path from "node:path";
 import { DEFAULT_NETWORK_URL, ARTIFACTS_PATH, TYPED_CONTRACTS_PATH } from "./consts.js";
 import { SwankyConfig } from "../types/index.js";
-import { Abi } from "@polkadot/api-contract";
 
 export async function commandStdoutOrNull(command: string): Promise<string | null> {
   try {
@@ -60,7 +59,7 @@ export async function storeArtifacts(
   }
 }
 // TODO: Use the Abi type (optionally, support legacy types version)
-export async function printContractInfo(abi: any) {
+export function printContractInfo(abi: any) {
   // TODO: Use templating, colorize.
   console.log(`
     😎 ${abi.contract.name} Contract 😎

@@ -43,7 +43,7 @@ export class ChainApi {
   }
 
   public get chainProperty(): ChainProperty {
-    return this._chainProperty as ChainProperty;
+    return this._chainProperty!;
   }
 
   public get typeRegistry(): TypeRegistry {
@@ -56,7 +56,7 @@ export class ChainApi {
     const chainProperties = await this._api.rpc.system.properties();
 
     const ss58Prefix = Number.parseInt(
-      (await this._api.consts.system.ss58Prefix).toString() || "0",
+      (this._api.consts.system.ss58Prefix).toString() || "0",
       10
     );
 
@@ -90,8 +90,8 @@ export class ChainApi {
     throw new Error(`Undefined extrinsic call ${extrinsic} with method ${method}`);
   }
 
-  public buildStorageQuery(extrinsic: string, method: string, ...args: any[]): Promise<Codec> {
-    const ext = this._api?.query[extrinsic][method](...args);
+  public async buildStorageQuery(extrinsic: string, method: string, ...args: any[]): Promise<Codec> {
+    const ext = await this._api?.query[extrinsic][method](...args);
     if (ext) return ext;
     throw new Error(`Undefined storage query ${extrinsic} for method ${method}`);
   }

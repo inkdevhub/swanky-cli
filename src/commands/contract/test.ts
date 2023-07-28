@@ -61,7 +61,7 @@ export class TestContract extends SwankyCommand {
       const artifactsCheck = await contract.artifactsExist();
 
       if (!artifactsCheck.result) {
-        this.error(`No artifact file found at path: ${artifactsCheck.missingPaths}`);
+        this.error(`No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`);
       }
 
       console.log(`Testing contract: ${contractName}`);
@@ -84,7 +84,6 @@ export class TestContract extends SwankyCommand {
 
       const tests = await globby(`${path.resolve(testDir, contractName)}/*.test.ts`);
 
-      mocha.addFile;
       tests.forEach((test) => {
         mocha.addFile(test);
       });

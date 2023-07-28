@@ -40,12 +40,12 @@ export class Spinner {
     shouldExitOnError = true
   ) {
     try {
-      this.start(runningMessage);
+      await this.start(runningMessage);
       const res = await command();
-      this.succeed(successMessage || `${runningMessage} OK`);
+      this.succeed(successMessage ?? `${runningMessage} OK`);
       return res;
     } catch (error) {
-      this.fail(failMessage || `Error ${runningMessage}`);
+      this.fail(failMessage ?? `Error ${runningMessage}`);
       if (this.verbose) console.error(error);
       if (shouldExitOnError) process.exit(1);
     }

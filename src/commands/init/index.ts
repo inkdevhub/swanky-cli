@@ -2,7 +2,6 @@ import { Args, Flags } from "@oclif/core";
 import path from "node:path";
 import { ensureDir, writeJSON, pathExists, copy, outputFile, readJSON, remove } from "fs-extra/esm";
 import { stat, readdir, readFile } from "fs/promises";
-import { Dirent } from "fs";
 import { execaCommand, execaCommandSync } from "execa";
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer from "inquirer";
@@ -26,7 +25,7 @@ import {
   DEFAULT_SHIDEN_NETWORK_URL,
 } from "../../lib/consts.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-import { globby } from "globby";
+import { GlobEntry, globby } from "globby";
 import { merge } from "lodash-es";
 import inquirerFuzzyPath from "inquirer-fuzzy-path";
 import { SwankyConfig } from "../../types/index.js";
@@ -43,20 +42,20 @@ interface Task {
   callback?: (param: string) => void;
 }
 
-type PathEntry = {
-  dirent: Dirent;
+interface PathEntry {
+  dirent: GlobEntry["dirent"];
   name: string;
   path: string;
   moduleName?: string;
 };
 
-type CopyCandidates = {
+interface CopyCandidates {
   contracts: PathEntry[];
   crates: PathEntry[];
   tests?: PathEntry[];
 };
 
-type CopyPathsList = { contractsDirectories: string[]; cratesDirectories: string[] };
+interface CopyPathsList { contractsDirectories: string[]; cratesDirectories: string[] };
 
 inquirer.registerPrompt("fuzzypath", inquirerFuzzyPath);
 
@@ -180,7 +179,7 @@ export class Init extends SwankyCommand {
       },
     ];
 
-    Object.keys(this.configBuilder.contracts as typeof this.swankyConfig.contracts).forEach(
+    Object.keys(this.configBuilder.contracts!).forEach(
       async (contractName) => {
         await ensureDir(path.resolve(this.projectPath, "artifacts", contractName));
         await ensureDir(path.resolve(this.projectPath, "tests", contractName));
@@ -362,7 +361,7 @@ export class Init extends SwankyCommand {
     for (const contract of confirmedCopyList.contracts) {
       this.configBuilder.contracts[contract.name] = {
         name: contract.name,
-        moduleName: contract.moduleName as string,
+        moduleName: contract.moduleName!,
         deployments: [],
       };
     }
@@ -387,7 +386,7 @@ export class Init extends SwankyCommand {
       task: async (pathToExistingProject, projectPath) => {
         const fileList = ["rust-toolchain.toml", ".rustfmt.toml"];
         for (const fileName of fileList) {
-          const filePath = await path.resolve(pathToExistingProject, fileName);
+          const filePath = path.resolve(pathToExistingProject, fileName);
           if (await pathExists(filePath)) {
             await copy(filePath, path.resolve(projectPath, fileName));
           }
@@ -423,7 +422,7 @@ async function detectModuleNames(copyList: CopyCandidates): Promise<CopyCandidat
   };
 
   for (const group of ["contracts", "crates"]) {
-    for (const entry of copyList[group as keyof CopyCandidates] as PathEntry[]) {
+    for (const entry of copyList[group as keyof CopyCandidates]!) {
       const moduleName = path.basename(entry.path);
       const extendedEntry = { ...entry, moduleName };
       if (
@@ -448,7 +447,7 @@ async function copyWorkspaceContracts(copyList: CopyCandidates, projectPath: str
   for (const group of ["contracts", "crates", "tests"]) {
     const destDir = path.resolve(projectPath, group);
     await ensureDir(destDir);
-    for (const entry of copyList[group as keyof CopyCandidates] as PathEntry[]) {
+    for (const entry of copyList[group as keyof CopyCandidates]!) {
       const destPath = path.join(destDir, entry.name);
       await copy(entry.path, destPath);
     }
@@ -519,7 +518,7 @@ async function detectTests(pathToExistingProject: string): Promise<string | unde
       type: "confirm",
       name: "shouldUseDetectedTestDir",
       message: `Detected test directory [${path.basename(
-        testDir as string
+        testDir!
       )}]. Do you want to copy it to your new project?`,
       default: true,
     },

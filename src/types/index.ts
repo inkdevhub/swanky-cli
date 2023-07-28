@@ -11,7 +11,7 @@ export interface ChainProperty {
 
 export type ExtrinsicPayload = SubmittableExtrinsic<"promise">;
 
-export type Encrypted = { iv: string; data: string };
+export interface Encrypted { iv: string; data: string };
 
 export interface AccountData {
   isDev: boolean;
@@ -46,11 +46,7 @@ export interface SwankyConfig {
   };
   accounts: AccountData[];
   contracts: Record<string, ContractData> | Record<string, never>;
-  networks: {
-    [network: string]: {
-      url: string;
-    };
-  };
+  networks: Record<string, {url: string}>
 }
 
 export type SupportedPlatforms = "darwin" | "linux";

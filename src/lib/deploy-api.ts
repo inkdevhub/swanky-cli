@@ -16,7 +16,7 @@ export class DeployApi extends ChainApi {
   ) {
     const gasLimit = this.apiInst.registry.createType("WeightV2", {
       refTime: BigInt(TEN_B),
-      proofSize: BigInt(customGas || TEN_B),
+      proofSize: BigInt(customGas ?? TEN_B),
     });
 
     const code = new CodePromise(this._api, abi, wasm);
@@ -35,7 +35,7 @@ export class DeployApi extends ChainApi {
             deployer: string;
           };
 
-          if (!addresses || !addresses.contract)
+          if (!addresses?.contract)
             reject(new Error("Unable to get the contract address"));
           resolve(addresses.contract);
           this._provider.disconnect();

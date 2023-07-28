@@ -31,7 +31,7 @@ export class TypegenCommand extends SwankyCommand {
     const artifactsCheck = await contract.artifactsExist();
 
     if (!artifactsCheck.result) {
-      this.error(`No artifact file found at path: ${artifactsCheck.missingPaths}`);
+      this.error(`No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`);
     }
 
     await this.spinner.runCommand(async () => {

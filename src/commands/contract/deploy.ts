@@ -60,7 +60,7 @@ export class DeployContract extends SwankyCommand {
     const artifactsCheck = await contract.artifactsExist();
 
     if (!artifactsCheck.result) {
-      this.error(`No artifact file found at path: ${artifactsCheck.missingPaths}`);
+      this.error(`No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`);
     }
 
     const accountData = this.swankyConfig.accounts.find(
@@ -111,7 +111,7 @@ export class DeployContract extends SwankyCommand {
           wasm,
           flags.constructorName,
           account.pair,
-          flags.args as string[],
+          flags.args!,
           flags.gas
         );
         return contractAddress;

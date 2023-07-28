@@ -8,7 +8,7 @@ import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
 import { Contract } from "./contract.js";
 
 export type JoinedFlagsType<T extends typeof Command> = Interfaces.InferredFlags<
-  (typeof SwankyCommand)["baseFlags"] & (typeof ContractCall)["baseFlags"] & T["flags"]
+  (typeof ContractCall)["baseFlags"] & T["flags"]
 >;
 
 export abstract class ContractCall<T extends typeof Command> extends SwankyCommand {
@@ -26,7 +26,7 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
   };
 
   protected flags!: JoinedFlagsType<T>;
-  protected args!: { [name: string]: any };
+  protected args!: Record<string, any>;
   protected contractInfo!: ContractData;
   protected deploymentInfo!: DeploymentData;
   protected account!: ChainAccount;
@@ -54,7 +54,7 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
     const artifactsCheck = await contract.artifactsExist();
 
     if (!artifactsCheck.result) {
-      this.error(`No artifact file found at path: ${artifactsCheck.missingPaths}`);
+      this.error(`No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`);
     }
 
     const deploymentData = flags.address

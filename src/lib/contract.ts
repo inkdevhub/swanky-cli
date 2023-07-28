@@ -43,7 +43,7 @@ export class Contract {
   async getABI(): Promise<AbiType> {
     const check = await this.artifactsExist();
     if (!check.result && check.missingTypes.includes(".json")) {
-      throw new Error(`Cannot read ABI, path not found: ${check.missingPaths}`);
+      throw new Error(`Cannot read ABI, path not found: ${check.missingPaths.toString()}`);
     }
     return readJSON(path.resolve(this.artifactsPath, `${this.moduleName}.json`));
   }
@@ -51,7 +51,7 @@ export class Contract {
   async getBundle() {
     const check = await this.artifactsExist();
     if (!check.result && check.missingTypes.includes(".contract")) {
-      throw new Error(`Cannot read .contract bundle, path not found: ${check.missingPaths}`);
+      throw new Error(`Cannot read .contract bundle, path not found: ${check.missingPaths.toString()}`);
     }
     return readJSON(path.resolve(this.artifactsPath, `${this.moduleName}.contract`));
   }
