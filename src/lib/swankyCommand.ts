@@ -2,7 +2,15 @@ import { Command, Flags } from "@oclif/core";
 import { getSwankyConfig, Spinner } from "./index.js";
 import { SwankyConfig } from "../types/index.js";
 import { writeJSON } from "fs-extra/esm";
+import ModernError from "modern-errors";
+import modernErrorsBugs from "modern-errors-bugs";
+import modernErrorsClean from "modern-errors-clean";
 
+export const BaseError = ModernError.subclass("BaseError", {
+  plugins: [modernErrorsBugs, modernErrorsClean],
+});
+
+export const UnknownError = BaseError.subclass("UnknownError");
 export abstract class SwankyCommand extends Command {
   protected spinner!: Spinner;
   protected swankyConfig!: SwankyConfig;
@@ -31,7 +39,8 @@ export abstract class SwankyCommand extends Command {
   protected async catch(err: Error & { exitCode?: number }): Promise<any> {
     // add any custom logic to handle errors from the command
     // or simply return the parent class error handling
-    return super.catch(err);
+    throw BaseError.normalize(err, UnknownError);
+    // return super.catch(err);
   }
 
   protected async finally(_: Error | undefined): Promise<any> {
