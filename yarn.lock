@@ -2063,15 +2063,7 @@ chai@4:
     pathval "^1.1.1"
     type-detect "^4.0.5"
 
-chalk-string@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/chalk-string/-/chalk-string-2.0.0.tgz#bc3cab38e827a874d7a6da053d4b224ac4d8c4e5"
-  integrity sha512-uK1/l1PUB1YgDob9l5iKsnAKKtYOXhXhHfAhXu86VCtl14URFLrIBKy/eN1Nm/L5phPpoUaokrkvXAL4nGBnbw==
-  dependencies:
-    colors-option "^5.0.0"
-    is-plain-obj "^4.1.0"
-
-chalk@5.3.0, chalk@^5.0.0, chalk@^5.2.0, chalk@^5.3.0:
+chalk@5.3.0, chalk@^5.0.0, chalk@^5.3.0:
   version "5.3.0"
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-5.3.0.tgz#67c20a7ebef70e7f3970a01f90fa210cb6860385"
   integrity sha512-dLitG79d+GV1Nb/VYcCDFivJeK1hiukt9QjRNVOsUtTy1rR1YJsmpGGTZ3qJos+uw7WmWF4wUwBd9jxjocFC2w==
@@ -2388,14 +2380,6 @@ colorette@^2.0.20:
   version "2.0.20"
   resolved "https://registry.yarnpkg.com/colorette/-/colorette-2.0.20.tgz#9eb793e6833067f7235902fcd3b09917a000a95a"
   integrity sha512-IfEDxwoWIjkeXL1eXcDiow4UbKjhLdq6/EuSVR9GMN7KVH3r9gQ83e73hsz1Nd1T3ijd5xv1wcWRYO+D6kCI2w==
-
-colors-option@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/colors-option/-/colors-option-5.0.0.tgz#e9fe13b5783bf22354ab954a04b9631558de2b66"
-  integrity sha512-tlLwb40JtYBb/KmJBz72l1tLKYGhuj2/lHKbHceRrCnLtvvmdiZwliiCNrIS3gpvUKnWkUyk/Q0OqmMKkyF7fA==
-  dependencies:
-    chalk "^5.2.0"
-    is-plain-obj "^4.1.0"
 
 colors@1.0.3:
   version "1.0.3"
@@ -3563,19 +3547,6 @@ grouped-queue@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/grouped-queue/-/grouped-queue-2.0.0.tgz#a2c6713f2171e45db2c300a3a9d7c119d694dac8"
   integrity sha512-/PiFUa7WIsl48dUeCvhIHnwNmAAzlI/eHoJl0vu3nsFA366JleY7Ff8EVTplZu5kO0MIdZjKTTnzItL61ahbnw==
-
-handle-cli-error@^4.0.2:
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/handle-cli-error/-/handle-cli-error-4.0.2.tgz#df25b07bee189da64239b1862fb1f2ee56f1fe4a"
-  integrity sha512-a04R5DCf4PivoF8leuez2gbigq0rvJgjieeflXbufU1KhpSZHkFmEJAq33aahg2ecZmXbVPdPs/owR60X7foRQ==
-  dependencies:
-    chalk-string "^2.0.0"
-    figures "^5.0.0"
-    filter-obj "^5.1.0"
-    is-error-instance "^2.0.0"
-    is-plain-obj "^4.1.0"
-    normalize-exception "^3.0.0"
-    strip-ansi "^7.0.1"
 
 handlebars@4.7.7:
   version "4.7.7"
@@ -4995,13 +4966,6 @@ modern-errors-clean@^5.0.0:
   integrity sha512-rlU1Ii02QO4f7+4Tq4t2Zm7KRfs6zrMDJUgI5FlgNyX0ZADZ45ItJzVBUALRCPcQGQYLDUBNm82u78+Qvxx0BQ==
   dependencies:
     clean-stack "^5.1.0"
-
-modern-errors-cli@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/modern-errors-cli/-/modern-errors-cli-4.0.0.tgz#716079d03d3a8196f5c96feba28082a68e82b6a6"
-  integrity sha512-ZMcZJ8aBDenBSjgZ0XO6OdnbD7WQc2pQgP/WGozORJA96UEYsChlUs20KG0Nf55eU1QI9fi9G33NKCrUZ8fkDQ==
-  dependencies:
-    handle-cli-error "^4.0.2"
 
 modern-errors-winston@^4.0.0:
   version "4.0.0"

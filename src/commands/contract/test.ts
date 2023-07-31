@@ -12,7 +12,7 @@ declare global {
   var contractTypesPath: string; // eslint-disable-line no-var
 }
 
-export class TestContract extends SwankyCommand {
+export class TestContract extends SwankyCommand<typeof TestContract> {
   static description = "Run tests for a given contact";
 
   static flags = {

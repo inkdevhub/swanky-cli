@@ -4,7 +4,7 @@ import { downloadNode, swankyNode } from "../../lib/index.js";
 import path from "node:path";
 import { writeJSON } from "fs-extra/esm";
 
-export class InstallNode extends SwankyCommand {
+export class InstallNode extends SwankyCommand<typeof InstallNode> {
   static description = "Install swanky node binary";
 
   async run(): Promise<void> {

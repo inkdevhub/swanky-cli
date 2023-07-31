@@ -1,7 +1,7 @@
 import { Flags } from "@oclif/core";
 import { execaCommand } from "execa";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-export class StartNode extends SwankyCommand {
+export class StartNode extends SwankyCommand<typeof StartNode> {
   static description = "Start a local node";
 
   static flags = {

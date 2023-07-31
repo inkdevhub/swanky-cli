@@ -24,11 +24,12 @@ import {
   DEFAULT_SHIBUYA_NETWORK_URL,
   DEFAULT_SHIDEN_NETWORK_URL,
 } from "../../lib/consts.js";
-import { SwankyCommand } from "../../lib/swankyCommand.js";
+import { InputError, SwankyCommand } from "../../lib/swankyCommand.js";
 import { GlobEntry, globby } from "globby";
 import { merge } from "lodash-es";
 import inquirerFuzzyPath from "inquirer-fuzzy-path";
 import { SwankyConfig } from "../../types/index.js";
+import chalk from "chalk";
 
 type TaskFunction = (...args: any[]) => any;
 
@@ -47,19 +48,22 @@ interface PathEntry {
   name: string;
   path: string;
   moduleName?: string;
-};
+}
 
 interface CopyCandidates {
   contracts: PathEntry[];
   crates: PathEntry[];
   tests?: PathEntry[];
-};
+}
 
-interface CopyPathsList { contractsDirectories: string[]; cratesDirectories: string[] };
+interface CopyPathsList {
+  contractsDirectories: string[];
+  cratesDirectories: string[];
+}
 
 inquirer.registerPrompt("fuzzypath", inquirerFuzzyPath);
 
-export class Init extends SwankyCommand {
+export class Init extends SwankyCommand<typeof Init> {
   static description = "Generate a new smart contract environment";
 
   static flags = {
@@ -116,7 +120,8 @@ export class Init extends SwankyCommand {
       const pathStat = await stat(this.projectPath);
       if (pathStat.isDirectory()) {
         const files = await readdir(this.projectPath);
-        if (files.length > 0) throw new Error(`Directory ${args.projectName} is not empty!`);
+        if (files.length > 0)
+          throw new InputError(`Directory ${chalk.yellowBright(args.projectName)} is not empty!`);
       }
     } catch (error: unknown) {
       // ignore if it doesn't exist, it will be created
@@ -179,12 +184,10 @@ export class Init extends SwankyCommand {
       },
     ];
 
-    Object.keys(this.configBuilder.contracts!).forEach(
-      async (contractName) => {
-        await ensureDir(path.resolve(this.projectPath, "artifacts", contractName));
-        await ensureDir(path.resolve(this.projectPath, "tests", contractName));
-      }
-    );
+    Object.keys(this.configBuilder.contracts!).forEach(async (contractName) => {
+      await ensureDir(path.resolve(this.projectPath, "artifacts", contractName));
+      await ensureDir(path.resolve(this.projectPath, "tests", contractName));
+    });
 
     this.taskQueue.push({
       task: () =>

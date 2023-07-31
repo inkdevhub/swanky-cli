@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 
-export class CreateAccount extends SwankyCommand {
+export class ListAccounts extends SwankyCommand<typeof ListAccounts> {
   static description = "List dev accounts stored in config";
   static aliases = [`account:ls`];
 

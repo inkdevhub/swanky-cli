@@ -9,7 +9,7 @@ import chalk from "chalk";
 import { Contract } from "../../lib/contract.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 
-export class DeployContract extends SwankyCommand {
+export class DeployContract extends SwankyCommand<typeof DeployContract> {
   static description = "Deploy contract to a running node";
 
   static flags = {

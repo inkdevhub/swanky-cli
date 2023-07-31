@@ -1,12 +1,11 @@
 {
   "compilerOptions": {
-    "declaration": true,
+    "declaration": false,
     "importHelpers": true,
     "module": "NodeNext",
     "strict": true,
     "target": "es2020",
     "resolveJsonModule": true,
-    "composite": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "outDir": "dist",

@@ -3,7 +3,7 @@ import { generateTypes } from "../../lib/index.js";
 import { Contract } from "../../lib/contract.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 
-export class TypegenCommand extends SwankyCommand {
+export class TypegenCommand extends SwankyCommand<typeof TypegenCommand> {
   static description = "Generate types from compiled contract metadata";
 
   static args = {

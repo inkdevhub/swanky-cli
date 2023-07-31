@@ -24,7 +24,7 @@ interface Ctx {
   looseDefinitionDetected: boolean;
 }
 
-export default class Check extends SwankyCommand {
+export default class Check extends SwankyCommand<typeof Check> {
   static description = "Check installed package versions and compatibility";
 
   public async run(): Promise<void> {
@@ -93,7 +93,7 @@ export default class Check extends SwankyCommand {
         task: async (ctx) => {
           const supportedInk = ctx.swankyConfig?.node.supportedInk;
 
-          const mismatched:Record<string, string> = {};
+          const mismatched: Record<string, string> = {};
           Object.entries(ctx.versions.contracts).forEach(([contract, inkPackages]) => {
             Object.entries(inkPackages).forEach(([inkPackage, version]) => {
               if (semver.gt(version, supportedInk!)) {

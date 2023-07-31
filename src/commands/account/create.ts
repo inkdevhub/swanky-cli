@@ -4,7 +4,7 @@ import { ChainAccount, encrypt } from "../../lib/index.js";
 import { AccountData } from "../../types/index.js";
 import inquirer from "inquirer";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-export class CreateAccount extends SwankyCommand {
+export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
   static description = "Create a new dev account in config";
 
   static flags = {

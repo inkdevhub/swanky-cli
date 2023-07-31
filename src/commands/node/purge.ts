@@ -1,6 +1,6 @@
 import { execaCommand } from "execa";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-export class PurgeNode extends SwankyCommand {
+export class PurgeNode extends SwankyCommand<typeof PurgeNode> {
   static description = "Purge local chain state";
 
   async run(): Promise<void> {

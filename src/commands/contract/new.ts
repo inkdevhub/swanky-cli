@@ -13,7 +13,7 @@ import { execaCommandSync } from "execa";
 import inquirer from "inquirer";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 
-export class NewContract extends SwankyCommand {
+export class NewContract extends SwankyCommand<typeof NewContract> {
   static description = "Generate a new smart contract template inside a project";
 
   static flags = {

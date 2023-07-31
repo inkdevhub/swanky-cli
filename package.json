@@ -50,7 +50,6 @@
     "modern-errors": "^6.0.0",
     "modern-errors-bugs": "^4.0.0",
     "modern-errors-clean": "^5.0.0",
-    "modern-errors-cli": "^4.0.0",
     "modern-errors-winston": "^4.0.0",
     "node-downloader-helper": "2.1.9",
     "ora": "6.3.1",
