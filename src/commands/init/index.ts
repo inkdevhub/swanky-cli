@@ -24,7 +24,8 @@ import {
   DEFAULT_SHIBUYA_NETWORK_URL,
   DEFAULT_SHIDEN_NETWORK_URL,
 } from "../../lib/consts.js";
-import { InputError, SwankyCommand } from "../../lib/swankyCommand.js";
+import { SwankyCommand } from "../../lib/swankyCommand.js";
+import { InputError } from "../../lib/errors.js";
 import { GlobEntry, globby } from "globby";
 import { merge } from "lodash-es";
 import inquirerFuzzyPath from "inquirer-fuzzy-path";
