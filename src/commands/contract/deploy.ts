@@ -2,7 +2,7 @@ import { Args, Flags } from "@oclif/core";
 import path from "node:path";
 import { writeJSON } from "fs-extra/esm";
 import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
-import { resolveNetworkUrl, DeployApi, ChainAccount, decrypt, AbiType } from "../../lib/index.js";
+import { resolveNetworkUrl, ChainApi, ChainAccount, decrypt, AbiType } from "../../lib/index.js";
 import { AccountData, Encrypted } from "../../types/index.js";
 import inquirer from "inquirer";
 import chalk from "chalk";
@@ -99,10 +99,10 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
     const networkUrl = resolveNetworkUrl(this.swankyConfig, flags.network ?? "");
 
     const api = (await this.spinner.runCommand(async () => {
-      const api = new DeployApi(networkUrl);
+      const api = await ChainApi.create(networkUrl);
       await api.start();
       return api;
-    }, "Connecting to node")) as DeployApi;
+    }, "Connecting to node")) as ChainApi;
 
     const contractAddress = (await this.spinner.runCommand(async () => {
       try {

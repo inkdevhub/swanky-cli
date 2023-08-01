@@ -13,6 +13,6 @@ export const UnknownError = BaseError.subclass("UnknownError", {
 
 export const InputError = BaseError.subclass("InputError");
 
-export const RPCError = BaseError.subclass("RPCError");
+export const RpcError = BaseError.subclass("RpcError");
 
-export const APIError = BaseError.subclass("APIError");
+export const ApiError = BaseError.subclass("ApiError");

@@ -10,9 +10,35 @@ import BN from "bn.js";
 import { ChainProperty, ExtrinsicPayload } from "../types/index.js";
 
 import { KeyringPair } from "@polkadot/keyring/types";
+import { Abi, CodePromise } from "@polkadot/api-contract";
+import { ApiError } from "./errors.js";
 
-const AUTO_CONNECT_MS = 10_000; // [ms]
+export type AbiType = Abi;
+// const AUTO_CONNECT_MS = 10_000; // [ms]
+const TEN_B = 10_000_000_000;
 
+function CreateApiPromise(provider: WsProvider): Promise<ApiPromise> {
+  return new Promise((resolve, reject) => {
+    const apiPromise = new ApiPromise({ provider });
+
+    apiPromise.on("error", (error) => {
+      reject(new ApiError("Error creating ApiPromise", { cause: error }));
+    });
+
+    const disconnectHandler = () => {
+      reject(
+        new ApiError("Disconnected from the endpoint", { cause: new Error("Abnormal closure") })
+      );
+    };
+
+    apiPromise.on("disconnected", disconnectHandler);
+
+    apiPromise.on("ready", () => {
+      apiPromise.off("disconnected", disconnectHandler);
+      resolve(apiPromise);
+    });
+  });
+}
 export class ChainApi {
   private _chainProperty?: ChainProperty;
   private _registry: TypeRegistry;
@@ -20,14 +46,16 @@ export class ChainApi {
   protected _provider: WsProvider;
   protected _api: ApiPromise;
 
-  constructor(endpoint: string, silent = true) {
-    this._provider = new WsProvider(endpoint, AUTO_CONNECT_MS);
+  static async create(endpoint: string) {
+    const provider = new WsProvider(endpoint);
+    const apiPromise = await CreateApiPromise(provider);
+    return new ChainApi(provider, apiPromise);
+  }
 
-    if (!silent) console.log("connecting to " + endpoint);
+  constructor(provider: WsProvider, apiPromise: ApiPromise) {
+    this._provider = provider;
 
-    this._api = new ApiPromise({
-      provider: this._provider,
-    });
+    this._api = apiPromise;
 
     this._registry = new TypeRegistry();
 
@@ -51,14 +79,9 @@ export class ChainApi {
   }
 
   public async start(): Promise<void> {
-    this._api = await this._api.isReady;
-
     const chainProperties = await this._api.rpc.system.properties();
 
-    const ss58Prefix = Number.parseInt(
-      (this._api.consts.system.ss58Prefix).toString() || "0",
-      10
-    );
+    const ss58Prefix = Number.parseInt(this._api.consts.system.ss58Prefix.toString() || "0", 10);
 
     const tokenDecimals = chainProperties.tokenDecimals
       .unwrapOrDefault()
@@ -90,7 +113,11 @@ export class ChainApi {
     throw new Error(`Undefined extrinsic call ${extrinsic} with method ${method}`);
   }
 
-  public async buildStorageQuery(extrinsic: string, method: string, ...args: any[]): Promise<Codec> {
+  public async buildStorageQuery(
+    extrinsic: string,
+    method: string,
+    ...args: any[]
+  ): Promise<Codec> {
     const ext = await this._api?.query[extrinsic][method](...args);
     if (ext) return ext;
     throw new Error(`Undefined storage query ${extrinsic} for method ${method}`);
@@ -158,6 +185,43 @@ export class ChainApi {
         });
 
       if (handler) handler(result);
+    });
+  }
+
+  public async deploy(
+    abi: Abi,
+    wasm: Buffer,
+    constructorName: string,
+    signerPair: KeyringPair,
+    args: string[],
+    customGas?: number
+  ) {
+    const gasLimit = this.apiInst.registry.createType("WeightV2", {
+      refTime: BigInt(TEN_B),
+      proofSize: BigInt(customGas ?? TEN_B),
+    });
+
+    const code = new CodePromise(this._api, abi, wasm);
+    const storageDepositLimit = null;
+    if (typeof code.tx[constructorName] !== "function") {
+      throw new Error(`Contract has no constructor called ${constructorName}`);
+    }
+    const tx = code.tx[constructorName]({ gasLimit, storageDepositLimit }, ...(args || []));
+    return new Promise((resolve, reject) => {
+      this.signAndSend(signerPair, tx, {}, ({ status, events }) => {
+        if (status.isInBlock || status.isFinalized) {
+          const instantiateEvent = events.find(({ event }: any) => event.method === "Instantiated");
+
+          const addresses = instantiateEvent?.event.data.toHuman() as {
+            contract: string;
+            deployer: string;
+          };
+
+          if (!addresses?.contract) reject(new Error("Unable to get the contract address"));
+          resolve(addresses.contract);
+          this._provider.disconnect();
+        }
+      });
     });
   }
 }

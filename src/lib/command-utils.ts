@@ -17,7 +17,7 @@ export async function getSwankyConfig(): Promise<SwankyConfig> {
   try {
     const config = await readJSON("swanky.config.json");
     return config;
-  } catch {
+  } catch (err) {
     throw new Error("No 'swanky.config.json' detected in current folder!");
   }
 }

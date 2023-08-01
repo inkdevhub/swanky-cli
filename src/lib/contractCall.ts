@@ -80,7 +80,7 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
     }
 
     const networkUrl = resolveNetworkUrl(this.swankyConfig, flags.network ?? "");
-    const api = new ChainApi(networkUrl);
+    const api = await ChainApi.create(networkUrl);
     this.api = api;
     await this.api.start();
 
