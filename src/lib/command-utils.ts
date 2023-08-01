@@ -3,6 +3,7 @@ import { copy, emptyDir, ensureDir, readJSON } from "fs-extra/esm";
 import path from "node:path";
 import { DEFAULT_NETWORK_URL, ARTIFACTS_PATH, TYPED_CONTRACTS_PATH } from "./consts.js";
 import { SwankyConfig } from "../types/index.js";
+import { InputError } from "./errors.js";
 
 export async function commandStdoutOrNull(command: string): Promise<string | null> {
   try {
@@ -17,8 +18,8 @@ export async function getSwankyConfig(): Promise<SwankyConfig> {
   try {
     const config = await readJSON("swanky.config.json");
     return config;
-  } catch (err) {
-    throw new Error("No 'swanky.config.json' detected in current folder!");
+  } catch (cause) {
+    throw new InputError("Error reading swanky.config.json in the current directory!", { cause });
   }
 }
 
