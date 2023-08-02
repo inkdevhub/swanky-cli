@@ -11,7 +11,7 @@ import { ChainProperty, ExtrinsicPayload } from "../types/index.js";
 
 import { KeyringPair } from "@polkadot/keyring/types";
 import { Abi, CodePromise } from "@polkadot/api-contract";
-import { ApiError } from "./errors.js";
+import { ApiError, UnknownError } from "./errors.js";
 
 export type AbiType = Abi;
 // const AUTO_CONNECT_MS = 10_000; // [ms]
@@ -25,10 +25,8 @@ function CreateApiPromise(provider: WsProvider): Promise<ApiPromise> {
       reject(new ApiError("Error creating ApiPromise", { cause: error }));
     });
 
-    const disconnectHandler = () => {
-      reject(
-        new ApiError("Disconnected from the endpoint", { cause: new Error("Abnormal closure") })
-      );
+    const disconnectHandler = (cause: Error) => {
+      reject(new ApiError("Disconnected from the endpoint", { cause }));
     };
 
     apiPromise.on("disconnected", disconnectHandler);
@@ -39,6 +37,31 @@ function CreateApiPromise(provider: WsProvider): Promise<ApiPromise> {
     });
   });
 }
+
+function CreateProvider(endpoint: string): Promise<WsProvider> {
+  return new Promise((resolve, reject) => {
+    const provider = new WsProvider(endpoint, false);
+
+    const unsubscribe = provider.on("error", (cause) => {
+      unsubscribe();
+
+      const errorSymbol = Object.getOwnPropertySymbols(cause).find(
+        (symbol) => symbol.description === "kError"
+      );
+
+      const errorObject = errorSymbol
+        ? cause[errorSymbol]
+        : new UnknownError("Unknown WsProvider error", { cause });
+
+      reject(new ApiError("Cannot connect to the WsProvider", { cause: errorObject }));
+    });
+
+    provider.on("connected", () => {
+      resolve(provider);
+    });
+    provider.connect();
+  });
+}
 export class ChainApi {
   private _chainProperty?: ChainProperty;
   private _registry: TypeRegistry;
@@ -47,7 +70,7 @@ export class ChainApi {
   protected _api: ApiPromise;
 
   static async create(endpoint: string) {
-    const provider = new WsProvider(endpoint);
+    const provider = await CreateProvider(endpoint);
     const apiPromise = await CreateApiPromise(provider);
     return new ChainApi(provider, apiPromise);
   }
