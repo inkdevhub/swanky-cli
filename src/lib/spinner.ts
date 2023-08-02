@@ -1,4 +1,5 @@
 import ora, { Ora } from "ora";
+import { ProcessError } from "./errors.js";
 
 export class Spinner {
   ora: Ora;
@@ -44,10 +45,11 @@ export class Spinner {
       const res = await command();
       this.succeed(successMessage ?? `${runningMessage} OK`);
       return res;
-    } catch (error) {
+    } catch (cause) {
+      const errorMessage = failMessage ?? `Error ${runningMessage}`;
       this.fail(failMessage ?? `Error ${runningMessage}`);
-      if (this.verbose) console.error(error);
-      if (shouldExitOnError) process.exit(1);
+      // ProcessError.exit(errorMessage);
+      throw new ProcessError(errorMessage, { cause, shouldExit: shouldExitOnError });
     }
   }
 
