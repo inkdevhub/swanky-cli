@@ -230,7 +230,7 @@ export class Init extends SwankyCommand<typeof Init> {
     try {
       const detectedGitUser = execaCommandSync("git config --get user.name").stdout;
       gitUser = detectedGitUser;
-    } catch (error) {
+    } catch (_) {
       gitUser = undefined;
     }
 
@@ -302,10 +302,11 @@ export class Init extends SwankyCommand<typeof Init> {
         if (files.length < 1)
           throw new Error(`Target project directory [${pathToExistingProject}] is empty!`);
       }
-    } catch (error: unknown) {
-      if (error instanceof Error && error.message.includes("ENOENT"))
-        throw new Error(`Target project directory [${pathToExistingProject}] not found!`);
-      throw error;
+    } catch (cause) {
+      throw new InputError(
+        `Error reading target directory [${chalk.yellowBright(pathToExistingProject)}]`,
+        { cause }
+      );
     }
 
     const copyGlobsList: CopyPathsList = {

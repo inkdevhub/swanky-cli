@@ -8,6 +8,7 @@ import inquirer from "inquirer";
 import chalk from "chalk";
 import { Contract } from "../../lib/contract.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
+import { ApiError } from "../../lib/errors.js";
 
 export class DeployContract extends SwankyCommand<typeof DeployContract> {
   static description = "Deploy contract to a running node";
@@ -115,9 +116,8 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
           flags.gas
         );
         return contractAddress;
-      } catch (e) {
-        console.error(e);
-        throw new Error("Error deploying!");
+      } catch (cause) {
+        throw new ApiError("Error deploying", { cause });
       }
     }, "Deploying")) as string;
 

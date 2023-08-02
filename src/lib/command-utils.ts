@@ -3,7 +3,7 @@ import { copy, emptyDir, ensureDir, readJSON } from "fs-extra/esm";
 import path from "node:path";
 import { DEFAULT_NETWORK_URL, ARTIFACTS_PATH, TYPED_CONTRACTS_PATH } from "./consts.js";
 import { SwankyConfig } from "../types/index.js";
-import { InputError } from "./errors.js";
+import { FileError, InputError } from "./errors.js";
 
 export async function commandStdoutOrNull(command: string): Promise<string | null> {
   try {
@@ -55,8 +55,8 @@ export async function storeArtifacts(
       await copy(artifactFileToCopy, path.resolve(destArtifactsPath, fileName));
       await copy(artifactFileToCopy, path.resolve(testArtifactsPath, fileName));
     }
-  } catch (error) {
-    console.error(error);
+  } catch (cause) {
+    throw new FileError("Error storing artifacts", { cause });
   }
 }
 // TODO: Use the Abi type (optionally, support legacy types version)

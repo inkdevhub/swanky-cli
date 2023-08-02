@@ -7,6 +7,7 @@ import { emptyDir } from "fs-extra/esm";
 import shell from "shelljs";
 import { Contract } from "../../lib/contract.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
+import { TestError } from "../../lib/errors.js";
 
 declare global {
   var contractTypesPath: string; // eslint-disable-line no-var
@@ -102,8 +103,8 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
             }
           });
         });
-      } catch (error) {
-        this.error(error as string);
+      } catch (cause) {
+        throw new TestError("Error in test", { cause });
       }
     }
   }
