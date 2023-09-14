@@ -7,7 +7,7 @@ import { emptyDir } from "fs-extra/esm";
 import shell from "shelljs";
 import { Contract } from "../../lib/contract.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-import { TestError } from "../../lib/errors.js";
+import { ConfigError, FileError, InputError, TestError } from "../../lib/errors.js";
 
 declare global {
   var contractTypesPath: string; // eslint-disable-line no-var
@@ -36,7 +36,7 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
     const { args, flags } = await this.parse(TestContract);
 
     if (args.contractName === undefined && !flags.all) {
-      this.error("No contracts were selected to compile");
+      throw new InputError("No contracts were selected to compile");
     }
 
     const contractNames = flags.all
@@ -48,13 +48,15 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
     for (const contractName of contractNames) {
       const contractRecord = this.swankyConfig.contracts[contractName];
       if (!contractRecord) {
-        this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
+        throw new ConfigError(
+          `Cannot find a contract named ${args.contractName} in swanky.config.json`
+        );
       }
 
       const contract = new Contract(contractRecord);
 
       if (!(await contract.pathExists())) {
-        this.error(
+        throw new FileError(
           `Path to contract ${args.contractName} does not exist: ${contract.contractPath}`
         );
       }
@@ -62,7 +64,9 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
       const artifactsCheck = await contract.artifactsExist();
 
       if (!artifactsCheck.result) {
-        this.error(`No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`);
+        throw new FileError(
+          `No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`
+        );
       }
 
       console.log(`Testing contract: ${contractName}`);

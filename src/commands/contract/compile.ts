@@ -4,6 +4,7 @@ import { storeArtifacts, Spinner, generateTypes } from "../../lib/index.js";
 import { spawn } from "node:child_process";
 import { pathExists } from "fs-extra/esm";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
+import { ConfigError, FileError, InputError, ProcessError } from "../../lib/errors.js";
 
 export class CompileContract extends SwankyCommand<typeof CompileContract> {
   static description = "Compile the smart contract(s) in your contracts directory";
@@ -35,7 +36,7 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
     const { args, flags } = await this.parse(CompileContract);
 
     if (args.contractName === undefined && !flags.all) {
-      this.error("No contracts were selected to compile");
+      throw new InputError("No contracts were selected to compile", { winston: { stack: true } });
     }
 
     const contractNames = flags.all
@@ -46,12 +47,14 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
     for (const contractName of contractNames) {
       const contractInfo = this.swankyConfig.contracts[contractName];
       if (!contractInfo) {
-        this.error(`Cannot find contract info for ${contractName} contract in swanky.config.json`);
+        throw new ConfigError(
+          `Cannot find contract info for ${contractName} contract in swanky.config.json`
+        );
       }
       const contractPath = path.resolve("contracts", contractInfo.name);
 
       if (!(await pathExists(contractPath))) {
-        this.error(`Contract folder not found at expected path`);
+        throw new InputError(`Contract folder not found at expected path`);
       }
 
       const compilationResult = await spinner.runCommand(
@@ -68,6 +71,7 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
             }
             const compile = spawn("cargo", compileArgs);
             let outputBuffer = "";
+            let errorBuffer = "";
 
             compile.stdout.on("data", (data) => {
               outputBuffer += data.toString();
@@ -75,16 +79,18 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
             });
             compile.stdout.pipe(process.stdout);
 
-            if (flags.verbose) {
-              compile.stderr.on("data", () => spinner.ora.clear());
-              compile.stderr.pipe(process.stdout);
-            }
+            compile.stderr.on("data", (data) => {
+              errorBuffer += data;
+            });
+
             compile.on("exit", (code) => {
               if (code === 0) {
                 const regex = /Your contract artifacts are ready\. You can find them in:\n(.*)/;
                 const match = outputBuffer.match(regex);
                 if (match) resolve(match[1]);
-              } else reject();
+              } else {
+                reject(new ProcessError(errorBuffer));
+              }
             });
           });
         },

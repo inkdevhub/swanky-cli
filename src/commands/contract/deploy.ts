@@ -8,7 +8,7 @@ import inquirer from "inquirer";
 import chalk from "chalk";
 import { Contract } from "../../lib/contract.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-import { ApiError } from "../../lib/errors.js";
+import { ApiError, ConfigError, FileError } from "../../lib/errors.js";
 
 export class DeployContract extends SwankyCommand<typeof DeployContract> {
   static description = "Deploy contract to a running node";
@@ -49,26 +49,32 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
 
     const contractRecord = this.swankyConfig.contracts[args.contractName];
     if (!contractRecord) {
-      this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
+      throw new ConfigError(
+        `Cannot find a contract named ${args.contractName} in swanky.config.json`
+      );
     }
 
     const contract = new Contract(contractRecord);
 
     if (!(await contract.pathExists())) {
-      this.error(`Path to contract ${args.contractName} does not exist: ${contract.contractPath}`);
+      throw new FileError(
+        `Path to contract ${args.contractName} does not exist: ${contract.contractPath}`
+      );
     }
 
     const artifactsCheck = await contract.artifactsExist();
 
     if (!artifactsCheck.result) {
-      this.error(`No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`);
+      throw new FileError(
+        `No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`
+      );
     }
 
     const accountData = this.swankyConfig.accounts.find(
       (account: AccountData) => account.alias === flags.account
     );
     if (!accountData) {
-      this.error("Provided account alias not found in swanky.config.json");
+      throw new ConfigError("Provided account alias not found in swanky.config.json");
     }
 
     const mnemonic = accountData.isDev

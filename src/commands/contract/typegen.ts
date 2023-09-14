@@ -2,6 +2,7 @@ import { Args } from "@oclif/core";
 import { generateTypes } from "../../lib/index.js";
 import { Contract } from "../../lib/contract.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
+import { ConfigError, FileError } from "../../lib/errors.js";
 
 export class TypegenCommand extends SwankyCommand<typeof TypegenCommand> {
   static description = "Generate types from compiled contract metadata";
@@ -19,19 +20,25 @@ export class TypegenCommand extends SwankyCommand<typeof TypegenCommand> {
 
     const contractRecord = this.swankyConfig.contracts[args.contractName];
     if (!contractRecord) {
-      this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
+      throw new ConfigError(
+        `Cannot find a contract named ${args.contractName} in swanky.config.json`
+      );
     }
 
     const contract = new Contract(contractRecord);
 
     if (!(await contract.pathExists())) {
-      this.error(`Path to contract ${args.contractName} does not exist: ${contract.contractPath}`);
+      throw new FileError(
+        `Path to contract ${args.contractName} does not exist: ${contract.contractPath}`
+      );
     }
 
     const artifactsCheck = await contract.artifactsExist();
 
     if (!artifactsCheck.result) {
-      this.error(`No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`);
+      throw new FileError(
+        `No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`
+      );
     }
 
     await this.spinner.runCommand(async () => {

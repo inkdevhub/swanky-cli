@@ -25,7 +25,7 @@ import {
   DEFAULT_SHIDEN_NETWORK_URL,
 } from "../../lib/consts.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-import { InputError } from "../../lib/errors.js";
+import { InputError, UnknownError } from "../../lib/errors.js";
 import { GlobEntry, globby } from "globby";
 import { merge } from "lodash-es";
 import inquirerFuzzyPath from "inquirer-fuzzy-path";
@@ -126,7 +126,8 @@ export class Init extends SwankyCommand<typeof Init> {
       }
     } catch (error: unknown) {
       // ignore if it doesn't exist, it will be created
-      if (!(error instanceof Error) || !error.message.includes("ENOENT")) throw error;
+      if (!(error instanceof Error) || !error.message.includes("ENOENT"))
+        throw new UnknownError("Unexpected error", { cause: error });
     }
 
     const templates = getTemplates();

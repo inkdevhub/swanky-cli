@@ -3,7 +3,7 @@ import { BaseError } from "./errors.js";
 import { env } from "node:process";
 
 export const swankyLogger = createLogger({
-  format: format.combine(BaseError.shortFormat({ stack: true }), format.cli()),
+  format: format.combine(BaseError.shortFormat({ stack: false }), format.cli()),
 
   transports: [new transports.Console({ level: "error" })],
 });
@@ -12,7 +12,7 @@ if (!env.CI) {
   swankyLogger.add(
     new transports.File({
       format: format.combine(
-        BaseError.fullFormat(),
+        BaseError.fullFormat({ stack: true }),
         format.uncolorize(),
         format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
         format.printf((info) => `${info.timestamp} ${info.level}: ${info.message}`)

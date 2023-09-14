@@ -6,7 +6,7 @@ import chalk from "chalk";
 import { SwankyCommand } from "./swankyCommand.js";
 import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
 import { Contract } from "./contract.js";
-import { NetworkError } from "./errors.js";
+import { ConfigError, FileError, NetworkError } from "./errors.js";
 
 export type JoinedFlagsType<T extends typeof Command> = Interfaces.InferredFlags<
   (typeof ContractCall)["baseFlags"] & T["flags"]
@@ -38,26 +38,30 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
 
   public async init(): Promise<void> {
     await super.init();
-    // const { flags, args } = await this.parse(this.constructor as Interfaces.Command.Class);
     const { flags, args } = await this.parse(this.ctor);
-    // this.flags = flags as JoinedFlagsType<typeof ContractCall>;
     this.args = args;
 
     const contractRecord = this.swankyConfig.contracts[args.contractName];
     if (!contractRecord) {
-      this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
+      throw new ConfigError(
+        `Cannot find a contract named ${args.contractName} in swanky.config.json`
+      );
     }
 
     const contract = new Contract(contractRecord);
 
     if (!(await contract.pathExists())) {
-      this.error(`Path to contract ${args.contractName} does not exist: ${contract.contractPath}`);
+      throw new FileError(
+        `Path to contract ${args.contractName} does not exist: ${contract.contractPath}`
+      );
     }
 
     const artifactsCheck = await contract.artifactsExist();
 
     if (!artifactsCheck.result) {
-      this.error(`No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`);
+      throw new FileError(
+        `No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`
+      );
     }
 
     const deploymentData = flags.address
@@ -77,7 +81,7 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
       (account: AccountData) => account.alias === flags.account || "alice"
     );
     if (!accountData) {
-      this.error("Provided account alias not found in swanky.config.json");
+      throw new ConfigError("Provided account alias not found in swanky.config.json");
     }
 
     const networkUrl = resolveNetworkUrl(this.swankyConfig, flags.network ?? "");
