@@ -2,8 +2,8 @@ import { Command, Flags, Interfaces } from "@oclif/core";
 import { getSwankyConfig, Spinner } from "./index.js";
 import { SwankyConfig } from "../types/index.js";
 import { writeJSON } from "fs-extra/esm";
-import { BaseError, UnknownError } from "./errors.js";
-import { initLogger } from "./logger.js";
+import { BaseError, ConfigError, UnknownError } from "./errors.js";
+import { swankyLogger } from "./logger.js";
 import { Logger } from "winston";
 export type Flags<T extends typeof Command> = Interfaces.InferredFlags<
   (typeof SwankyCommand)["baseFlags"] & T["flags"]
@@ -23,7 +23,6 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
   public async init(): Promise<void> {
     await super.init();
     this.spinner = new Spinner();
-    this.logger = initLogger();
 
     const { args, flags } = await this.parse({
       flags: this.ctor.flags,
@@ -34,6 +33,7 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
     this.flags = flags as Flags<T>;
     this.args = args as Args<T>;
 
+    this.logger = swankyLogger;
     try {
       this.swankyConfig = await getSwankyConfig();
     } catch (error) {
@@ -42,7 +42,7 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
         error.message.includes("swanky.config.json") &&
         (this.constructor as typeof SwankyCommand).ENSURE_SWANKY_CONFIG
       )
-        throw error;
+        throw new ConfigError("Cannot find swanky.config.json", { cause: error });
     }
   }
 

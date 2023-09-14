@@ -6,6 +6,7 @@ import chalk from "chalk";
 import { SwankyCommand } from "./swankyCommand.js";
 import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
 import { Contract } from "./contract.js";
+import { NetworkError } from "./errors.js";
 
 export type JoinedFlagsType<T extends typeof Command> = Interfaces.InferredFlags<
   (typeof ContractCall)["baseFlags"] & T["flags"]
@@ -66,7 +67,7 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
       : contract.deployments[0];
 
     if (!deploymentData?.address)
-      throw new Error(
+      throw new NetworkError(
         `Cannot find a deployment with address: ${flags.address} in swanky.config.json`
       );
 

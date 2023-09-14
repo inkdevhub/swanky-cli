@@ -3,7 +3,7 @@ import modernErrorsBugs from "modern-errors-bugs";
 import modernErrorsClean from "modern-errors-clean";
 import modernErrorWinston from "modern-errors-winston";
 export const BaseError = ModernError.subclass("BaseError", {
-  plugins: [modernErrorsBugs, modernErrorsClean, modernErrorWinston],
+  plugins: [modernErrorWinston, modernErrorsBugs, modernErrorsClean],
 });
 
 export const UnknownError = BaseError.subclass("UnknownError", {
@@ -20,8 +20,11 @@ export const TestError = BaseError.subclass("TestError");
 
 export const FileError = BaseError.subclass("FileError");
 
+export const ConfigError = BaseError.subclass("ConfigError");
+
+export const NetworkError = BaseError.subclass("NetworkError");
+
 export const ProcessError = BaseError.subclass("ProcessError", {
-  plugins: [],
   custom: class extends BaseError {
     constructor(message: string, options?: InstanceOptions & ProcessErrorOptions) {
       super(message, options);

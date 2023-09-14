@@ -87,7 +87,7 @@ export class ChainApi {
 
   public get apiInst(): ApiPromise {
     if (!this._api) {
-      throw new Error("The ApiPromise has not been initialized");
+      throw new ApiError("The ApiPromise has not been initialized");
     }
 
     return this._api;
@@ -133,7 +133,7 @@ export class ChainApi {
   public buildTxCall(extrinsic: string, method: string, ...args: any[]): ExtrinsicPayload {
     const ext = this._api?.tx[extrinsic][method](...args);
     if (ext) return ext;
-    throw new Error(`Undefined extrinsic call ${extrinsic} with method ${method}`);
+    throw new ApiError(`Undefined extrinsic call ${extrinsic} with method ${method}`);
   }
 
   public async buildStorageQuery(
@@ -143,19 +143,19 @@ export class ChainApi {
   ): Promise<Codec> {
     const ext = await this._api?.query[extrinsic][method](...args);
     if (ext) return ext;
-    throw new Error(`Undefined storage query ${extrinsic} for method ${method}`);
+    throw new ApiError(`Undefined storage query ${extrinsic} for method ${method}`);
   }
 
   public wrapBatchAll(txs: ExtrinsicPayload[]): ExtrinsicPayload {
     const ext = this._api?.tx.utility.batchAll(txs);
     if (ext) return ext;
-    throw new Error("Undefined batch all");
+    throw new ApiError("Undefined batch all");
   }
 
   public wrapSudo(tx: ExtrinsicPayload): ExtrinsicPayload {
     const ext = this._api?.tx.sudo.sudo(tx);
     if (ext) return ext;
-    throw new Error("Undefined sudo");
+    throw new ApiError("Undefined sudo");
   }
 
   public async nonce(account: ChainAccount): Promise<number | undefined> {
@@ -227,7 +227,7 @@ export class ChainApi {
     const code = new CodePromise(this._api, abi, wasm);
     const storageDepositLimit = null;
     if (typeof code.tx[constructorName] !== "function") {
-      throw new Error(`Contract has no constructor called ${constructorName}`);
+      throw new ApiError(`Contract has no constructor called ${constructorName}`);
     }
     const tx = code.tx[constructorName]({ gasLimit, storageDepositLimit }, ...(args || []));
     return new Promise((resolve, reject) => {

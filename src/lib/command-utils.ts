@@ -3,7 +3,7 @@ import { copy, emptyDir, ensureDir, readJSON } from "fs-extra/esm";
 import path from "node:path";
 import { DEFAULT_NETWORK_URL, ARTIFACTS_PATH, TYPED_CONTRACTS_PATH } from "./consts.js";
 import { SwankyConfig } from "../types/index.js";
-import { FileError, InputError } from "./errors.js";
+import { ConfigError, FileError, InputError } from "./errors.js";
 
 export async function commandStdoutOrNull(command: string): Promise<string | null> {
   try {
@@ -31,7 +31,7 @@ export function resolveNetworkUrl(config: SwankyConfig, networkName: string): st
   try {
     return config.networks[networkName].url;
   } catch {
-    throw new Error("Network name not found in SwankyConfig");
+    throw new ConfigError("Network name not found in SwankyConfig");
   }
 }
 

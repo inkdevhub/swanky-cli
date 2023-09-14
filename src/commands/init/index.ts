@@ -300,7 +300,7 @@ export class Init extends SwankyCommand<typeof Init> {
       if (pathStat.isDirectory()) {
         const files = await readdir(pathToExistingProject);
         if (files.length < 1)
-          throw new Error(`Target project directory [${pathToExistingProject}] is empty!`);
+          throw new InputError(`Target project directory [${pathToExistingProject}] is empty!`);
       }
     } catch (cause) {
       throw new InputError(

@@ -12,6 +12,7 @@ import { paramCase, pascalCase, snakeCase } from "change-case";
 import { execaCommandSync } from "execa";
 import inquirer from "inquirer";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
+import { InputError } from "../../lib/errors.js";
 
 export class NewContract extends SwankyCommand<typeof NewContract> {
   static description = "Generate a new smart contract template inside a project";
@@ -36,11 +37,11 @@ export class NewContract extends SwankyCommand<typeof NewContract> {
     const { args, flags } = await this.parse(NewContract);
 
     if (await pathExists(path.resolve(projectPath, "contracts", args.contractName))) {
-      throw new Error(`Contract folder '${args.contractName}' already exists`);
+      throw new InputError(`Contract folder '${args.contractName}' already exists`);
     }
 
     if (this.swankyConfig.contracts[args.contractName]) {
-      throw new Error(
+      throw new InputError(
         `Contract with a name '${args.contractName}' already exists in swanky.config`
       );
     }

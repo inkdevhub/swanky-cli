@@ -1,7 +1,8 @@
 import { Answers, ListQuestion, Question } from "inquirer";
+import { ConfigError } from "./errors.js";
 
 export function pickTemplate(templateList: string[]): ListQuestion<Answers> {
-  if (!templateList?.length) throw new Error("Template list is empty!");
+  if (!templateList?.length) throw new ConfigError("Template list is empty!");
   return {
     name: "contractTemplate",
     type: "list",

@@ -32,13 +32,12 @@ export class Spinner {
     this.ora.text = text;
   }
 
-  //TODO: Take an options object as argument
   async runCommand(
     command: () => Promise<unknown>,
     runningMessage: string,
     successMessage?: string,
     failMessage?: string,
-    shouldExitOnError = true
+    shouldExitOnError = false
   ) {
     try {
       await this.start(runningMessage);
@@ -48,14 +47,13 @@ export class Spinner {
     } catch (cause) {
       const errorMessage = failMessage ?? `Error ${runningMessage}`;
       this.fail(failMessage ?? `Error ${runningMessage}`);
-      // ProcessError.exit(errorMessage);
       throw new ProcessError(errorMessage, { cause, shouldExit: shouldExitOnError });
     }
   }
 
   ensureSpinner() {
     if (!this.ora) {
-      throw new Error("spinner not started");
+      throw new ProcessError("spinner not started");
     }
   }
 }
