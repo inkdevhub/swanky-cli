@@ -45,6 +45,7 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
     const spinner = new Spinner();
 
     for (const contractName of contractNames) {
+      this.logger.info(`Started compiling contract [${contractName}]`);
       const contractInfo = this.swankyConfig.contracts[contractName];
       if (!contractInfo) {
         throw new ConfigError(
@@ -52,7 +53,7 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
         );
       }
       const contractPath = path.resolve("contracts", contractInfo.name);
-
+      this.logger.info(`"Looking for contract ${contractInfo.name} in path: [${contractPath}]`);
       if (!(await pathExists(contractPath))) {
         throw new InputError(`Contract folder not found at expected path`);
       }
@@ -70,6 +71,7 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
               compileArgs.push("--release");
             }
             const compile = spawn("cargo", compileArgs);
+            this.logger.info(`Running compile command: [${JSON.stringify(compile.spawnargs)}]`);
             let outputBuffer = "";
             let errorBuffer = "";
 
@@ -87,7 +89,10 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
               if (code === 0) {
                 const regex = /Your contract artifacts are ready\. You can find them in:\n(.*)/;
                 const match = outputBuffer.match(regex);
-                if (match) resolve(match[1]);
+                if (match) {
+                  this.logger.info(`Contract ${contractName} compilation done.`);
+                  resolve(match[1]);
+                }
               } else {
                 reject(new ProcessError(errorBuffer));
               }
