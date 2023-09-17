@@ -187,7 +187,7 @@ $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
 running command...
 $ swanky (--version|-V|-v)
-@astar-network/swanky-cli/3.0.4 darwin-x64 node-v19.9.0
+@astar-network/swanky-cli/3.1.0-beta.0 darwin-x64 node-v20.2.0
 $ swanky --help [COMMAND]
 USAGE
   $ swanky COMMAND
@@ -230,11 +230,12 @@ Create a new dev account in config
 
 ```
 USAGE
-  $ swanky account create [-g] [-d]
+  $ swanky account create [-v] [-g] [-d]
 
 FLAGS
   -d, --dev
   -g, --generate
+  -v, --verbose   Display more info in the result logs
 
 DESCRIPTION
   Create a new dev account in config
@@ -246,7 +247,10 @@ List dev accounts stored in config
 
 ```
 USAGE
-  $ swanky account list
+  $ swanky account list [-v]
+
+FLAGS
+  -v, --verbose  Display more info in the result logs
 
 DESCRIPTION
   List dev accounts stored in config
@@ -261,7 +265,10 @@ List dev accounts stored in config
 
 ```
 USAGE
-  $ swanky account ls
+  $ swanky account ls [-v]
+
+FLAGS
+  -v, --verbose  Display more info in the result logs
 
 DESCRIPTION
   List dev accounts stored in config
@@ -276,13 +283,16 @@ Check installed package versions and compatibility
 
 ```
 USAGE
-  $ swanky check
+  $ swanky check [-v]
+
+FLAGS
+  -v, --verbose  Display more info in the result logs
 
 DESCRIPTION
   Check installed package versions and compatibility
 ```
 
-_See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v3.0.4/dist/commands/check/index.ts)_
+_See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v3.1.0-beta.0/dist/commands/check/index.ts)_
 
 ## `swanky contract compile [CONTRACTNAME]`
 
@@ -298,7 +308,7 @@ ARGUMENTS
 FLAGS
   -a, --all      Set all to true to compile all contracts
   -r, --release  A production contract should always be build in `release` mode for building optimized wasm
-  -v, --verbose  Display additional compilation output
+  -v, --verbose  Display more info in the result logs
 
 DESCRIPTION
   Compile the smart contract(s) in your contracts directory
@@ -310,7 +320,7 @@ Deploy contract to a running node
 
 ```
 USAGE
-  $ swanky contract deploy CONTRACTNAME --account <value> [-g <value>] [-a <value>] [-c <value>] [-n <value>]
+  $ swanky contract deploy CONTRACTNAME --account <value> [-v] [-g <value>] [-a <value>] [-c <value>] [-n <value>]
 
 ARGUMENTS
   CONTRACTNAME  Name of the contract to deploy
@@ -320,6 +330,7 @@ FLAGS
   -c, --constructorName=<value>  [default: new] Constructor function name of a contract to deploy
   -g, --gas=<value>
   -n, --network=<value>          Network name to connect to
+  -v, --verbose                  Display more info in the result logs
   --account=<value>              (required) Alias of account to be used
 
 DESCRIPTION
@@ -350,7 +361,7 @@ Generate a new smart contract template inside a project
 
 ```
 USAGE
-  $ swanky contract new CONTRACTNAME [--template blank|flipper|psp22] [-v]
+  $ swanky contract new CONTRACTNAME [-v] [--template blank|flipper|psp22]
 
 ARGUMENTS
   CONTRACTNAME  Name of the new contract
@@ -391,13 +402,14 @@ Run tests for a given contact
 
 ```
 USAGE
-  $ swanky contract test [CONTRACTNAME] [-a]
+  $ swanky contract test [CONTRACTNAME] [-v] [-a]
 
 ARGUMENTS
   CONTRACTNAME  Name of the contract to test
 
 FLAGS
-  -a, --all  Set all to true to compile all contracts
+  -a, --all      Set all to true to compile all contracts
+  -v, --verbose  Display more info in the result logs
 
 DESCRIPTION
   Run tests for a given contact
@@ -432,10 +444,13 @@ Generate types from compiled contract metadata
 
 ```
 USAGE
-  $ swanky contract typegen CONTRACTNAME
+  $ swanky contract typegen CONTRACTNAME [-v]
 
 ARGUMENTS
   CONTRACTNAME  Name of the contract
+
+FLAGS
+  -v, --verbose  Display more info in the result logs
 
 DESCRIPTION
   Generate types from compiled contract metadata
@@ -459,7 +474,7 @@ DESCRIPTION
   Display help for swanky.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.9/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.14/src/commands/help.ts)_
 
 ## `swanky init PROJECTNAME`
 
@@ -482,7 +497,7 @@ DESCRIPTION
   Generate a new smart contract environment
 ```
 
-_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v3.0.4/dist/commands/init/index.ts)_
+_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v3.1.0-beta.0/dist/commands/init/index.ts)_
 
 ## `swanky node install`
 
@@ -505,7 +520,10 @@ Purge local chain state
 
 ```
 USAGE
-  $ swanky node purge
+  $ swanky node purge [-v]
+
+FLAGS
+  -v, --verbose  Display more info in the result logs
 
 DESCRIPTION
   Purge local chain state
@@ -517,11 +535,14 @@ Start a local node
 
 ```
 USAGE
-  $ swanky node start [-t] [--rpcCors <value>] [--finalizeDelaySec <value>]
+  $ swanky node start [-v] [-t] [--rpcCors <value>] [--finalizeDelaySec <value>]
 
 FLAGS
   -t, --tmp
       Run node with non-persistent mode
+
+  -v, --verbose
+      Display more info in the result logs
 
   --finalizeDelaySec=<value>
       Delay time in seconds after blocks being sealed
@@ -558,7 +579,7 @@ EXAMPLES
   $ swanky plugins
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.1.1/src/commands/plugins/index.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.1.8/src/commands/plugins/index.ts)_
 
 ## `swanky plugins:install PLUGIN...`
 
@@ -791,5 +812,5 @@ FLAG DESCRIPTIONS
     Additionally shows the architecture, node version, operating system, and versions of plugins that the CLI is using.
 ```
 
-_See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.3.4/src/commands/version.ts)_
+_See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.3.7/src/commands/version.ts)_
 <!-- commandsstop -->
