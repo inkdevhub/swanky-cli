@@ -4,7 +4,7 @@ import { storeArtifacts, Spinner, generateTypes } from "../../lib/index.js";
 import { spawn } from "node:child_process";
 import { pathExists } from "fs-extra/esm";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-import { ConfigError, FileError, InputError, ProcessError } from "../../lib/errors.js";
+import { ConfigError, InputError, ProcessError } from "../../lib/errors.js";
 
 export class CompileContract extends SwankyCommand<typeof CompileContract> {
   static description = "Compile the smart contract(s) in your contracts directory";

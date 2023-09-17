@@ -44,6 +44,11 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
       )
         throw new ConfigError("Cannot find swanky.config.json", { cause: error });
     }
+
+    this.logger.info(`Running command: ${this.ctor.name}
+      Args: ${JSON.stringify(this.args)}
+      Flags: ${JSON.stringify(this.flags)}
+      Full command: ${JSON.stringify(process.argv)}`);
   }
 
   protected async storeConfig() {
