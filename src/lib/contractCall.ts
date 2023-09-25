@@ -3,15 +3,18 @@ import { AccountData, ContractData, DeploymentData, Encrypted } from "../types/i
 import { Args, Command, Flags, Interfaces } from "@oclif/core";
 import inquirer from "inquirer";
 import chalk from "chalk";
-import { BaseCommand } from "./baseCommand.js";
+import { SwankyCommand } from "./swankyCommand.js";
 import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
 import { Contract } from "./contract.js";
+import { ConfigError, FileError, NetworkError } from "./errors.js";
 
 export type JoinedFlagsType<T extends typeof Command> = Interfaces.InferredFlags<
-  (typeof BaseCommand)["baseFlags"] & (typeof ContractCall)["baseFlags"] & T["flags"]
+  (typeof ContractCall)["baseFlags"] & T["flags"]
 >;
 
-export abstract class ContractCall<T extends typeof Command> extends BaseCommand {
+export abstract class ContractCall<T extends typeof Command> extends SwankyCommand<
+  typeof ContractCall
+> {
   static callArgs = {
     contractName: Args.string({
       name: "Contract name",
@@ -26,7 +29,7 @@ export abstract class ContractCall<T extends typeof Command> extends BaseCommand
   };
 
   protected flags!: JoinedFlagsType<T>;
-  protected args!: { [name: string]: any };
+  protected args!: Record<string, any>;
   protected contractInfo!: ContractData;
   protected deploymentInfo!: DeploymentData;
   protected account!: ChainAccount;
@@ -35,26 +38,30 @@ export abstract class ContractCall<T extends typeof Command> extends BaseCommand
 
   public async init(): Promise<void> {
     await super.init();
-    // const { flags, args } = await this.parse(this.constructor as Interfaces.Command.Class);
     const { flags, args } = await this.parse(this.ctor);
-    // this.flags = flags as JoinedFlagsType<typeof ContractCall>;
     this.args = args;
 
     const contractRecord = this.swankyConfig.contracts[args.contractName];
     if (!contractRecord) {
-      this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
+      throw new ConfigError(
+        `Cannot find a contract named ${args.contractName} in swanky.config.json`
+      );
     }
 
     const contract = new Contract(contractRecord);
 
     if (!(await contract.pathExists())) {
-      this.error(`Path to contract ${args.contractName} does not exist: ${contract.contractPath}`);
+      throw new FileError(
+        `Path to contract ${args.contractName} does not exist: ${contract.contractPath}`
+      );
     }
 
     const artifactsCheck = await contract.artifactsExist();
 
     if (!artifactsCheck.result) {
-      this.error(`No artifact file found at path: ${artifactsCheck.missingPaths}`);
+      throw new FileError(
+        `No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`
+      );
     }
 
     const deploymentData = flags.address
@@ -64,7 +71,7 @@ export abstract class ContractCall<T extends typeof Command> extends BaseCommand
       : contract.deployments[0];
 
     if (!deploymentData?.address)
-      throw new Error(
+      throw new NetworkError(
         `Cannot find a deployment with address: ${flags.address} in swanky.config.json`
       );
 
@@ -74,11 +81,11 @@ export abstract class ContractCall<T extends typeof Command> extends BaseCommand
       (account: AccountData) => account.alias === flags.account || "alice"
     );
     if (!accountData) {
-      this.error("Provided account alias not found in swanky.config.json");
+      throw new ConfigError("Provided account alias not found in swanky.config.json");
     }
 
     const networkUrl = resolveNetworkUrl(this.swankyConfig, flags.network ?? "");
-    const api = new ChainApi(networkUrl);
+    const api = await ChainApi.create(networkUrl);
     this.api = api;
     await this.api.start();
 
@@ -124,7 +131,7 @@ export abstract class ContractCall<T extends typeof Command> extends BaseCommand
 // Static property baseFlags needs to be defined like this (for now) because of the way TS transpiles ESNEXT code
 // https://github.com/oclif/oclif/issues/1100#issuecomment-1454910926
 ContractCall.baseFlags = {
-  ...BaseCommand.baseFlags,
+  ...SwankyCommand.baseFlags,
   params: Flags.string({
     required: false,
     description: "Arguments supplied to the message",

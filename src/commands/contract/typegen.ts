@@ -1,8 +1,10 @@
-import { Args, Command } from "@oclif/core";
-import { ensureSwankyProject, getSwankyConfig, Spinner, generateTypes } from "../../lib/index.js";
+import { Args } from "@oclif/core";
+import { generateTypes } from "../../lib/index.js";
 import { Contract } from "../../lib/contract.js";
+import { SwankyCommand } from "../../lib/swankyCommand.js";
+import { ConfigError, FileError } from "../../lib/errors.js";
 
-export class TypegenCommand extends Command {
+export class TypegenCommand extends SwankyCommand<typeof TypegenCommand> {
   static description = "Generate types from compiled contract metadata";
 
   static args = {
@@ -16,30 +18,30 @@ export class TypegenCommand extends Command {
   async run(): Promise<void> {
     const { args } = await this.parse(TypegenCommand);
 
-    await ensureSwankyProject();
-
-    const config = await getSwankyConfig();
-
-    const contractRecord = config.contracts[args.contractName];
+    const contractRecord = this.swankyConfig.contracts[args.contractName];
     if (!contractRecord) {
-      this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
+      throw new ConfigError(
+        `Cannot find a contract named ${args.contractName} in swanky.config.json`
+      );
     }
-
-    const spinner = new Spinner();
 
     const contract = new Contract(contractRecord);
 
     if (!(await contract.pathExists())) {
-      this.error(`Path to contract ${args.contractName} does not exist: ${contract.contractPath}`);
+      throw new FileError(
+        `Path to contract ${args.contractName} does not exist: ${contract.contractPath}`
+      );
     }
 
     const artifactsCheck = await contract.artifactsExist();
 
     if (!artifactsCheck.result) {
-      this.error(`No artifact file found at path: ${artifactsCheck.missingPaths}`);
+      throw new FileError(
+        `No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`
+      );
     }
 
-    await spinner.runCommand(async () => {
+    await this.spinner.runCommand(async () => {
       await generateTypes(contract.name);
     }, "Generating types");
   }

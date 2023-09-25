@@ -1,17 +1,7 @@
 import { Args, Flags } from "@oclif/core";
 import path from "node:path";
-import {
-  ensureDir,
-  writeJSON,
-  pathExists,
-  copy,
-  outputFile,
-  readJSON,
-  writeJson,
-  remove,
-} from "fs-extra/esm";
+import { ensureDir, writeJSON, pathExists, copy, outputFile, readJSON, remove } from "fs-extra/esm";
 import { stat, readdir, readFile } from "fs/promises";
-import { Dirent } from "fs";
 import { execaCommand, execaCommandSync } from "execa";
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer from "inquirer";
@@ -34,11 +24,13 @@ import {
   DEFAULT_SHIBUYA_NETWORK_URL,
   DEFAULT_SHIDEN_NETWORK_URL,
 } from "../../lib/consts.js";
-import { BaseCommand } from "../../lib/baseCommand.js";
-import { globby } from "globby";
+import { SwankyCommand } from "../../lib/swankyCommand.js";
+import { InputError, UnknownError } from "../../lib/errors.js";
+import { GlobEntry, globby } from "globby";
 import { merge } from "lodash-es";
 import inquirerFuzzyPath from "inquirer-fuzzy-path";
 import { SwankyConfig } from "../../types/index.js";
+import chalk from "chalk";
 
 type TaskFunction = (...args: any[]) => any;
 
@@ -52,24 +44,27 @@ interface Task {
   callback?: (param: string) => void;
 }
 
-type PathEntry = {
-  dirent: Dirent;
+interface PathEntry {
+  dirent: GlobEntry["dirent"];
   name: string;
   path: string;
   moduleName?: string;
-};
+}
 
-type CopyCandidates = {
+interface CopyCandidates {
   contracts: PathEntry[];
   crates: PathEntry[];
   tests?: PathEntry[];
-};
+}
 
-type CopyPathsList = { contractsDirectories: string[]; cratesDirectories: string[] };
+interface CopyPathsList {
+  contractsDirectories: string[];
+  cratesDirectories: string[];
+}
 
 inquirer.registerPrompt("fuzzypath", inquirerFuzzyPath);
 
-export class Init extends BaseCommand {
+export class Init extends SwankyCommand<typeof Init> {
   static description = "Generate a new smart contract environment";
 
   static flags = {
@@ -92,6 +87,10 @@ export class Init extends BaseCommand {
     }),
   };
 
+  constructor(argv: string[], config: any) {
+    super(argv, config);
+    (this.constructor as typeof SwankyCommand).ENSURE_SWANKY_CONFIG = false;
+  }
   projectPath = "";
 
   configBuilder: Partial<SwankyConfig> = {
@@ -122,11 +121,13 @@ export class Init extends BaseCommand {
       const pathStat = await stat(this.projectPath);
       if (pathStat.isDirectory()) {
         const files = await readdir(this.projectPath);
-        if (files.length > 0) throw new Error(`Directory ${args.projectName} is not empty!`);
+        if (files.length > 0)
+          throw new InputError(`Directory ${chalk.yellowBright(args.projectName)} is not empty!`);
       }
     } catch (error: unknown) {
       // ignore if it doesn't exist, it will be created
-      if (!(error instanceof Error) || !error.message.includes("ENOENT")) throw error;
+      if (!(error instanceof Error) || !error.message.includes("ENOENT"))
+        throw new UnknownError("Unexpected error", { cause: error });
     }
 
     const templates = getTemplates();
@@ -185,12 +186,10 @@ export class Init extends BaseCommand {
       },
     ];
 
-    Object.keys(this.configBuilder.contracts as typeof this.swankyConfig.contracts).forEach(
-      async (contractName) => {
-        await ensureDir(path.resolve(this.projectPath, "artifacts", contractName));
-        await ensureDir(path.resolve(this.projectPath, "tests", contractName));
-      }
-    );
+    Object.keys(this.configBuilder.contracts!).forEach(async (contractName) => {
+      await ensureDir(path.resolve(this.projectPath, "artifacts", contractName));
+      await ensureDir(path.resolve(this.projectPath, "tests", contractName));
+    });
 
     this.taskQueue.push({
       task: () =>
@@ -232,7 +231,7 @@ export class Init extends BaseCommand {
     try {
       const detectedGitUser = execaCommandSync("git config --get user.name").stdout;
       gitUser = detectedGitUser;
-    } catch (error) {
+    } catch (_) {
       gitUser = undefined;
     }
 
@@ -302,12 +301,13 @@ export class Init extends BaseCommand {
       if (pathStat.isDirectory()) {
         const files = await readdir(pathToExistingProject);
         if (files.length < 1)
-          throw new Error(`Target project directory [${pathToExistingProject}] is empty!`);
+          throw new InputError(`Target project directory [${pathToExistingProject}] is empty!`);
       }
-    } catch (error: unknown) {
-      if (error instanceof Error && error.message.includes("ENOENT"))
-        throw new Error(`Target project directory [${pathToExistingProject}] not found!`);
-      throw error;
+    } catch (cause) {
+      throw new InputError(
+        `Error reading target directory [${chalk.yellowBright(pathToExistingProject)}]`,
+        { cause }
+      );
     }
 
     const copyGlobsList: CopyPathsList = {
@@ -367,7 +367,7 @@ export class Init extends BaseCommand {
     for (const contract of confirmedCopyList.contracts) {
       this.configBuilder.contracts[contract.name] = {
         name: contract.name,
-        moduleName: contract.moduleName as string,
+        moduleName: contract.moduleName!,
         deployments: [],
       };
     }
@@ -392,7 +392,7 @@ export class Init extends BaseCommand {
       task: async (pathToExistingProject, projectPath) => {
         const fileList = ["rust-toolchain.toml", ".rustfmt.toml"];
         for (const fileName of fileList) {
-          const filePath = await path.resolve(pathToExistingProject, fileName);
+          const filePath = path.resolve(pathToExistingProject, fileName);
           if (await pathExists(filePath)) {
             await copy(filePath, path.resolve(projectPath, fileName));
           }
@@ -411,7 +411,7 @@ export class Init extends BaseCommand {
           const templatePJson = await readJSON(templatePJsonPath);
           const mergedJson = merge(templatePJson, existingPJson);
           await remove(templatePJsonPath);
-          await writeJson(templatePJsonPath, mergedJson, { spaces: 2 });
+          await writeJSON(templatePJsonPath, mergedJson, { spaces: 2 });
         },
         args: [existingPJsonPath, this.projectPath],
         runningMessage: "Merging package.json",
@@ -428,7 +428,7 @@ async function detectModuleNames(copyList: CopyCandidates): Promise<CopyCandidat
   };
 
   for (const group of ["contracts", "crates"]) {
-    for (const entry of copyList[group as keyof CopyCandidates] as PathEntry[]) {
+    for (const entry of copyList[group as keyof CopyCandidates]!) {
       const moduleName = path.basename(entry.path);
       const extendedEntry = { ...entry, moduleName };
       if (
@@ -453,7 +453,7 @@ async function copyWorkspaceContracts(copyList: CopyCandidates, projectPath: str
   for (const group of ["contracts", "crates", "tests"]) {
     const destDir = path.resolve(projectPath, group);
     await ensureDir(destDir);
-    for (const entry of copyList[group as keyof CopyCandidates] as PathEntry[]) {
+    for (const entry of copyList[group as keyof CopyCandidates]!) {
       const destPath = path.join(destDir, entry.name);
       await copy(entry.path, destPath);
     }
@@ -524,7 +524,7 @@ async function detectTests(pathToExistingProject: string): Promise<string | unde
       type: "confirm",
       name: "shouldUseDetectedTestDir",
       message: `Detected test directory [${path.basename(
-        testDir as string
+        testDir!
       )}]. Do you want to copy it to your new project?`,
       default: true,
     },

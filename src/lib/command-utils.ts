@@ -1,9 +1,9 @@
 import { execaCommand } from "execa";
-import { copy, emptyDir, ensureDir, pathExists, readJSON } from "fs-extra/esm";
+import { copy, emptyDir, ensureDir, readJSON } from "fs-extra/esm";
 import path from "node:path";
 import { DEFAULT_NETWORK_URL, ARTIFACTS_PATH, TYPED_CONTRACTS_PATH } from "./consts.js";
 import { SwankyConfig } from "../types/index.js";
-import { Abi } from "@polkadot/api-contract";
+import { ConfigError, FileError, InputError } from "./errors.js";
 
 export async function commandStdoutOrNull(command: string): Promise<string | null> {
   try {
@@ -14,19 +14,12 @@ export async function commandStdoutOrNull(command: string): Promise<string | nul
   }
 }
 
-export async function ensureSwankyProject(): Promise<void> {
-  const configExists = await pathExists("swanky.config.json");
-  if (!configExists) {
-    throw new Error("No 'swanky.config.json' detected in current folder!");
-  }
-}
-
 export async function getSwankyConfig(): Promise<SwankyConfig> {
   try {
     const config = await readJSON("swanky.config.json");
     return config;
-  } catch {
-    throw new Error("No 'swanky.config.json' detected in current folder!");
+  } catch (cause) {
+    throw new InputError("Error reading swanky.config.json in the current directory!", { cause });
   }
 }
 
@@ -38,7 +31,7 @@ export function resolveNetworkUrl(config: SwankyConfig, networkName: string): st
   try {
     return config.networks[networkName].url;
   } catch {
-    throw new Error("Network name not found in SwankyConfig");
+    throw new ConfigError("Network name not found in SwankyConfig");
   }
 }
 
@@ -62,12 +55,12 @@ export async function storeArtifacts(
       await copy(artifactFileToCopy, path.resolve(destArtifactsPath, fileName));
       await copy(artifactFileToCopy, path.resolve(testArtifactsPath, fileName));
     }
-  } catch (error) {
-    console.error(error);
+  } catch (cause) {
+    throw new FileError("Error storing artifacts", { cause });
   }
 }
 // TODO: Use the Abi type (optionally, support legacy types version)
-export async function printContractInfo(abi: any) {
+export function printContractInfo(abi: any) {
   // TODO: Use templating, colorize.
   console.log(`
     😎 ${abi.contract.name} Contract 😎

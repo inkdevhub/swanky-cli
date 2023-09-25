@@ -1,4 +1,5 @@
 import ora, { Ora } from "ora";
+import { ProcessError } from "./errors.js";
 
 export class Spinner {
   ora: Ora;
@@ -31,29 +32,28 @@ export class Spinner {
     this.ora.text = text;
   }
 
-  //TODO: Take an options object as argument
   async runCommand(
     command: () => Promise<unknown>,
     runningMessage: string,
     successMessage?: string,
     failMessage?: string,
-    shouldExitOnError = true
+    shouldExitOnError = false
   ) {
     try {
-      this.start(runningMessage);
+      await this.start(runningMessage);
       const res = await command();
-      this.succeed(successMessage || `${runningMessage} OK`);
+      this.succeed(successMessage ?? `${runningMessage} OK`);
       return res;
-    } catch (error) {
-      this.fail(failMessage || `Error ${runningMessage}`);
-      if (this.verbose) console.error(error);
-      if (shouldExitOnError) process.exit(1);
+    } catch (cause) {
+      const errorMessage = failMessage ?? `Error ${runningMessage}`;
+      this.fail(failMessage ?? `Error ${runningMessage}`);
+      throw new ProcessError(errorMessage, { cause, shouldExit: shouldExitOnError });
     }
   }
 
   ensureSpinner() {
     if (!this.ora) {
-      throw new Error("spinner not started");
+      throw new ProcessError("spinner not started");
     }
   }
 }

@@ -45,7 +45,7 @@ export class Tx extends ContractCall<typeof Tx> {
     );
 
     this.log(
-      `Gas required: ${queryResult.gasRequired["refTime"]} (proofSize: ${queryResult.gasRequired["proofSize"]})`
+      `Gas required: ${queryResult.gasRequired.refTime.toString()} (proofSize: ${queryResult.gasRequired.proofSize.toString()})`
     );
 
     if (flags.dry) {
@@ -56,10 +56,10 @@ export class Tx extends ContractCall<typeof Tx> {
 
     const customGas = flags.gas ? BigInt(flags.gas) : null;
     await cryptoWaitReady();
-    const txResult = await contract.tx[args.messageName](
+    const txResult = contract.tx[args.messageName](
       {
         storageDepositLimit,
-        gasLimit: customGas || queryResult.gasRequired,
+        gasLimit: customGas ?? queryResult.gasRequired,
       },
       ...flags.params
     );

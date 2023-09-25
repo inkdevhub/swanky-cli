@@ -2,6 +2,7 @@ import { AbiType, consts, printContractInfo } from "./index.js";
 import { ContractData, DeploymentData } from "../types/index.js";
 import { pathExists, readJSON } from "fs-extra/esm";
 import path from "node:path";
+import { FileError } from "./errors.js";
 
 export class Contract {
   static artifactTypes = [".json", ".contract"];
@@ -43,7 +44,7 @@ export class Contract {
   async getABI(): Promise<AbiType> {
     const check = await this.artifactsExist();
     if (!check.result && check.missingTypes.includes(".json")) {
-      throw new Error(`Cannot read ABI, path not found: ${check.missingPaths}`);
+      throw new FileError(`Cannot read ABI, path not found: ${check.missingPaths.toString()}`);
     }
     return readJSON(path.resolve(this.artifactsPath, `${this.moduleName}.json`));
   }
@@ -51,7 +52,9 @@ export class Contract {
   async getBundle() {
     const check = await this.artifactsExist();
     if (!check.result && check.missingTypes.includes(".contract")) {
-      throw new Error(`Cannot read .contract bundle, path not found: ${check.missingPaths}`);
+      throw new FileError(
+        `Cannot read .contract bundle, path not found: ${check.missingPaths.toString()}`
+      );
     }
     return readJSON(path.resolve(this.artifactsPath, `${this.moduleName}.contract`));
   }
@@ -60,7 +63,7 @@ export class Contract {
     const bundle = await this.getBundle();
     if (bundle.source?.wasm) return bundle.source.wasm;
 
-    throw new Error(`Cannot find wasm field in the .contract bundle!`);
+    throw new FileError(`Cannot find wasm field in the .contract bundle!`);
   }
 
   async printInfo(): Promise<void> {

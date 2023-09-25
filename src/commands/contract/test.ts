@@ -1,18 +1,19 @@
 import "ts-mocha";
-import { Command, Flags, Args } from "@oclif/core";
+import { Flags, Args } from "@oclif/core";
 import path from "node:path";
-import { ensureSwankyProject, getSwankyConfig } from "../../lib/index.js";
 import { globby } from "globby";
 import Mocha from "mocha";
 import { emptyDir } from "fs-extra/esm";
 import shell from "shelljs";
 import { Contract } from "../../lib/contract.js";
+import { SwankyCommand } from "../../lib/swankyCommand.js";
+import { ConfigError, FileError, InputError, TestError } from "../../lib/errors.js";
 
 declare global {
   var contractTypesPath: string; // eslint-disable-line no-var
 }
 
-export class TestContract extends Command {
+export class TestContract extends SwankyCommand<typeof TestContract> {
   static description = "Run tests for a given contact";
 
   static flags = {
@@ -35,26 +36,27 @@ export class TestContract extends Command {
     const { args, flags } = await this.parse(TestContract);
 
     if (args.contractName === undefined && !flags.all) {
-      this.error("No contracts were selected to compile");
+      throw new InputError("No contracts were selected to compile");
     }
 
-    await ensureSwankyProject();
-    const config = await getSwankyConfig();
-
-    const contractNames = flags.all ? Object.keys(config.contracts) : [args.contractName];
+    const contractNames = flags.all
+      ? Object.keys(this.swankyConfig.contracts)
+      : [args.contractName];
 
     const testDir = path.resolve("tests");
 
     for (const contractName of contractNames) {
-      const contractRecord = config.contracts[contractName];
+      const contractRecord = this.swankyConfig.contracts[contractName];
       if (!contractRecord) {
-        this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
+        throw new ConfigError(
+          `Cannot find a contract named ${args.contractName} in swanky.config.json`
+        );
       }
 
       const contract = new Contract(contractRecord);
 
       if (!(await contract.pathExists())) {
-        this.error(
+        throw new FileError(
           `Path to contract ${args.contractName} does not exist: ${contract.contractPath}`
         );
       }
@@ -62,7 +64,9 @@ export class TestContract extends Command {
       const artifactsCheck = await contract.artifactsExist();
 
       if (!artifactsCheck.result) {
-        this.error(`No artifact file found at path: ${artifactsCheck.missingPaths}`);
+        throw new FileError(
+          `No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`
+        );
       }
 
       console.log(`Testing contract: ${contractName}`);
@@ -85,7 +89,6 @@ export class TestContract extends Command {
 
       const tests = await globby(`${path.resolve(testDir, contractName)}/*.test.ts`);
 
-      mocha.addFile;
       tests.forEach((test) => {
         mocha.addFile(test);
       });
@@ -104,8 +107,8 @@ export class TestContract extends Command {
             }
           });
         });
-      } catch (error) {
-        this.error(error as string);
+      } catch (cause) {
+        throw new TestError("Error in test", { cause });
       }
     }
   }

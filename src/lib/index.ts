@@ -2,7 +2,6 @@ export * from "./account.js";
 export * from "./command-utils.js";
 export * as consts from "./consts.js";
 export * from "./crypto.js";
-export * from "./deploy-api.js";
 export * from "./nodeInfo.js";
 export * from "./spinner.js";
 export * from "./substrate-api.js";

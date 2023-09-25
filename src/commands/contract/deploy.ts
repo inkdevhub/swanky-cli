@@ -1,23 +1,16 @@
-import { Args, Command, Flags } from "@oclif/core";
+import { Args, Flags } from "@oclif/core";
 import path from "node:path";
 import { writeJSON } from "fs-extra/esm";
 import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
-import {
-  ensureSwankyProject,
-  getSwankyConfig,
-  resolveNetworkUrl,
-  DeployApi,
-  ChainAccount,
-  Spinner,
-  decrypt,
-  AbiType,
-} from "../../lib/index.js";
+import { resolveNetworkUrl, ChainApi, ChainAccount, decrypt, AbiType } from "../../lib/index.js";
 import { AccountData, Encrypted } from "../../types/index.js";
 import inquirer from "inquirer";
 import chalk from "chalk";
 import { Contract } from "../../lib/contract.js";
+import { SwankyCommand } from "../../lib/swankyCommand.js";
+import { ApiError, ConfigError, FileError } from "../../lib/errors.js";
 
-export class DeployContract extends Command {
+export class DeployContract extends SwankyCommand<typeof DeployContract> {
   static description = "Deploy contract to a running node";
 
   static flags = {
@@ -52,35 +45,36 @@ export class DeployContract extends Command {
   };
 
   async run(): Promise<void> {
-    await ensureSwankyProject();
     const { args, flags } = await this.parse(DeployContract);
 
-    const config = await getSwankyConfig();
-
-    const spinner = new Spinner();
-
-    const contractRecord = config.contracts[args.contractName];
+    const contractRecord = this.swankyConfig.contracts[args.contractName];
     if (!contractRecord) {
-      this.error(`Cannot find a contract named ${args.contractName} in swanky.config.json`);
+      throw new ConfigError(
+        `Cannot find a contract named ${args.contractName} in swanky.config.json`
+      );
     }
 
     const contract = new Contract(contractRecord);
 
     if (!(await contract.pathExists())) {
-      this.error(`Path to contract ${args.contractName} does not exist: ${contract.contractPath}`);
+      throw new FileError(
+        `Path to contract ${args.contractName} does not exist: ${contract.contractPath}`
+      );
     }
 
     const artifactsCheck = await contract.artifactsExist();
 
     if (!artifactsCheck.result) {
-      this.error(`No artifact file found at path: ${artifactsCheck.missingPaths}`);
+      throw new FileError(
+        `No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`
+      );
     }
 
-    const accountData = config.accounts.find(
+    const accountData = this.swankyConfig.accounts.find(
       (account: AccountData) => account.alias === flags.account
     );
     if (!accountData) {
-      this.error("Provided account alias not found in swanky.config.json");
+      throw new ConfigError("Provided account alias not found in swanky.config.json");
     }
 
     const mnemonic = accountData.isDev
@@ -98,43 +92,42 @@ export class DeployContract extends Command {
           ).password
         );
 
-    const account = (await spinner.runCommand(async () => {
+    const account = (await this.spinner.runCommand(async () => {
       await cryptoWaitReady();
       return new ChainAccount(mnemonic);
     }, "Initialising")) as ChainAccount;
 
-    const { abi, wasm } = (await spinner.runCommand(async () => {
+    const { abi, wasm } = (await this.spinner.runCommand(async () => {
       const abi = await contract.getABI();
       const wasm = await contract.getWasm();
       return { abi, wasm };
     }, "Getting WASM")) as { abi: AbiType; wasm: Buffer };
 
-    const networkUrl = resolveNetworkUrl(config, flags.network ?? "");
+    const networkUrl = resolveNetworkUrl(this.swankyConfig, flags.network ?? "");
 
-    const api = (await spinner.runCommand(async () => {
-      const api = new DeployApi(networkUrl);
+    const api = (await this.spinner.runCommand(async () => {
+      const api = await ChainApi.create(networkUrl);
       await api.start();
       return api;
-    }, "Connecting to node")) as DeployApi;
+    }, "Connecting to node")) as ChainApi;
 
-    const contractAddress = (await spinner.runCommand(async () => {
+    const contractAddress = (await this.spinner.runCommand(async () => {
       try {
         const contractAddress = await api.deploy(
           abi,
           wasm,
           flags.constructorName,
           account.pair,
-          flags.args as string[],
+          flags.args!,
           flags.gas
         );
         return contractAddress;
-      } catch (e) {
-        console.error(e);
-        throw new Error("Error deploying!");
+      } catch (cause) {
+        throw new ApiError("Error deploying", { cause });
       }
     }, "Deploying")) as string;
 
-    await spinner.runCommand(async () => {
+    await this.spinner.runCommand(async () => {
       contractRecord.deployments = [
         ...contractRecord.deployments,
         {
@@ -145,7 +138,7 @@ export class DeployContract extends Command {
         },
       ];
 
-      await writeJSON(path.resolve("swanky.config.json"), config, {
+      await writeJSON(path.resolve("swanky.config.json"), this.swankyConfig, {
         spaces: 2,
       });
     }, "Writing config");

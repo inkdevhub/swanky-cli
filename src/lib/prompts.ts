@@ -1,7 +1,8 @@
 import { Answers, ListQuestion, Question } from "inquirer";
+import { ConfigError } from "./errors.js";
 
 export function pickTemplate(templateList: string[]): ListQuestion<Answers> {
-  if (!templateList || !templateList.length) throw new Error("Template list is empty!");
+  if (!templateList?.length) throw new ConfigError("Template list is empty!");
   return {
     name: "contractTemplate",
     type: "list",
@@ -18,7 +19,7 @@ export function name(
   const question: Question = {
     name: `${subject}Name`,
     type: "input",
-    message: questionText || `What name should we use for ${subject}?`,
+    message: questionText ?? `What name should we use for ${subject}?`,
   };
   if (initial) question.default = initial;
   return question;
@@ -28,7 +29,7 @@ export function email(initial?: string, questionText?: string): Question<Answers
   const question: Question = {
     name: "email",
     type: "input",
-    message: questionText || "What is your email?",
+    message: questionText ?? "What is your email?",
   };
   if (initial) question.default = initial;
   return question;

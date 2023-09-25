@@ -10,6 +10,7 @@ import { nodeInfo } from "./nodeInfo.js";
 import decompress from "decompress";
 import { Spinner } from "./spinner.js";
 import { SupportedPlatforms, SupportedArch } from "../types/index.js";
+import { ConfigError, NetworkError } from "./errors.js";
 
 export async function checkCliDependencies(spinner: Spinner) {
   const dependencyList = [
@@ -78,11 +79,13 @@ export async function downloadNode(projectPath: string, nodeInfo: nodeInfo, spin
 
   const platformDlUrls = nodeInfo.downloadUrl[process.platform as SupportedPlatforms];
   if (!platformDlUrls)
-    throw new Error(`Could not download swanky-node. Platform ${process.platform} not supported!`);
+    throw new ConfigError(
+      `Could not download swanky-node. Platform ${process.platform} not supported!`
+    );
 
   const dlUrl = platformDlUrls[process.arch as SupportedArch];
   if (!dlUrl)
-    throw new Error(
+    throw new ConfigError(
       `Could not download swanky-node. Platform ${process.platform} Arch ${process.arch} not supported!`
     );
 
@@ -99,11 +102,13 @@ export async function downloadNode(projectPath: string, nodeInfo: nodeInfo, spin
       reject(new Error(`Error downloading node: , ${error.message}`));
     });
 
-    dl.start().catch((error) => reject(new Error(`Error downloading node: , ${error.message}`)));
+    dl.start().catch((error: Error) =>
+      reject(new Error(`Error downloading node: , ${error.message}`))
+    );
   });
 
   if (dlFileDetails.incomplete) {
-    throw new Error("Node download incomplete");
+    throw new NetworkError("Node download incomplete");
   }
 
   if (dlFileDetails.filePath.endsWith(".tar.gz")) {
