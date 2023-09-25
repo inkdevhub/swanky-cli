@@ -1,16 +1,10 @@
-#![cfg_attr(not(feature = "std"), no_std)]
-#![feature(min_specialization)]
+#![cfg_attr(not(feature = "std"), no_std, no_main)]
 
+#[openbrush::implementation(PSP22)]
 #[openbrush::contract]
 pub mod {{contract_name_snake}} {
     use ink::codegen::{Env, EmitEvent};
-    use openbrush::{
-        contracts::psp22::*,
-        traits::{
-            Storage,
-            String,
-        },
-    };
+    use openbrush::traits::Storage;
 
     #[ink(event)]
     pub struct TransferEvent {
@@ -35,82 +29,44 @@ pub mod {{contract_name_snake}} {
     pub struct {{contract_name_pascal}} {
         #[storage_field]
         psp22: psp22::Data,
-        // fields for hater logic
-        hated_account: AccountId,
     }
 
-    impl Default for {{contract_name_pascal}} {
-        fn default() -> Self {
-            Self {
-                psp22: Default::default(),
-                hated_account: [0u8; 32].into(),
-            }
-        }
+    #[overrider(psp22::Internal)]
+    fn _emit_transfer_event(
+        &self,
+        from: Option<AccountId>,
+        to: Option<AccountId>,
+        amount: Balance,
+    ) {
+        self.env().emit_event(TransferEvent {
+            from,
+            to,
+            value: amount,
+        });
     }
 
-    impl Transfer for {{contract_name_pascal}} {
-        // Let's override method to reject transactions to bad account
-        fn _before_token_transfer(
-            &mut self,
-            _from: Option<&AccountId>,
-            to: Option<&AccountId>,
-            _amount: &Balance,
-        ) -> Result<(), PSP22Error> {
-            if to == Some(&self.hated_account) {
-                return Err(PSP22Error::Custom(String::from("I hate this account!")))
-            }
-            Ok(())
-        }
+    #[overrider(psp22::Internal)]
+    fn _emit_approval_event(&self, owner: AccountId, spender: AccountId, amount: Balance) {
+        self.env().emit_event(ApprovalEvent {
+            owner,
+            spender,
+            value: amount,
+        });
     }
-
-    impl psp22::Internal for {{contract_name_pascal}} {
-        fn _emit_transfer_event(
-            &self,
-            from: Option<AccountId>,
-            to: Option<AccountId>,
-            amount: Balance,
-        ) {
-            self.env().emit_event(TransferEvent {
-                from,
-                to,
-                value: amount,
-            });
-        }
-
-        fn _emit_approval_event(&self, owner: AccountId, spender: AccountId, amount: Balance) {
-            self.env().emit_event(ApprovalEvent {
-                owner,
-                spender,
-                value: amount,
-            });
-        }
-    }
-
-    impl PSP22 for {{contract_name_pascal}} {}
 
     impl {{contract_name_pascal}} {
         #[ink(constructor)]
         pub fn new(total_supply: Balance) -> Self {
-            let mut instance = Self::default();
+            let mut instance = Self {
+                psp22: Default::default()
+            };
+            Internal::_mint_to(&mut instance, Self::env().caller(), total_supply).expect("Should mint");
             instance
-                ._mint_to(instance.env().caller(), total_supply)
-                .expect("Should mint");
-            instance
-        }
-
-        #[ink(message)]
-        pub fn set_hated_account(&mut self, hated: AccountId) {
-            self.hated_account = hated;
-        }
-
-        #[ink(message)]
-        pub fn get_hated_account(&self) -> AccountId {
-            self.hated_account.clone()
         }
 
         #[ink(message)]
         pub fn get_total_supply(&self) -> Balance {
-            self.total_supply()
+            PSP22::total_supply(self)
         }
     }
 }
