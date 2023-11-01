@@ -214,6 +214,7 @@ USAGE
 * [`swanky node install`](#swanky-node-install)
 * [`swanky node purge`](#swanky-node-purge)
 * [`swanky node start`](#swanky-node-start)
+* [`swanky clear CONTRACTNAME`](#)
 * [`swanky plugins`](#swanky-plugins)
 * [`swanky plugins:install PLUGIN...`](#swanky-pluginsinstall-plugin)
 * [`swanky plugins:inspect PLUGIN...`](#swanky-pluginsinspect-plugin)
@@ -574,6 +575,25 @@ FLAGS
 
 DESCRIPTION
   Start a local node
+```
+
+## `swanky clear`
+
+Clear the artifacts
+
+```
+USAGE
+  $ swanky clear [CONTRACTNAME] [-v] [-a]
+
+ARGUMENTS
+  CONTRACTNAME  Name of the contract artifact to clear
+
+FLAGS
+  -a, --all      Select all the project artifacts for delete
+  -v, --verbose  Display more info in the result logs
+
+DESCRIPTION
+  Clear the artifacts
 ```
 
 ## `swanky plugins`
