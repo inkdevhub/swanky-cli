@@ -1,7 +1,7 @@
 ---
 name: Clear command
 about: New feature/clearCommand
-title: ''
+title: 'Clear command'
 labels: ''
 assignees: ''
 

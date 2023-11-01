@@ -13,6 +13,7 @@ export default class Clear extends SwankyCommand<typeof Clear> {
   static flags = {
     all: Flags.boolean({
       char: "a",
+      description: "Select all the project artifacts for delete"
     }),
   };
 
