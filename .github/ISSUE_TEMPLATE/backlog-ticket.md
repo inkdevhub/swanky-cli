@@ -1,7 +1,7 @@
 ---
-name: Clear command
-about: New feature/clearCommand
-title: 'Clear command'
+name: Backlog Ticket
+about: New feature/ticket for the project
+title: ''
 labels: ''
 assignees: ''
 
