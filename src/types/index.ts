@@ -44,6 +44,7 @@ export interface SwankyConfig {
     localPath: string;
     supportedInk: string;
   };
+  env: Record<string, string>;
   accounts: AccountData[];
   contracts: Record<string, ContractData> | Record<string, never>;
   networks: Record<string, {url: string}>

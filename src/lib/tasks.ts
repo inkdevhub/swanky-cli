@@ -28,6 +28,34 @@ export async function checkCliDependencies(spinner: Spinner) {
   }
 }
 
+export async function installCliDevDeps(
+  spinner: Spinner,
+  name: string,
+  version: string
+) {
+  switch (name) {
+    case "rust": {
+      spinner.text(`  Installing rust`);
+      await execaCommand(`rustup toolchain install ${version}`);
+      await execaCommand(`rustup default ${version}`);
+      break;
+    }
+    case "rust-nightly": {
+      spinner.text(`  Installing nightly`);
+      await execaCommand(`rustup toolchain install ${version}`);
+      await execaCommand(`rustup default ${version}`);
+      await execaCommand(`rustup component add rust-src --toolchain ${version}`);
+      await execaCommand(`rustup target add wasm32-unknown-unknown --toolchain ${version}`);
+      break;
+    }
+    default: {
+      spinner.text(`  Installing ${name}`);
+      await execaCommand(`cargo +stable install ${name} ${version === 'latest' ? '' : ` --force --version ${version}`}`);
+      break;
+    }
+  }
+}
+
 export async function copyCommonTemplateFiles(templatesPath: string, projectPath: string) {
   await ensureDir(projectPath);
   const commonFiles = await globby(`*`, { cwd: templatesPath });
