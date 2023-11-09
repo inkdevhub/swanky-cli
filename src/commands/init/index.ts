@@ -177,8 +177,14 @@ export class Init extends SwankyCommand<typeof Init> {
           task: downloadNode,
           args: [this.projectPath, nodeInfo, this.spinner],
           runningMessage: "Downloading Swanky node",
-          callback: (result) =>
-            this.configBuilder.node ? (this.configBuilder.node.localPath = result) : null,
+          callback: (result) => {
+            this.configBuilder.node = {
+              supportedInk: nodeInfo.supportedInk,
+              polkadotPalletVersions: nodeInfo.polkadotPalletVersions,
+              version: nodeInfo.version,
+              localPath: result,
+            };
+          }
         });
       }
     }
