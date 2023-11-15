@@ -1,6 +1,5 @@
-import { Args, Flags } from "@oclif/core";
-import { ApiPromise, Keyring, WsProvider } from "@polkadot/api";
-import { resolveNetworkUrl } from "../../lib/index.js";
+import { Args } from "@oclif/core";
+import { ChainApi, resolveNetworkUrl } from "../../lib/index.js";
 import { AccountData } from "../../types/index.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { ConfigError } from "../../lib/errors.js";
@@ -29,21 +28,14 @@ export class Faucet extends SwankyCommand<typeof Faucet> {
 
     const networkUrl = resolveNetworkUrl(this.swankyConfig, "");
 
-    const wsProvider = new WsProvider(networkUrl);
-    const api = await ApiPromise.create({ provider: wsProvider });
-    await api.isReady;
+    const api = (await this.spinner.runCommand(async () => {
+      const api = await ChainApi.create(networkUrl);
+      await api.start();
+      return api;
+    }, "Connecting to node")) as ChainApi;
 
-    const keyring = new Keyring({ type: 'sr25519' });
 
-    const alicePair = keyring.addFromUri('//Alice');
-
-    await this.spinner.runCommand(async () => {
-      await api.tx.balances
-        .transfer(accountData.address, BigInt(100000000000000000000n))
-        .signAndSend(alicePair);
-
-      await wsProvider.disconnect();
-    }, `Fauceting 100000000000000000000 units to ${args.alias}`);
-
+    await this.spinner.runCommand( async () => {await api.faucet(accountData)}
+    , `Fauceting 100000000000000000000 units to ${args.alias}`);
   }
 }

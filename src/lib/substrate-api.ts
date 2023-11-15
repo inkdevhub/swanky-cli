@@ -1,5 +1,5 @@
 import { ApiPromise } from "@polkadot/api/promise";
-import { WsProvider } from "@polkadot/api";
+import { Keyring, WsProvider } from "@polkadot/api";
 import { SignerOptions } from "@polkadot/api/types";
 import { Codec, ITuple } from "@polkadot/types-codec/types";
 import { ISubmittableResult } from "@polkadot/types/types";
@@ -7,7 +7,7 @@ import { TypeRegistry } from "@polkadot/types";
 import { DispatchError, BlockHash } from "@polkadot/types/interfaces";
 import { ChainAccount } from "./account.js";
 import BN from "bn.js";
-import { ChainProperty, ExtrinsicPayload } from "../types/index.js";
+import { ChainProperty, ExtrinsicPayload, AccountData } from "../types/index.js";
 
 import { KeyringPair } from "@polkadot/keyring/types";
 import { Abi, CodePromise } from "@polkadot/api-contract";
@@ -210,7 +210,6 @@ export class ChainApi {
       if (handler) handler(result);
     });
   }
-
   public async deploy(
     abi: Abi,
     wasm: Buffer,
@@ -246,5 +245,16 @@ export class ChainApi {
         }
       });
     });
+  }
+
+  public async faucet(accountData: AccountData) {
+    const keyring = new Keyring({ type: "sr25519" });
+    const alicePair = keyring.addFromUri("//Alice");
+
+    await this._api.tx.balances
+      .transfer(accountData.address, BigInt(100000000000000000000n))
+      .signAndSend(alicePair);
+
+    await this._provider.disconnect();
   }
 }

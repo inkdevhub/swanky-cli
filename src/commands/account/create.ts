@@ -1,6 +1,6 @@
 import { Flags } from "@oclif/core";
 import chalk from "chalk";
-import { ChainAccount, encrypt } from "../../lib/index.js";
+import { ChainAccount, ChainApi, encrypt, resolveNetworkUrl } from "../../lib/index.js";
 import { AccountData } from "../../types/index.js";
 import inquirer from "inquirer";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
@@ -35,7 +35,7 @@ export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
       );
     }
 
-    let tmpMnemonic = "";
+    let tmpMnemonic: string;
     if (flags.generate) {
       tmpMnemonic = ChainAccount.generate();
       console.log(
@@ -84,5 +84,17 @@ export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
         accountData.alias
       )} stored to config`
     );
+
+    const networkUrl = resolveNetworkUrl(this.swankyConfig, "");
+
+    const api = (await this.spinner.runCommand(async () => {
+      const api = await ChainApi.create(networkUrl);
+      await api.start();
+      return api;
+    }, "Connecting to node")) as ChainApi;
+
+
+    await this.spinner.runCommand( async () => {await api.faucet(accountData)}
+      , `Fauceting 100000000000000000000 units to ${accountData.alias}`);
   }
 }
