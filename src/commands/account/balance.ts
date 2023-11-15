@@ -1,5 +1,5 @@
-import { Args, Flags } from "@oclif/core";
-import { ApiPromise, Keyring, WsProvider } from "@polkadot/api";
+import { Args } from "@oclif/core";
+import { ApiPromise, WsProvider } from "@polkadot/api";
 import { resolveNetworkUrl } from "../../lib/index.js";
 import { AccountData } from "../../types/index.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
