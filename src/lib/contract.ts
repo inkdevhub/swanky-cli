@@ -3,6 +3,7 @@ import { ContractData, DeploymentData } from "../types/index.js";
 import { pathExists, readJSON } from "fs-extra/esm";
 import path from "node:path";
 import { FileError } from "./errors.js";
+import fs from "fs";
 
 export class Contract {
   static artifactTypes = [".json", ".contract"];
@@ -49,6 +50,16 @@ export class Contract {
     return readJSON(path.resolve(this.artifactsPath, `${this.moduleName}.json`));
   }
 
+  async getBuildMode(): Promise<string> {
+    const check = await this.artifactsExist();
+    if (!check.result && check.missingTypes.includes(".contract")) {
+      throw new FileError(
+        `Cannot read .contract bundle, path not found: ${check.missingPaths.toString()}`
+      );
+    }
+    const contractJson = JSON.parse(fs.readFileSync(path.resolve(this.artifactsPath, `${this.moduleName}.json`), 'utf8'));
+    return contractJson.source.build_info.build_mode;
+  }
   async getBundle() {
     const check = await this.artifactsExist();
     if (!check.result && check.missingTypes.includes(".contract")) {
@@ -56,7 +67,7 @@ export class Contract {
         `Cannot read .contract bundle, path not found: ${check.missingPaths.toString()}`
       );
     }
-    return readJSON(path.resolve(this.artifactsPath, `${this.moduleName}.contract`));
+    return readJSON(path.resolve(this.artifactsPath, `${this.moduleName}.contract`), 'utf8');
   }
 
   async getWasm(): Promise<Buffer> {

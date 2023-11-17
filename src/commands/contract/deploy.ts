@@ -97,6 +97,22 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
       return new ChainAccount(mnemonic);
     }, "Initialising")) as ChainAccount;
 
+    const buildMode = await contract.getBuildMode();
+    if(buildMode !== 'Release') {
+      await inquirer.prompt([
+        {
+          type: "confirm",
+          message: `You are deploying a contract in debug mode. Are you sure you want to continue?`,
+          name: "confirm",
+        },
+      ]).then((answers) => {
+        if(!answers.confirm) {
+          this.log(`${chalk.redBright('✖')} Aborted deployment of ${chalk.yellowBright(args.contractName)}`);
+          process.exit(0);
+        }
+      })
+    }
+
     const { abi, wasm } = (await this.spinner.runCommand(async () => {
       const abi = await contract.getABI();
       const wasm = await contract.getWasm();
