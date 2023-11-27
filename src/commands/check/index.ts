@@ -1,14 +1,20 @@
 import { Listr } from "listr2";
 import { commandStdoutOrNull } from "../../lib/index.js";
 import { SwankyConfig } from "../../types/index.js";
-import { pathExistsSync, readJSON } from "fs-extra/esm";
+import { pathExistsSync, readJSON, writeJson } from "fs-extra/esm";
 import { readFileSync } from "fs";
 import path from "node:path";
 import TOML from "@iarna/toml";
 import semver from "semver";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
+import { Flags } from "@oclif/core";
+import chalk from "chalk";
 
 interface Ctx {
+  os: {
+    platform: string;
+    architecture: string;
+  },
   versions: {
     tools: {
       rust?: string | null;
@@ -17,6 +23,7 @@ interface Ctx {
       cargoDylint?: string | null;
       cargoContract?: string | null;
     };
+    missingTools: string[];
     contracts: Record<string, Record<string, string>>;
     node?: string | null;
   };
@@ -28,8 +35,23 @@ interface Ctx {
 export default class Check extends SwankyCommand<typeof Check> {
   static description = "Check installed package versions and compatibility";
 
+  static flags = {
+    file: Flags.string({
+      char: "f",
+      description: "File to write output to",
+    })
+  };
+
   public async run(): Promise<void> {
+    const { flags } = await this.parse(Check);
     const tasks = new Listr<Ctx>([
+      {
+        title: "Check OS",
+        task: async (ctx) => {
+          ctx.os.platform = process.platform;
+          ctx.os.architecture = process.arch;
+        },
+      },
       {
         title: "Check Rust",
         task: async (ctx) => {
@@ -86,7 +108,7 @@ export default class Check extends SwankyCommand<typeof Check> {
             const cargoToml = TOML.parse(cargoTomlString);
 
             const inkDependencies = Object.entries(cargoToml.dependencies)
-              .filter((dependency) => dependency[0].includes("ink_"))
+              .filter((dependency) => dependency[0].includes("ink"))
               .map(([depName, depInfo]) => {
                 const dependency = depInfo as Dependency;
                 return [depName, dependency.version ?? dependency.tag];
@@ -118,12 +140,27 @@ export default class Check extends SwankyCommand<typeof Check> {
           ctx.mismatchedVersions = mismatched;
         },
       },
+      {
+        title: "Check for missing tools",
+        task: async (ctx) => {
+          const missingTools: string[] = [];
+          for (const [toolName, toolVersion] of Object.entries(ctx.versions.tools)) {
+            if (!toolVersion) {
+              missingTools.push(toolName);
+            }
+          }
+          ctx.versions.missingTools = missingTools;
+        },
+      }
     ]);
+    process.platform
+    process.arch
     const context = await tasks.run({
-      versions: { tools: {}, contracts: {} },
+      os: { platform: "", architecture: "" },
+      versions: {tools: {}, missingTools: [], contracts: {} },
       looseDefinitionDetected: false,
     });
-    console.log(context.versions);
+
     Object.values(context.mismatchedVersions as any).forEach((mismatch) =>
       console.error(`[ERROR] ${mismatch as string}`)
     );
@@ -133,9 +170,26 @@ export default class Check extends SwankyCommand<typeof Check> {
       Please use "=" to install a fixed version (Example: "=3.0.1")
       `);
     }
+    const supportedPlatforms = ["darwin", "linux"];
+    const supportedArch = ["arm64", "x64"];
+
+    if (!supportedPlatforms.includes(context.os.platform)) {
+      console.error(`[ERROR] Platform ${context.os.platform} is not supported`);
+    }
+    if (!supportedArch.includes(context.os.architecture)) {
+      console.error(`[ERROR] Architecture ${context.os.architecture} is not supported`);
+    }
+
+    console.log(context.os, context.versions);
+
+    const filePath = flags.file ?? null;
+    if(filePath) {
+      await this.spinner.runCommand(async () => {
+        writeJson(filePath, [context.os, context.versions], { spaces: 2 })
+      }, `Writing output to file ${chalk.yellowBright(filePath)}`)
+    }
   }
 }
-
 interface Dependency {
   version?: string;
   tag?: string;
