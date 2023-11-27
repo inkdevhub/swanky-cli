@@ -16,6 +16,12 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
       description:
         "A production contract should always be build in `release` mode for building optimized wasm",
     }),
+    verifiable: Flags.boolean({
+      default: false,
+      char: "v",
+      description:
+        "A production contract should be build in `verifiable` mode to deploy on a public network",
+    }),
     all: Flags.boolean({
       default: false,
       char: "a",
@@ -65,10 +71,13 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
               "contract",
               "build",
               "--manifest-path",
-              `${contractPath}/Cargo.toml`,
+              `contracts/${contractName}/Cargo.toml`,
             ];
-            if (flags.release) {
+            if (flags.release && !flags.verifiable) {
               compileArgs.push("--release");
+            }
+            if (flags.verifiable) {
+              compileArgs.push("--verifiable");
             }
             const compile = spawn("cargo", compileArgs);
             this.logger.info(`Running compile command: [${JSON.stringify(compile.spawnargs)}]`);
