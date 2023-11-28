@@ -2,7 +2,10 @@ import { AbiType, consts, printContractInfo } from "./index.js";
 import { ContractData, DeploymentData } from "../types/index.js";
 import { pathExists, readJSON } from "fs-extra/esm";
 import path from "node:path";
-import { FileError } from "./errors.js";
+import { FileError, ProcessError } from "./errors.js";
+import { spawn } from "node:child_process";
+import { Logger } from "winston";
+import { Spinner } from "./spinner.js";
 
 export class Contract {
   static artifactTypes = [".json", ".contract"];
@@ -56,7 +59,14 @@ export class Contract {
         `Cannot read .contract bundle, path not found: ${check.missingPaths.toString()}`
       );
     }
-    return readJSON(path.resolve(this.artifactsPath, `${this.moduleName}.contract`));
+    return readJSON(path.resolve(this.artifactsPath, `${this.moduleName}.contract`), 'utf-8');
+  }
+
+  async getMetadata(): Promise<Buffer> {
+    const bundle = await this.getBundle();
+    if (bundle.source?.metadata) return bundle.source.metadata;
+
+    throw new FileError(`Cannot find metadata field in the .contract bundle!`);
   }
 
   async getWasm(): Promise<Buffer> {
@@ -69,5 +79,43 @@ export class Contract {
   async printInfo(): Promise<void> {
     const abi = await this.getABI();
     printContractInfo(abi);
+  }
+
+  async verify(spinner : Spinner, logger : Logger): Promise<boolean> {
+    return new Promise<boolean>((resolve, reject) => {
+      const compileArgs = [
+        "contract",
+        "verify",
+        `artifacts/${this.name}/${this.name}.contract`,
+        "--manifest-path",
+        `contracts/${this.name}/Cargo.toml`,
+      ];
+      const compile = spawn("cargo", compileArgs);
+      logger.info(`Running verify command: [${JSON.stringify(compile.spawnargs)}]`);
+      let outputBuffer = "";
+      let errorBuffer = "";
+
+      compile.stdout.on("data", (data) => {
+        outputBuffer += data.toString();
+        spinner.ora.clear();
+      });
+
+      compile.stderr.on("data", (data) => {
+        errorBuffer += data;
+      });
+
+      compile.on("exit", (code) => {
+        if (code === 0) {
+          const regex = /Successfully verified contract (.*) against reference contract (.*)/;
+          const match = outputBuffer.match(regex);
+          if (match) {
+            logger.info(`Contract ${this.name} verification done.`);
+            resolve(true);
+          }
+        } else {
+          reject(new ProcessError(errorBuffer));
+        }
+      });
+    });
   }
 }
