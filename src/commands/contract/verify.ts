@@ -3,8 +3,8 @@ import path from "node:path";
 import { Spinner } from "../../lib/index.js";
 import { pathExists } from "fs-extra/esm";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-import { ConfigError, InputError } from "../../lib/errors.js";
-import { Contract } from "../../lib/contract.js";
+import { ConfigError, InputError, ProcessError } from "../../lib/errors.js";
+import { spawn } from "node:child_process";
 
 export class VerifyContract extends SwankyCommand<typeof VerifyContract> {
   static description = "Verify the smart contract(s) in your contracts directory";
@@ -53,15 +53,52 @@ export class VerifyContract extends SwankyCommand<typeof VerifyContract> {
         throw new InputError(`Contract folder not found at expected path`);
       }
 
-      const contract = new Contract(contractInfo);
-
       await spinner.runCommand(
         async () => {
-          await contract.verify(spinner, this.logger);
-        },
+            return new Promise<boolean>((resolve, reject) => {
+              const compileArgs = [
+                "contract",
+                "verify",
+                `artifacts/${contractName}/${contractName}.contract`,
+                "--manifest-path",
+                `contracts/${contractName}/Cargo.toml`,
+              ];
+              const compile = spawn("cargo", compileArgs);
+              this.logger.info(`Running verify command: [${JSON.stringify(compile.spawnargs)}]`);
+              let outputBuffer = "";
+              let errorBuffer = "";
+
+              compile.stdout.on("data", (data) => {
+                outputBuffer += data.toString();
+                spinner.ora.clear();
+              });
+
+              compile.stderr.on("data", (data) => {
+                errorBuffer += data;
+              });
+
+              compile.on("exit", (code) => {
+                if (code === 0) {
+                  const regex = /Successfully verified contract (.*) against reference contract (.*)/;
+                  const match = outputBuffer.match(regex);
+                  if (match) {
+                    this.logger.info(`Contract ${contractName} verification done.`);
+                    resolve(true);
+                  }
+                } else {
+                  reject(new ProcessError(errorBuffer));
+                }
+              });
+            });
+          },
         `Verifying ${contractName} contract`,
         `${contractName} Contract verified successfully`
       );
+      contractInfo.build!.verified = true;
+
+      this.swankyConfig.contracts[contractName] = contractInfo;
+
+      await this.storeConfig();
     }
   }
 }

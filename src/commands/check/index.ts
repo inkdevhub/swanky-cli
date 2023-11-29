@@ -79,12 +79,16 @@ export default class Check extends SwankyCommand<typeof Check> {
             const cargoToml = TOML.parse(cargoTomlString);
 
             const inkDependencies = Object.entries(cargoToml.dependencies)
-              .filter((dependency) => dependency[0].includes("ink_"))
+              .filter((dependency) => dependency[0].includes("ink"))
               .map(([depName, depInfo]) => {
                 const dependency = depInfo as Dependency;
                 return [depName, dependency.version ?? dependency.tag];
               });
             ctx.versions.contracts[contract] = Object.fromEntries(inkDependencies);
+            ctx.versions.contracts[contract] = {
+              ...ctx.versions.contracts[contract],
+              verified: swankyConfig.contracts[contract].build?.verified ?? false,
+            };
           }
         },
       },
@@ -96,14 +100,16 @@ export default class Check extends SwankyCommand<typeof Check> {
           const mismatched: Record<string, string> = {};
           Object.entries(ctx.versions.contracts).forEach(([contract, inkPackages]) => {
             Object.entries(inkPackages).forEach(([inkPackage, version]) => {
-              if (semver.gt(version, supportedInk!)) {
-                mismatched[
-                  `${contract}-${inkPackage}`
-                ] = `Version of ${inkPackage} (${version}) in ${contract} is higher than supported ink version (${supportedInk})`;
-              }
+              if (inkPackage != "verified") {
+                if (semver.gt(version, supportedInk!)) {
+                  mismatched[
+                    `${contract}-${inkPackage}`
+                  ] = `Version of ${inkPackage} (${version}) in ${contract} is higher than supported ink version (${supportedInk})`;
+                }
 
-              if (!(version.startsWith("=") || version.startsWith("v"))) {
-                ctx.looseDefinitionDetected = true;
+                if (!(version.startsWith("=") || version.startsWith("v"))) {
+                  ctx.looseDefinitionDetected = true;
+                }
               }
             });
           });

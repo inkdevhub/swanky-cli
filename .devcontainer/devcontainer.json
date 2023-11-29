@@ -1,6 +1,6 @@
 {
   "name": "swanky-env",
-  "image": "ghcr.io/swankyhub/swanky-cli/swanky-base:swanky3.1.0-beta.0_v2.1.0",
+  "image": "ghcr.io/swankyhub/swanky-cli/swanky-base:swanky3.1.0-beta.0_v2.1.1",
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version" : "latest"

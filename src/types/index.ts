@@ -11,7 +11,7 @@ export interface ChainProperty {
 
 export type ExtrinsicPayload = SubmittableExtrinsic<"promise">;
 
-export interface Encrypted { iv: string; data: string };
+export interface Encrypted { iv: string; data: string }
 
 export interface AccountData {
   isDev: boolean;
@@ -30,6 +30,7 @@ export interface ContractData {
 export interface BuildData {
   timestamp: number;
   artifactsPath: string;
+  verified: boolean;
 }
 
 export interface DeploymentData {

@@ -123,6 +123,14 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
         `Generating ${contractName} contract ts types`,
         `${contractName} contract's TS types Generated successfully`
       );
+
+      this.swankyConfig.contracts[contractName].build = {
+        timestamp: Date.now(),
+        artifactsPath,
+        verified: false,
+      };
+
+      await this.storeConfig();
     }
   }
 }

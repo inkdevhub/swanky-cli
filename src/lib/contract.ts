@@ -2,10 +2,7 @@ import { AbiType, consts, printContractInfo } from "./index.js";
 import { ContractData, DeploymentData } from "../types/index.js";
 import { pathExists, readJSON } from "fs-extra/esm";
 import path from "node:path";
-import { FileError, ProcessError } from "./errors.js";
-import { spawn } from "node:child_process";
-import { Logger } from "winston";
-import { Spinner } from "./spinner.js";
+import { FileError } from "./errors.js";
 
 export class Contract {
   static artifactTypes = [".json", ".contract"];
@@ -79,43 +76,5 @@ export class Contract {
   async printInfo(): Promise<void> {
     const abi = await this.getABI();
     printContractInfo(abi);
-  }
-
-  async verify(spinner : Spinner, logger : Logger): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject) => {
-      const compileArgs = [
-        "contract",
-        "verify",
-        `artifacts/${this.name}/${this.name}.contract`,
-        "--manifest-path",
-        `contracts/${this.name}/Cargo.toml`,
-      ];
-      const compile = spawn("cargo", compileArgs);
-      logger.info(`Running verify command: [${JSON.stringify(compile.spawnargs)}]`);
-      let outputBuffer = "";
-      let errorBuffer = "";
-
-      compile.stdout.on("data", (data) => {
-        outputBuffer += data.toString();
-        spinner.ora.clear();
-      });
-
-      compile.stderr.on("data", (data) => {
-        errorBuffer += data;
-      });
-
-      compile.on("exit", (code) => {
-        if (code === 0) {
-          const regex = /Successfully verified contract (.*) against reference contract (.*)/;
-          const match = outputBuffer.match(regex);
-          if (match) {
-            logger.info(`Contract ${this.name} verification done.`);
-            resolve(true);
-          }
-        } else {
-          reject(new ProcessError(errorBuffer));
-        }
-      });
-    });
   }
 }
