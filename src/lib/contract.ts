@@ -59,13 +59,6 @@ export class Contract {
     return readJSON(path.resolve(this.artifactsPath, `${this.moduleName}.contract`), 'utf-8');
   }
 
-  async getMetadata(): Promise<Buffer> {
-    const bundle = await this.getBundle();
-    if (bundle.source?.metadata) return bundle.source.metadata;
-
-    throw new FileError(`Cannot find metadata field in the .contract bundle!`);
-  }
-
   async getWasm(): Promise<Buffer> {
     const bundle = await this.getBundle();
     if (bundle.source?.wasm) return bundle.source.wasm;
