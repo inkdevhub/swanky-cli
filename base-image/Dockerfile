@@ -24,7 +24,7 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
   rustup component add rust-src && \
   rustup target add wasm32-unknown-unknown && \
   cargo install cargo-dylint dylint-link && \
-  cargo install --git https://github.com/paritytech/cargo-contract --branch master && \
+  cargo install cargo-contract --version 4.0.0-rc.1 && \
   rustc --version"
 
 # Install Yarn 1.x
