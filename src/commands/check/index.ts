@@ -9,6 +9,7 @@ import semver from "semver";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { Flags } from "@oclif/core";
 import chalk from "chalk";
+import { cargoContractDeps } from "../../lib/cargoContractInfo.js";
 
 interface Ctx {
   os: {
@@ -120,7 +121,19 @@ export default class Check extends SwankyCommand<typeof Check> {
       {
         title: "Verify ink version",
         task: async (ctx) => {
-          const supportedInk = ctx.swankyConfig?.node.supportedInk;
+          let supportedInk = ctx.swankyConfig?.node.supportedInk;
+          const regex = /cargo-contract-contract (.*)-unknown-x86_64-unknown-linux-gnu/;
+          const cargoContract = ctx.versions.tools.cargoContract;
+          if (cargoContract) {
+            const match = cargoContract.match(regex);
+            if (match) {
+              const cargoVersion = match[1];
+              const version = cargoContractDeps.get(cargoVersion);
+              if (version && semver.gt(supportedInk!, version[0])) {
+                supportedInk = version[0];
+              }
+            }
+          }
 
           const mismatched: Record<string, string> = {};
           Object.entries(ctx.versions.contracts).forEach(([contract, inkPackages]) => {
