@@ -16,7 +16,7 @@ import {
   ChainAccount,
   processTemplates,
   swankyNode,
-  getTemplates,
+  getTemplates, copyTestHelpers,
 } from "../../lib/index.js";
 import {
   DEFAULT_ASTAR_NETWORK_URL,
@@ -270,6 +270,15 @@ export class Init extends SwankyCommand<typeof Init> {
     });
 
     this.taskQueue.push({
+      task: copyTestHelpers,
+      args: [
+        path.resolve(templates.templatesPath),
+        this.projectPath,
+      ],
+      runningMessage: "Copying test helpers",
+    });
+
+    this.taskQueue.push({
       task: processTemplates,
       args: [
         this.projectPath,
@@ -381,11 +390,11 @@ export class Init extends SwankyCommand<typeof Init> {
     this.taskQueue.push({
       task: async (tomlObject, projectPath) => {
         const tomlString = TOML.stringify(tomlObject);
-        const rootTomlPath = path.resolve(projectPath, "Cargo.toml");
+        const rootTomlPath = path.resolve(projectPath, "Cargo.toml.hbs.hbs");
         await outputFile(rootTomlPath, tomlString);
       },
       args: [rootToml, this.projectPath],
-      runningMessage: "Writing Cargo.toml",
+      runningMessage: "Writing Cargo.toml.hbs.hbs",
     });
 
     this.taskQueue.push({
@@ -433,9 +442,9 @@ async function detectModuleNames(copyList: CopyCandidates): Promise<CopyCandidat
       const extendedEntry = { ...entry, moduleName };
       if (
         entry.dirent.isDirectory() &&
-        (await pathExists(path.resolve(entry.path, "Cargo.toml")))
+        (await pathExists(path.resolve(entry.path, "Cargo.toml.hbs.hbs")))
       ) {
-        const fileData = await readFile(path.resolve(entry.path, "Cargo.toml"), "utf-8");
+        const fileData = await readFile(path.resolve(entry.path, "Cargo.toml.hbs.hbs"), "utf-8");
         const toml: any = TOML.parse(fileData);
         if (toml.package?.name) {
           extendedEntry.moduleName = toml.package.name;
@@ -544,7 +553,7 @@ async function detectTests(pathToExistingProject: string): Promise<string | unde
 }
 
 async function readRootCargoToml(pathToProject: string) {
-  const rootTomlPath = path.resolve(pathToProject, "Cargo.toml");
+  const rootTomlPath = path.resolve(pathToProject, "Cargo.toml.hbs.hbs");
   if (!(await pathExists(rootTomlPath))) return null;
   const fileData = await readFile(rootTomlPath, "utf-8");
   const toml: any = TOML.parse(fileData);

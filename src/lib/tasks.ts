@@ -59,6 +59,16 @@ export async function copyContractTemplateFiles(
   );
 }
 
+export async function copyTestHelpers(
+  templatePath: string,
+  projectPath: string
+) {
+  await copy(
+    path.resolve(templatePath, "test_helpers"),
+    path.resolve(projectPath, "tests", "test_helpers")
+  );
+}
+
 export async function processTemplates(projectPath: string, templateData: Record<string, string>) {
   const templateFiles = await globby(projectPath, {
     expandDirectories: { extensions: ["hbs"] },

@@ -1,6 +1,6 @@
 import { Args, Flags } from "@oclif/core";
 import path from "node:path";
-import { storeArtifacts, Spinner, generateTypes } from "../../lib/index.js";
+import { storeArtifacts, Spinner } from "../../lib/index.js";
 import { spawn } from "node:child_process";
 import { pathExists } from "fs-extra/esm";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
@@ -108,12 +108,6 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
       await spinner.runCommand(async () => {
         return storeArtifacts(artifactsPath, contractInfo.name, contractInfo.moduleName);
       }, "Moving artifacts");
-
-      await spinner.runCommand(
-        async () => await generateTypes(contractInfo.name),
-        `Generating ${contractName} contract ts types`,
-        `${contractName} contract's TS types Generated successfully`
-      );
     }
   }
 }
