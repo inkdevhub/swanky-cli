@@ -27,7 +27,7 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
     mocha: Flags.boolean({
         default: false,
         description: "Run tests with mocha",
-      }),
+    }),
   };
 
   static args = {
@@ -71,7 +71,7 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
 
       console.log(`Testing contract: ${contractName}`);
 
-      if (!flags.ts) {
+      if (!flags.mocha) {
         await spinner.runCommand(
           async () => {
             return new Promise<string>((resolve, reject) => {
@@ -123,6 +123,17 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
         if (!artifactsCheck.result) {
           throw new FileError(
             `No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`
+          );
+        }
+
+        const artifactPath = path.resolve("typedContracts", `${contractName}`);
+        const typedContractCheck = await contract.typedContractExists(contractName);
+
+        this.log(`artifactPath: ${artifactPath}`);
+
+        if (!typedContractCheck.result) {
+          throw new FileError(
+            `No typed contract found at path: ${typedContractCheck.missingPaths.toString()}`
           );
         }
 
