@@ -8,6 +8,7 @@ const __dirname = path.dirname(__filename);
 export function getTemplates() {
   const templatesPath = path.resolve(__dirname, "..", "templates");
   const contractTemplatesPath = path.resolve(templatesPath, "contracts");
+  const frontendTemplatesPath = path.resolve(templatesPath, "frontends");
   const fileList = readdirSync(contractTemplatesPath, {
     withFileTypes: true,
   });
@@ -19,5 +20,6 @@ export function getTemplates() {
     templatesPath,
     contractTemplatesPath,
     contractTemplatesList,
+    frontendTemplatesPath,
   };
 }

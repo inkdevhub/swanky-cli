@@ -1,0 +1,28 @@
+import { DeployerProvider, InkLayout } from 'ui';
+import metadata from '../assets/psp22.json';
+import { Psp22 } from './components';
+
+const ONE_BILLION_TOKENS = '1000000000000000000000';
+
+function App() {
+  return (
+    <InkLayout
+      className='md:py-12 md:p-6 p-4 h-screen flex items-center justify-center'
+      animationSrc='https://raw.githubusercontent.com/paritytech/ink-workshop/d819d10a35b2ac3d2bff4f77a96701a527b3ad3a/frontend/public/dark-sea-creatures.json'
+    >
+      <DeployerProvider
+        {...{
+          metadata,
+          constructorArgs: { totalSupply: ONE_BILLION_TOKENS },
+          constructorName: 'new',
+          codeHash:
+            '0x6bf4efb5bc41b9dba3c3bdbd602e513a253ef3482e91168fb30b7b3d6eb3b6fa',
+        }}
+      >
+        <Psp22 />
+      </DeployerProvider>
+    </InkLayout>
+  );
+}
+
+export default App;

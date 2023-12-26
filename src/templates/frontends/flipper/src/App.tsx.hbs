@@ -1,0 +1,26 @@
+import {InkLayout, DeployerProvider} from 'ui';
+import metadata from './assets/flipper.json';
+import {Flipper} from './components'
+
+function App() {
+  return (
+    <InkLayout
+      className='md:py-12 md:p-6 p-4 h-screen flex items-center justify-center'
+      animationSrc='https://raw.githubusercontent.com/paritytech/ink-workshop/d819d10a35b2ac3d2bff4f77a96701a527b3ad3a/frontend/public/dark-sea-creatures.json'
+    >
+      <DeployerProvider
+          {...{
+            metadata,
+            constructorName: 'newDefault',
+            constructorArgs: {},
+            codeHash:
+                '0xc61221687fe75efbc0261c0a5c510c6f78e8571cf8595ffe146bec4719354b80',
+          }}
+      >
+        <Flipper />
+      </DeployerProvider>
+    </InkLayout>
+  );
+}
+
+export default App;

@@ -1,0 +1,4 @@
+files=$(find . -type f | tr " " "\n")
+for f in $files; do
+  mv -- $f "$f.hbs"
+done

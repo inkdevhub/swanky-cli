@@ -5,9 +5,9 @@ import {
   checkCliDependencies,
   copyContractTemplateFiles,
   processTemplates,
-  getTemplates,
+  getTemplates, copyFrontendTemplateFiles,
 } from "../../lib/index.js";
-import { email, name, pickTemplate } from "../../lib/prompts.js";
+import { choice, email, name, pickTemplate } from "../../lib/prompts.js";
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import { execaCommandSync } from "execa";
 import inquirer from "inquirer";
@@ -59,6 +59,7 @@ export class NewContract extends SwankyCommand<typeof NewContract> {
         "What is your name?"
       ),
       email(),
+      choice("useFrontendTemplate", "Do you want to use a frontend template?"),
     ];
 
     const answers = await inquirer.prompt(questions);
@@ -77,6 +78,14 @@ export class NewContract extends SwankyCommand<typeof NewContract> {
         ),
       "Copying contract template files"
     );
+
+    if(answers.useFrontendTemplate) {
+      await copyFrontendTemplateFiles(
+        templates.frontendTemplatesPath,
+        args.contractName,
+        projectPath,
+      )
+    }
 
     await this.spinner.runCommand(
       () =>

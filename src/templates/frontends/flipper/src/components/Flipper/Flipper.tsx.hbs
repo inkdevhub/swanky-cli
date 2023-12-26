@@ -1,0 +1,46 @@
+import {Card, formatContractName, Button, ConnectButton, useDeployerState} from 'ui';
+import { useCallSubscription, useContract, useTx, useWallet } from 'useink';
+import { useTxNotifications } from 'useink/notifications';
+import {pickDecoded, shouldDisable} from 'useink/utils';
+import metadata from "../../assets/flipper.json";
+
+export const Flipper: React.FC = () => {
+    const { contractAddress } = useDeployerState();
+    const contract = useContract(contractAddress || '', metadata);
+
+    const flip = useTx(contract, 'flip');
+    useTxNotifications(flip);
+
+    const { account } = useWallet();
+
+    const getSub = useCallSubscription<boolean>(contract, 'get', [], {
+        defaultCaller: true,
+    });
+
+    return (
+        <div className='flex flex-col md:flex-row md:justify-center justify-center items-stretch gap-3 w-full max-h-[80%]'>
+            <Card className='mx-auto p-6 flex flex-col w-full max-w-md backdrop-blur-sm bg-opacity-70'>
+                <h1 className='text-2xl font-bold'>
+                    {formatContractName(metadata.contract.name)}
+                </h1>
+
+                <p className='mt-6'>
+                    Flipped:{' '}
+                    <b className='uppercase'>{pickDecoded(getSub.result)?.toString()}</b>
+                </p>
+
+                {account ? (
+                    <Button
+                        disabled={shouldDisable(flip)}
+                        onClick={() => flip.signAndSend()}
+                        className='mt-6'
+                    >
+                        {shouldDisable(flip) ? 'Flipping...' : 'Flip'}
+                    </Button>
+                ) : (
+                    <ConnectButton className='mt-6' />
+                )}
+            </Card>
+        </div>
+    );
+};

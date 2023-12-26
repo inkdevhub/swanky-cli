@@ -11,6 +11,7 @@ import decompress from "decompress";
 import { Spinner } from "./spinner.js";
 import { SupportedPlatforms, SupportedArch } from "../types/index.js";
 import { ConfigError, NetworkError } from "./errors.js";
+import { existsSync } from "node:fs";
 
 export async function checkCliDependencies(spinner: Spinner) {
   const dependencyList = [
@@ -57,6 +58,31 @@ export async function copyContractTemplateFiles(
     path.resolve(contractTemplatePath, "test"),
     path.resolve(projectPath, "tests", contractName)
   );
+}
+
+export async function copyFrontendTemplateFiles(
+  frontendTemplatePath: string,
+  contractName: string,
+  projectPath: string,
+) {
+  if(!existsSync(path.resolve(projectPath, "frontends"))) {
+    await copy(
+      path.resolve(frontendTemplatePath, "ui"),
+      path.resolve(projectPath, "frontends", "ui")
+    )
+    await copy(
+      path.resolve(frontendTemplatePath, "package.json.hbs"),
+      path.resolve(projectPath, "frontends", "package.json.hbs")
+    )
+    await copy(
+      path.resolve(frontendTemplatePath, "pnpm-workspace.yaml.hbs"),
+      path.resolve(projectPath, "frontends", "pnpm-workspace.yaml.hbs")
+    )
+  }
+  await copy(
+    path.resolve(frontendTemplatePath, contractName),
+    path.resolve(projectPath, "frontends", contractName)
+  )
 }
 
 export async function processTemplates(projectPath: string, templateData: Record<string, string>) {

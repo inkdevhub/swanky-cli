@@ -17,6 +17,7 @@ import {
   processTemplates,
   swankyNode,
   getTemplates,
+  copyFrontendTemplateFiles
 } from "../../lib/index.js";
 import {
   DEFAULT_ASTAR_NETWORK_URL,
@@ -268,6 +269,21 @@ export class Init extends SwankyCommand<typeof Init> {
       ],
       runningMessage: "Copying contract template files",
     });
+    const {useFrontendTemplate} = await inquirer.prompt([
+      choice("useFrontendTemplate", "Do you want to use a frontend template?"),
+    ]);
+    if(useFrontendTemplate)
+    {
+      this.taskQueue.push({
+        task: copyFrontendTemplateFiles,
+        args: [
+          templates.frontendTemplatesPath,
+          contractName,
+          this.projectPath,
+        ],
+        runningMessage: "Copying frontend template files",
+      });
+    }
 
     this.taskQueue.push({
       task: processTemplates,
@@ -402,19 +418,19 @@ export class Init extends SwankyCommand<typeof Init> {
       runningMessage: "Copying workspace files",
     });
 
-    const existingPJsonPath = path.resolve(pathToExistingProject, "package.json");
+    const existingPJsonPath = path.resolve(pathToExistingProject, "package.json.hbs");
     if (await pathExists(existingPJsonPath)) {
       this.taskQueue.push({
         task: async (pJsonPath, projectPath) => {
           const existingPJson = await readJSON(pJsonPath);
-          const templatePJsonPath = path.resolve(projectPath, "package.json");
+          const templatePJsonPath = path.resolve(projectPath, "package.json.hbs");
           const templatePJson = await readJSON(templatePJsonPath);
           const mergedJson = merge(templatePJson, existingPJson);
           await remove(templatePJsonPath);
           await writeJSON(templatePJsonPath, mergedJson, { spaces: 2 });
         },
         args: [existingPJsonPath, this.projectPath],
-        runningMessage: "Merging package.json",
+        runningMessage: "Merging package.json.hbs",
       });
     }
   }
