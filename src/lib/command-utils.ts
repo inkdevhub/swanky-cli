@@ -2,8 +2,9 @@ import { execaCommand } from "execa";
 import { copy, emptyDir, ensureDir, readJSON } from "fs-extra/esm";
 import path from "node:path";
 import { DEFAULT_NETWORK_URL, ARTIFACTS_PATH, TYPED_CONTRACTS_PATH } from "./consts.js";
-import { SwankyConfig } from "../types/index.js";
+import { SwankyConfig, SwankyLocalConfig, SwankySystemConfig } from "../types/index.js";
 import { ConfigError, FileError, InputError } from "./errors.js";
+import { userInfo } from "os";
 
 export async function commandStdoutOrNull(command: string): Promise<string | null> {
   try {
@@ -14,13 +15,29 @@ export async function commandStdoutOrNull(command: string): Promise<string | nul
   }
 }
 
-export async function getSwankyConfig(): Promise<SwankyConfig> {
+export async function getSwankyLocalConfig(): Promise<SwankyLocalConfig> {
   try {
     const config = await readJSON("swanky.config.json");
     return config;
   } catch (cause) {
     throw new InputError("Error reading swanky.config.json in the current directory!", { cause });
   }
+}
+
+export async function getSwankySystemConfig(): Promise<SwankySystemConfig> {
+  try {
+    const config = await readJSON(findSwankySystemConfigPath() + "/swanky.config.json");
+    return config;
+  } catch (cause) {
+    throw new ConfigError("Error reading swanky.config.json in system directory!", { cause });
+  }
+}
+
+export function findSwankySystemConfigPath(): string {
+  const homeDir = userInfo().homedir;
+  const amountOfDirectories = process.cwd().split("/").length - homeDir.split("/").length;
+  const configPath = "../".repeat(amountOfDirectories)+"swanky";
+  return configPath;
 }
 
 export function resolveNetworkUrl(config: SwankyConfig, networkName: string): string {

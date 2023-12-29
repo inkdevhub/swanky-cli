@@ -1,7 +1,7 @@
 import { Listr } from "listr2";
 import { commandStdoutOrNull } from "../../lib/index.js";
 import { SwankyConfig } from "../../types/index.js";
-import { pathExistsSync, readJSON } from "fs-extra/esm";
+import { pathExistsSync} from "fs-extra/esm";
 import { readFileSync } from "fs";
 import path from "node:path";
 import TOML from "@iarna/toml";
@@ -62,10 +62,9 @@ export default class Check extends SwankyCommand<typeof Check> {
       {
         title: "Read ink dependencies",
         task: async (ctx) => {
-          const swankyConfig = await readJSON("swanky.config.json");
-          ctx.swankyConfig = swankyConfig;
+          ctx.swankyConfig = this.swankyConfig;
 
-          for (const contract in swankyConfig.contracts) {
+          for (const contract in ctx.swankyConfig.contracts) {
             const tomlPath = path.resolve(`contracts/${contract}/Cargo.toml`);
             const doesCargoTomlExist = pathExistsSync(tomlPath);
             if (!doesCargoTomlExist) {

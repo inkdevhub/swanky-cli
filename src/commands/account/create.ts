@@ -59,6 +59,7 @@ export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
     const accountData: AccountData = {
       mnemonic: "",
       isDev,
+      default: false,
       alias: (await inquirer.prompt([{ type: "input", message: "Enter alias: ", name: "alias" }]))
         .alias,
       address: new ChainAccount(tmpMnemonic).pair.address,
@@ -76,8 +77,7 @@ export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
     }
 
     this.swankyConfig.accounts.push(accountData);
-
-    await this.storeConfig();
+    await this.storeSystemConfig();
 
     this.log(
       `${chalk.greenBright("✔")} Account with alias ${chalk.yellowBright(

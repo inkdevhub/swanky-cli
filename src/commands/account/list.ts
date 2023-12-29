@@ -9,7 +9,17 @@ export class ListAccounts extends SwankyCommand<typeof ListAccounts> {
     this.log(`${chalk.greenBright("✔")} Stored dev accounts:`);
 
     for (const account of this.swankyConfig.accounts) {
-      this.log(`\t${chalk.yellowBright("Alias: ")} ${account.alias}`);
+      if(account.isDev){
+        this.log(`\t${chalk.yellowBright("Alias: ")} ${account.alias}`);
+      }
+    }
+
+    this.log(`${chalk.greenBright("✔")} Stored prod accounts:`);
+
+    for (const account of this.swankyConfig.accounts) {
+      if(!account.isDev){
+        this.log(`\t${chalk.yellowBright("Alias: ")} ${account.alias}`);
+      }
     }
   }
 }

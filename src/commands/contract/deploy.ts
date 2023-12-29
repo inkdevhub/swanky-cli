@@ -15,7 +15,7 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
 
   static flags = {
     account: Flags.string({
-      required: true,
+      default: "",
       description: "Alias of account to be used",
     }),
     gas: Flags.integer({
@@ -70,11 +70,41 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
       );
     }
 
+    if(!flags.account && !this.defaultAccount) {
+      throw new ConfigError("No default account set. Please set one or provide an account alias with --account");
+    }
+
+    const accountAlias = flags.account ?? this.defaultAccount;
+
     const accountData = this.swankyConfig.accounts.find(
-      (account: AccountData) => account.alias === flags.account
+      (account: AccountData) => account.alias === accountAlias
     );
     if (!accountData) {
       throw new ConfigError("Provided account alias not found in swanky.config.json");
+    }
+
+    if (accountData.isDev && flags.network !== "local") {
+      throw new ConfigError(
+        `Account ${accountAlias} is a DEV account and can only be used with local network`
+      );
+    }
+
+    if(!this.defaultAccount)
+    {
+      this.defaultAccount = accountData.alias;
+      this.swankyConfig.accounts = this.swankyConfig.accounts.map((account: AccountData) => {
+        if (account.alias === accountData.alias) {
+          return {
+            ...account,
+            default: true,
+          };
+        }
+        return {
+          ...account,
+          default: false,
+        };
+      });
+      await this.storeSystemConfig();
     }
 
     const mnemonic = accountData.isDev
@@ -138,9 +168,7 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
         },
       ];
 
-      await writeJSON(path.resolve("swanky.config.json"), this.swankyConfig, {
-        spaces: 2,
-      });
+      await this.storeLocalConfig(process.cwd());
     }, "Writing config");
 
     this.log(`Contract deployed!`);

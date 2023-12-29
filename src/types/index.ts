@@ -15,6 +15,7 @@ export interface Encrypted { iv: string; data: string };
 
 export interface AccountData {
   isDev: boolean;
+  default: boolean;
   alias: string;
   mnemonic: string | Encrypted;
   address: string;
@@ -46,6 +47,20 @@ export interface SwankyConfig {
   };
   accounts: AccountData[];
   contracts: Record<string, ContractData> | Record<string, never>;
+  networks: Record<string, {url: string}>
+}
+
+export interface SwankyLocalConfig {
+  node: {
+    polkadotPalletVersions: string;
+    localPath: string;
+    supportedInk: string;
+  };
+  contracts: Record<string, ContractData> | Record<string, never>;
+}
+
+export interface SwankySystemConfig {
+  accounts: AccountData[];
   networks: Record<string, {url: string}>
 }
 
