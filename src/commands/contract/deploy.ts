@@ -1,6 +1,4 @@
 import { Args, Flags } from "@oclif/core";
-import path from "node:path";
-import { writeJSON } from "fs-extra/esm";
 import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
 import { resolveNetworkUrl, ChainApi, ChainAccount, decrypt, AbiType } from "../../lib/index.js";
 import { AccountData, Encrypted } from "../../types/index.js";

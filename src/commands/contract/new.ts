@@ -1,6 +1,6 @@
 import { Args, Flags } from "@oclif/core";
 import path from "node:path";
-import { ensureDir, pathExists, writeJSON } from "fs-extra/esm";
+import { ensureDir, pathExists } from "fs-extra/esm";
 import {
   checkCliDependencies,
   copyContractTemplateFiles,
