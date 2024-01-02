@@ -11,11 +11,10 @@ export interface ChainProperty {
 
 export type ExtrinsicPayload = SubmittableExtrinsic<"promise">;
 
-export interface Encrypted { iv: string; data: string };
+export interface Encrypted { iv: string; data: string }
 
 export interface AccountData {
   isDev: boolean;
-  default: boolean;
   alias: string;
   mnemonic: string | Encrypted;
   address: string;
@@ -45,6 +44,7 @@ export interface SwankyConfig {
     localPath: string;
     supportedInk: string;
   };
+  defaultAccount: string | null;
   accounts: AccountData[];
   contracts: Record<string, ContractData> | Record<string, never>;
   networks: Record<string, {url: string}>
@@ -60,6 +60,7 @@ export interface SwankyLocalConfig {
 }
 
 export interface SwankySystemConfig {
+  defaultAccount: string | null;
   accounts: AccountData[];
   networks: Record<string, {url: string}>
 }

@@ -77,11 +77,21 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
 
     this.deploymentInfo = deploymentData;
 
+    if(!flags.account && this.swankyConfig.defaultAccount === null) {
+      throw new ConfigError("No default account set in swanky.config.json and no account provided");
+    }
+
+    const accountAlias = flags.account ?? this.swankyConfig.defaultAccount;
+
     const accountData = this.swankyConfig.accounts.find(
-      (account: AccountData) => account.alias === flags.account || "alice"
+      (account: AccountData) => account.alias === accountAlias
     );
     if (!accountData) {
-      throw new ConfigError("Provided account alias not found in swanky.config.json");
+      throw new ConfigError(`Provided account alias(${chalk.redBright(accountAlias)}) not found in swanky.config.json`);
+    }
+
+    if(accountData.isDev && (flags.network !== "local" || !flags.network)) {
+      throw new ConfigError(`Account ${chalk.redBright(accountAlias)} is a dev account and can only be used on the local network`);
     }
 
     const networkUrl = resolveNetworkUrl(this.swankyConfig, flags.network ?? "");

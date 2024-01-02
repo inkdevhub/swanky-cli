@@ -175,18 +175,18 @@ export class Init extends SwankyCommand<typeof Init> {
       {
         alias: "alice",
         mnemonic: "//Alice",
-        default: true,
         isDev: true,
         address: new ChainAccount("//Alice").pair.address,
       },
       {
         alias: "bob",
         mnemonic: "//Bob",
-        default: false,
         isDev: true,
         address: new ChainAccount("//Bob").pair.address,
       },
     ];
+
+    this.configBuilder.defaultAccount = "alice";
 
     Object.keys(this.configBuilder.contracts!).forEach(async (contractName) => {
       await ensureDir(path.resolve(this.projectPath, "artifacts", contractName));
@@ -195,16 +195,12 @@ export class Init extends SwankyCommand<typeof Init> {
 
     this.taskQueue.push({
       task: () => {
-        console.log("\nSwanky config:", this.swankyConfig)
         if (Object.keys(this.swankyConfig.networks).length === 0 || this.swankyConfig.accounts.length === 0) {
           this.swankyConfig = this.configBuilder as SwankyConfig;
-          console.log("\n1\n");
         } else {
           this.swankyConfig.node = this.configBuilder.node!;
           this.swankyConfig.contracts = this.configBuilder.contracts!;
-          console.log("\n2\n");
         }
-        console.log("\nFinalised Swanky config:", this.swankyConfig)
         this.storeLocalConfig(this.projectPath);
         this.storeSystemConfig();
       },

@@ -6,19 +6,29 @@ export class ListAccounts extends SwankyCommand<typeof ListAccounts> {
   static aliases = [`account:ls`];
 
   async run(): Promise<void> {
-    this.log(`${chalk.greenBright("✔")} Stored dev accounts:`);
+    const countOfDevAccounts = this.swankyConfig.accounts.filter((account) => account.isDev).length;
 
-    for (const account of this.swankyConfig.accounts) {
-      if(account.isDev){
-        this.log(`\t${chalk.yellowBright("Alias: ")} ${account.alias}`);
+    if(countOfDevAccounts !== 0) {
+      this.log(`${chalk.greenBright("✔")} Stored dev accounts:`);
+
+      for (const account of this.swankyConfig.accounts) {
+        if(account.isDev){
+          this.log(`\t${chalk.yellowBright("Alias: ")} ${account.alias}  \
+${chalk.yellowBright("Address: ")} ${account.address} ${this.swankyConfig.defaultAccount === account.alias ? chalk.greenBright("<- Default") : ""}`);
+        }
       }
     }
 
-    this.log(`${chalk.greenBright("✔")} Stored prod accounts:`);
+    const countOfProdAccounts = this.swankyConfig.accounts.length - countOfDevAccounts;
 
-    for (const account of this.swankyConfig.accounts) {
-      if(!account.isDev){
-        this.log(`\t${chalk.yellowBright("Alias: ")} ${account.alias}`);
+    if(countOfProdAccounts !== 0) {
+      this.log(`${chalk.greenBright("✔")} Stored prod accounts:`);
+
+      for (const account of this.swankyConfig.accounts) {
+        if(!account.isDev){
+          this.log(`\t${chalk.yellowBright("Alias: ")} ${account.alias}  \
+${chalk.yellowBright("Address: ")} ${account.address} ${this.swankyConfig.defaultAccount === account.alias ? chalk.greenBright("<- Default") : ""}`);
+        }
       }
     }
   }

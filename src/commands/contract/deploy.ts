@@ -68,11 +68,11 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
       );
     }
 
-    if(!flags.account && !this.defaultAccount) {
+    if(!flags.account && this.swankyConfig.defaultAccount === null) {
       throw new ConfigError("No default account set. Please set one or provide an account alias with --account");
     }
 
-    const accountAlias = flags.account ?? this.defaultAccount;
+    const accountAlias = flags.account ?? this.swankyConfig.defaultAccount;
 
     const accountData = this.swankyConfig.accounts.find(
       (account: AccountData) => account.alias === accountAlias
@@ -87,21 +87,9 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
       );
     }
 
-    if(!this.defaultAccount)
+    if(this.swankyConfig.defaultAccount === null)
     {
-      this.defaultAccount = accountData.alias;
-      this.swankyConfig.accounts = this.swankyConfig.accounts.map((account: AccountData) => {
-        if (account.alias === accountData.alias) {
-          return {
-            ...account,
-            default: true,
-          };
-        }
-        return {
-          ...account,
-          default: false,
-        };
-      });
+      this.swankyConfig.defaultAccount = accountAlias;
       await this.storeSystemConfig();
     }
 

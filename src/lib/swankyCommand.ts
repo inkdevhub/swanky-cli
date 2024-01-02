@@ -1,8 +1,8 @@
 import { Command, Flags, Interfaces } from "@oclif/core";
 import { getSwankySystemConfig, getSwankyLocalConfig, Spinner, findSwankySystemConfigPath } from "./index.js";
-import { AccountData, SwankyConfig, SwankyLocalConfig, SwankySystemConfig } from "../types/index.js";
+import { SwankyConfig, SwankyLocalConfig, SwankySystemConfig } from "../types/index.js";
 import { writeJSON } from "fs-extra/esm";
-import {mkdirSync, existsSync} from "fs";
+import { mkdirSync, existsSync } from "fs";
 import { BaseError, UnknownError } from "./errors.js";
 import { swankyLogger } from "./logger.js";
 import { Logger } from "winston";
@@ -18,7 +18,6 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
   protected spinner!: Spinner;
   protected swankyConfig!: SwankyConfig;
   protected logger!: Logger;
-  protected defaultAccount!: string;
 
   protected flags!: Flags<T>;
   protected args!: Args<T>;
@@ -44,6 +43,7 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
         supportedInk: "",
       },
       contracts: {},
+      defaultAccount: null,
       accounts: [],
       networks: {},
     };
@@ -68,10 +68,6 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
       this.logger.warn("No system config found")
     }
 
-    this.defaultAccount = this.swankyConfig.accounts.find(
-      (account: AccountData) => account.default
-    )?.alias ?? "";
-
     this.logger.info(`Running command: ${this.ctor.name}
       Args: ${JSON.stringify(this.args)}
       Flags: ${JSON.stringify(this.flags)}
@@ -88,6 +84,7 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
 
   protected async storeSystemConfig() {
     const systemConfig : SwankySystemConfig = {
+      defaultAccount: this.swankyConfig.defaultAccount,
       accounts: this.swankyConfig.accounts,
       networks: this.swankyConfig.networks
     }
