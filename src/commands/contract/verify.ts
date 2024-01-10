@@ -13,7 +13,7 @@ export class VerifyContract extends SwankyCommand<typeof VerifyContract> {
     all: Flags.boolean({
       default: false,
       char: "a",
-      description: "Set all to true to compile all contracts",
+      description: "Set all to true to verify all contracts",
     }),
   };
 
@@ -22,7 +22,7 @@ export class VerifyContract extends SwankyCommand<typeof VerifyContract> {
       name: "contractName",
       required: false,
       default: "",
-      description: "Name of the contract to compile",
+      description: "Name of the contract to verify",
     }),
   };
 

@@ -20,7 +20,7 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
       default: false,
       char: "v",
       description:
-        "A production contract should be build in `verifiable` mode to deploy on a public network",
+        "A production contract should be build in `verifiable` mode to deploy on a public network. Ensure Docker Engine is up and running.",
     }),
     all: Flags.boolean({
       default: false,
