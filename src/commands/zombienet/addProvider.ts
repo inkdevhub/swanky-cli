@@ -1,17 +1,16 @@
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { Flags } from "@oclif/core";
 import path from "node:path";
-import { existsSync } from "fs-extra";
-import { Spinner } from "../../lib/index.js";
+import { pathExistsSync } from "fs-extra/esm";
+import { getTemplates, Spinner } from "../../lib/index.js";
 import inquirer from "inquirer";
-import { copyTemplateFile, providerChoices, templatePath, zombienetConfig } from "./init.js";
+import { copyTemplateFile, providerChoices, zombienetConfig } from "./init.js";
 
 
 export class AddZombienetProvider extends SwankyCommand<typeof AddZombienetProvider>{
-  static description = "Add Zomnienet provider config";
+  static description = "Add Zombienet provider config";
 
   static flags = {
-    verbose: Flags.boolean({ char: "v", description: "Verbose output" }),
     provider: Flags.string({ char: "p", description: "Provider to use" }),
   };
 
@@ -20,9 +19,12 @@ export class AddZombienetProvider extends SwankyCommand<typeof AddZombienetProvi
 
     const projectPath = path.resolve();
     const binPath = path.resolve(projectPath, "zombienet", "bin")
-    if (!existsSync(path.resolve(binPath, "zombienet"))) {
+    if (!pathExistsSync(path.resolve(binPath, "zombienet"))) {
       this.error("Zombienet has not initialized. Run `swanky zombienet:init` first");
     }
+
+    const zombienetTemplatePath = getTemplates().zombienetTemplatesPath;
+
 
     const spinner = new Spinner(flags.verbose);
 
@@ -39,17 +41,17 @@ export class AddZombienetProvider extends SwankyCommand<typeof AddZombienetProvi
 
     const configPath = path.resolve(projectPath, "zombienet", "config")
 
-    if (existsSync(path.resolve(configPath, provider!, zombienetConfig))) {
+    if (pathExistsSync(path.resolve(configPath, provider!, zombienetConfig))) {
       this.error(`Zombienet config for ${provider!} provider already exists`);
     }
 
     // Copy templates
     await spinner.runCommand(
       () =>
-        copyTemplateFile(path.resolve(templatePath, provider!), path.resolve(configPath, provider!)),
+        copyTemplateFile(path.resolve(zombienetTemplatePath, provider!), path.resolve(configPath, provider!)),
       "Copying template files"
     );
 
-    this.log("ZombieNet provider config added successfully");
+    this.log("Zombienet provider config added successfully");
   }
 }

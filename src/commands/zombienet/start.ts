@@ -1,17 +1,16 @@
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { Flags } from "@oclif/core";
 import path from "node:path";
-import { existsSync } from "fs-extra";
-import { Spinner } from "../../lib/index.js";
-import { zombienetConfig } from "./init.js";
+import { pathExistsSync } from "fs-extra/esm";
 import { execaCommand } from "execa";
+import inquirer from "inquirer";
+import { readdirSync } from "fs";
 
 
 export class StartZombienet extends SwankyCommand<typeof StartZombienet> {
   static description = "Start Zomnienet";
 
   static flags = {
-    verbose: Flags.boolean({ char: "v", description: "Verbose output" }),
     provider: Flags.string({ char: "p", description: "Provider to use", default: "native" }),
   };
 
@@ -20,22 +19,31 @@ export class StartZombienet extends SwankyCommand<typeof StartZombienet> {
 
     const projectPath = path.resolve();
     const binPath = path.resolve(projectPath, "zombienet", "bin")
-    if (!existsSync(path.resolve(binPath, "zombienet"))) {
+    if (!pathExistsSync(path.resolve(binPath, "zombienet"))) {
       this.error("Zombienet has not initialized. Run `swanky zombienet:init` first");
     }
 
-    const spinner = new Spinner(flags.verbose);
+    const zombienetConfigPath = path.resolve("zombienet", "config", flags.provider);
 
-    const configFilePath = path.resolve(projectPath, "zombienet", "config", flags.provider, zombienetConfig);
+    const configList = readdirSync(zombienetConfigPath);
 
-    if (!existsSync(configFilePath)) {
+    const zombienetConfig = (await inquirer.prompt([{
+      name: "zombienetConfig",
+      type: "list",
+      choices: configList,
+      message: "Select a zombienet config to use",
+    }])).zombienetConfig;
+
+    const configFilePath = path.resolve(zombienetConfigPath, zombienetConfig);
+
+    if (!pathExistsSync(configFilePath)) {
       this.error(`Zombienet config for ${flags.provider} does not exist. Add provider config first.`);
     }
 
     await execaCommand(
         `./zombienet/bin/zombienet \
             spawn --provider ${flags.provider} \
-            ./zombienet/config/${flags.provider}/zombienet.config.toml
+            ./zombienet/config/${flags.provider}/${zombienetConfig}
         `,
         {
           stdio: "inherit",

@@ -11,6 +11,7 @@ import decompress from "decompress";
 import { Spinner } from "./spinner.js";
 import { SupportedPlatforms, SupportedArch } from "../types/index.js";
 import { ConfigError, NetworkError } from "./errors.js";
+import { BinaryNames, zombienetInfo } from "./zombienetInfo.js";
 
 export async function checkCliDependencies(spinner: Spinner) {
   const dependencyList = [
@@ -120,6 +121,63 @@ export async function downloadNode(projectPath: string, nodeInfo: nodeInfo, spin
 
     return nodePath;
   }
+
+  return path.resolve(binPath, dlFileDetails.filePath);
+}
+
+export async function downloadZombinetBinary(projectPath: string, zombienetInfo: zombienetInfo, binaryName: BinaryNames, spinner: Spinner) {
+  const binPath = path.resolve(projectPath, "zombienet", "bin");
+  await ensureDir(binPath);
+
+  const platformDlUrls = zombienetInfo[binaryName].downloadUrl[process.platform as SupportedPlatforms];
+  if (!platformDlUrls)
+    throw new ConfigError(
+      `Could not download ${binaryName}. Platform ${process.platform} not supported!`
+    );
+
+  const dlUrl = platformDlUrls[process.arch as SupportedArch];
+  if (!dlUrl)
+    throw new ConfigError(
+      `Could not download ${binaryName}. Platform ${process.platform} Arch ${process.arch} not supported!`
+    );
+
+  const dlFileDetails = await new Promise<DownloadEndedStats>((resolve, reject) => {
+    const dl = new DownloaderHelper(dlUrl, binPath);
+
+    dl.on("progress", (event) => {
+      spinner.text(`Downloading ${binaryName} ${event.progress.toFixed(2)}%`);
+    });
+    dl.on("end", (event) => {
+      resolve(event);
+    });
+    dl.on("error", (error) => {
+      reject(new Error(`Error downloading ${binaryName}: , ${error.message}`));
+    });
+
+    dl.start().catch((error: Error) =>
+      reject(new Error(`Error downloading ${binaryName}: , ${error.message}`))
+    );
+  });
+
+  if (dlFileDetails.incomplete) {
+    throw new NetworkError("${binaryName} download incomplete");
+  }
+
+  let fileName = dlFileDetails.fileName;
+
+  if (dlFileDetails.filePath.endsWith(".tar.gz")) {
+    const compressedFilePath = path.resolve(binPath, dlFileDetails.filePath);
+    const decompressed = await decompress(compressedFilePath, binPath);
+    fileName = decompressed[0].path;
+  }
+
+  console.log('\n', fileName, '\n');
+
+  if(fileName !== binaryName)
+  {
+    await execaCommand(`mv ${binPath}/${fileName} ${binPath}/${binaryName}`)
+  }
+  await execaCommand(`chmod +x ${binPath}/${binaryName}`);
 
   return path.resolve(binPath, dlFileDetails.filePath);
 }
