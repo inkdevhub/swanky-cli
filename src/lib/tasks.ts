@@ -9,9 +9,13 @@ import process from "node:process";
 import { nodeInfo } from "./nodeInfo.js";
 import decompress from "decompress";
 import { Spinner } from "./spinner.js";
-import { SupportedPlatforms, SupportedArch } from "../types/index.js";
+import { SupportedPlatforms, SupportedArch, SwankyConfig, ZombienetConfig } from "../types/index.js";
 import { ConfigError, NetworkError } from "./errors.js";
-import { BinaryNames, zombienetInfo } from "./zombienetInfo.js";
+import { BinaryNames } from "./zombienetInfo.js";
+import { zombienetConfig } from "../commands/zombienet/init.js";
+import { readFileSync } from "fs";
+import TOML from "@iarna/toml";
+import { writeFileSync } from "node:fs";
 
 export async function checkCliDependencies(spinner: Spinner) {
   const dependencyList = [
@@ -124,62 +128,115 @@ export async function downloadNode(projectPath: string, nodeInfo: nodeInfo, spin
 
   return path.resolve(binPath, dlFileDetails.filePath);
 }
-
-export async function downloadZombinetBinary(projectPath: string, zombienetInfo: zombienetInfo, binaryName: BinaryNames, spinner: Spinner) {
+export async function copyZombienetTemplateFile(templatePath: string, configPath: string) {
+  await ensureDir(configPath);
+  await copy(
+    path.resolve(templatePath, zombienetConfig),
+    path.resolve(configPath, zombienetConfig)
+  );
+}
+export async function downloadZombinetBinaries(projectPath: string, swankyConfig: SwankyConfig, spinner: Spinner) {
   const binPath = path.resolve(projectPath, "zombienet", "bin");
   await ensureDir(binPath);
 
-  const platformDlUrls = zombienetInfo[binaryName].downloadUrl[process.platform as SupportedPlatforms];
-  if (!platformDlUrls)
-    throw new ConfigError(
-      `Could not download ${binaryName}. Platform ${process.platform} not supported!`
-    );
+  const zombienetInfo = swankyConfig.zombienet;
 
-  const dlUrl = platformDlUrls[process.arch as SupportedArch];
-  if (!dlUrl)
-    throw new ConfigError(
-      `Could not download ${binaryName}. Platform ${process.platform} Arch ${process.arch} not supported!`
-    );
-
-  const dlFileDetails = await new Promise<DownloadEndedStats>((resolve, reject) => {
-    const dl = new DownloaderHelper(dlUrl, binPath);
-
-    dl.on("progress", (event) => {
-      spinner.text(`Downloading ${binaryName} ${event.progress.toFixed(2)}%`);
-    });
-    dl.on("end", (event) => {
-      resolve(event);
-    });
-    dl.on("error", (error) => {
-      reject(new Error(`Error downloading ${binaryName}: , ${error.message}`));
-    });
-
-    dl.start().catch((error: Error) =>
-      reject(new Error(`Error downloading ${binaryName}: , ${error.message}`))
-    );
-  });
-
-  if (dlFileDetails.incomplete) {
-    throw new NetworkError("${binaryName} download incomplete");
+  const dlUrls = new Map<string, string>();
+  if (zombienetInfo.version) {
+    const version = zombienetInfo.version;
+    const binaryName = "zombienet";
+    const platformDlUrls = zombienetInfo.downloadUrl[process.platform as SupportedPlatforms];
+    if (!platformDlUrls)
+      throw new ConfigError(
+        `Could not download ${binaryName}. Platform ${process.platform} not supported!`
+      );
+    let dlUrl = platformDlUrls[process.arch as SupportedArch];
+    if (!dlUrl)
+      throw new ConfigError(
+        `Could not download ${binaryName}. Platform ${process.platform} Arch ${process.arch} not supported!`
+      );
+    dlUrl = dlUrl.replace("${version}", version);
+    dlUrls.set(binaryName, dlUrl);
   }
 
-  let fileName = dlFileDetails.fileName;
-
-  if (dlFileDetails.filePath.endsWith(".tar.gz")) {
-    const compressedFilePath = path.resolve(binPath, dlFileDetails.filePath);
-    const decompressed = await decompress(compressedFilePath, binPath);
-    fileName = decompressed[0].path;
+  for(const binaryName of Object.keys(zombienetInfo.binaries)){
+    const binaryInfo = zombienetInfo.binaries[binaryName as BinaryNames];
+    const version = binaryInfo.version;
+    const platformDlUrls = binaryInfo.downloadUrl[process.platform as SupportedPlatforms];
+    if (!platformDlUrls)
+      throw new ConfigError(
+        `Could not download ${binaryName}. Platform ${process.platform} not supported!`
+      );
+    let dlUrl = platformDlUrls[process.arch as SupportedArch];
+    if (!dlUrl)
+      throw new ConfigError(
+        `Could not download ${binaryName}. Platform ${process.platform} Arch ${process.arch} not supported!`
+      );
+    dlUrl = dlUrl.replace(/\$\{version\}/gi, version);
+    dlUrls.set(binaryName, dlUrl);
   }
 
-  console.log('\n', fileName, '\n');
+  for (const [binaryName, dlUrl] of dlUrls) {
+    const dlFileDetails = await new Promise<DownloadEndedStats>((resolve, reject) => {
+      const dl = new DownloaderHelper(dlUrl, binPath);
 
-  if(fileName !== binaryName)
-  {
-    await execaCommand(`mv ${binPath}/${fileName} ${binPath}/${binaryName}`)
+      dl.on("progress", (event) => {
+        spinner.text(`Downloading ${binaryName} ${event.progress.toFixed(2)}%`);
+      });
+      dl.on("end", (event) => {
+        resolve(event);
+      });
+      dl.on("error", (error) => {
+        reject(new Error(`Error downloading ${binaryName}: , ${error.message}`));
+      });
+
+      dl.start().catch((error: Error) =>
+        reject(new Error(`Error downloading ${binaryName}: , ${error.message}`))
+      );
+    });
+
+    if (dlFileDetails.incomplete) {
+      throw new NetworkError("${binaryName} download incomplete");
+    }
+
+    let fileName = dlFileDetails.fileName;
+
+    if (dlFileDetails.filePath.endsWith(".tar.gz")) {
+      const compressedFilePath = path.resolve(binPath, dlFileDetails.filePath);
+      const decompressed = await decompress(compressedFilePath, binPath);
+      await remove(compressedFilePath);
+      fileName = decompressed[0].path;
+    }
+
+    if(fileName !== binaryName)
+    {
+      await execaCommand(`mv ${binPath}/${fileName} ${binPath}/${binaryName}`)
+    }
+    await execaCommand(`chmod +x ${binPath}/${binaryName}`);
   }
-  await execaCommand(`chmod +x ${binPath}/${binaryName}`);
+}
 
-  return path.resolve(binPath, dlFileDetails.filePath);
+export async function buildZombienetConfigFromBinaries(binaries: string[], templatePath: string, configPath: string) {
+  await ensureDir(configPath);
+  let configBuilder = {
+    settings: {
+      timeout: 1000
+    },
+    relaychain:{
+      default_command: "",
+      chain: "",
+      nodes: []
+    },
+    parachains:[],
+    hrmp_channels:[]
+  } as ZombienetConfig;
+
+  for (const binaryName of binaries) {
+    const tamplate = TOML.parse(readFileSync(path.resolve(templatePath, binaryName+".toml"), "utf8"));
+    configBuilder = {...configBuilder, ...tamplate};
+  }
+
+  writeFileSync(path.resolve(configPath, zombienetConfig), TOML.stringify(configBuilder as any));
 }
 
 export async function installDeps(projectPath: string) {

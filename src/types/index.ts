@@ -11,7 +11,7 @@ export interface ChainProperty {
 
 export type ExtrinsicPayload = SubmittableExtrinsic<"promise">;
 
-export interface Encrypted { iv: string; data: string };
+export interface Encrypted { iv: string; data: string }
 
 export interface AccountData {
   isDev: boolean;
@@ -38,6 +38,17 @@ export interface DeploymentData {
   deployerAlias: string;
   address: string;
 }
+
+export interface downloadUrl {
+  darwin: {
+    "arm64": string,
+    "x64": string
+  },
+  linux: {
+    "arm64": string,
+    "x64": string
+  }
+}
 export interface SwankyConfig {
   node: {
     polkadotPalletVersions: string;
@@ -47,6 +58,45 @@ export interface SwankyConfig {
   accounts: AccountData[];
   contracts: Record<string, ContractData> | Record<string, never>;
   networks: Record<string, {url: string}>
+  zombienet: {
+    version: string,
+    downloadUrl : downloadUrl,
+    binaries: Record<string, {version: string, downloadUrl: downloadUrl}>
+  }
+}
+
+export interface ZombienetConfig {
+  settings: { timeout: number },
+  relaychain: Relaychain,
+  parachains: Parachain[],
+  hrmp_channels: HrmpChannel[],
+}
+
+interface Relaychain {
+  default_command: string,
+  chain: string,
+  nodes: Node[]
+}
+interface Node {
+  name: string,
+}
+interface HrmpChannel {
+  sender: number,
+  recipient: number,
+  max_capacity: number,
+  max_message_size: number
+}
+interface Parachain {
+  id: number,
+  chain: string,
+  cumulus_based: boolean,
+  collator: Collator
+}
+interface Collator {
+  name: string,
+  command: string,
+  rpc_port: number,
+  args: string[],
 }
 
 export type SupportedPlatforms = "darwin" | "linux";
