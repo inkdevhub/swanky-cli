@@ -1,6 +1,6 @@
 import { Args, Flags } from "@oclif/core";
 import path from "node:path";
-import { storeArtifacts, Spinner, generateTypes } from "../../lib/index.js";
+import { storeArtifacts, Spinner, generateTypes, checkCargoVersion } from "../../lib/index.js";
 import { spawn } from "node:child_process";
 import { pathExists } from "fs-extra/esm";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
@@ -77,6 +77,7 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
               compileArgs.push("--release");
             }
             if (flags.verifiable) {
+              checkCargoVersion("4.0.0", ["4.0.0-alpha"]);
               compileArgs.push("--verifiable");
             }
             const compile = spawn("cargo", compileArgs);
@@ -127,7 +128,7 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
       this.swankyConfig.contracts[contractName].build = {
         timestamp: Date.now(),
         artifactsPath,
-        verified: false,
+        isVerified: false,
       };
 
       await this.storeConfig();

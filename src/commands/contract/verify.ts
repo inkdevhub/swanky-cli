@@ -1,6 +1,6 @@
 import { Args, Flags } from "@oclif/core";
 import path from "node:path";
-import { Spinner } from "../../lib/index.js";
+import { checkCargoVersion, Spinner } from "../../lib/index.js";
 import { pathExists } from "fs-extra/esm";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { ConfigError, InputError, ProcessError } from "../../lib/errors.js";
@@ -29,6 +29,8 @@ export class VerifyContract extends SwankyCommand<typeof VerifyContract> {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(VerifyContract);
 
+    checkCargoVersion("4.0.0", ["4.0.0-alpha"]);
+
     if (args.contractName === undefined && !flags.all) {
       throw new InputError("No contracts were selected to verify", { winston: { stack: true } });
     }
@@ -51,6 +53,10 @@ export class VerifyContract extends SwankyCommand<typeof VerifyContract> {
       this.logger.info(`"Looking for contract ${contractInfo.name} in path: [${contractPath}]`);
       if (!(await pathExists(contractPath))) {
         throw new InputError(`Contract folder not found at expected path`);
+      }
+
+      if(!contractInfo.build) {
+        throw new InputError(`Contract ${contractName} is not compiled. Please compile it first`);
       }
 
       await spinner.runCommand(
@@ -94,7 +100,7 @@ export class VerifyContract extends SwankyCommand<typeof VerifyContract> {
         `Verifying ${contractName} contract`,
         `${contractName} Contract verified successfully`
       );
-      contractInfo.build!.verified = true;
+      contractInfo.build.isVerified = true;
 
       this.swankyConfig.contracts[contractName] = contractInfo;
 

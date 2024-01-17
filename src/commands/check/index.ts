@@ -79,16 +79,12 @@ export default class Check extends SwankyCommand<typeof Check> {
             const cargoToml = TOML.parse(cargoTomlString);
 
             const inkDependencies = Object.entries(cargoToml.dependencies)
-              .filter((dependency) => dependency[0].includes("ink"))
+              .filter(([depName]) => /^ink($|_)/.test(depName))
               .map(([depName, depInfo]) => {
                 const dependency = depInfo as Dependency;
                 return [depName, dependency.version ?? dependency.tag];
               });
             ctx.versions.contracts[contract] = Object.fromEntries(inkDependencies);
-            ctx.versions.contracts[contract] = {
-              ...ctx.versions.contracts[contract],
-              verified: swankyConfig.contracts[contract].build?.verified ?? false,
-            };
           }
         },
       },
@@ -98,20 +94,19 @@ export default class Check extends SwankyCommand<typeof Check> {
           const supportedInk = ctx.swankyConfig?.node.supportedInk;
 
           const mismatched: Record<string, string> = {};
-          Object.entries(ctx.versions.contracts).forEach(([contract, inkPackages]) => {
-            Object.entries(inkPackages).forEach(([inkPackage, version]) => {
-              if (inkPackage != "verified") {
-                if (semver.gt(version, supportedInk!)) {
-                  mismatched[
-                    `${contract}-${inkPackage}`
-                  ] = `Version of ${inkPackage} (${version}) in ${contract} is higher than supported ink version (${supportedInk})`;
-                }
-
-                if (!(version.startsWith("=") || version.startsWith("v"))) {
-                  ctx.looseDefinitionDetected = true;
-                }
+          Object.entries(ctx.versions.contracts).forEach(([contract, contractData]) => {
+            if (Object.prototype.hasOwnProperty.call(contractData, "ink")) {
+              const version = contractData.ink;
+              if (version && semver.gt(version, supportedInk!)) {
+                mismatched[
+                  `${contract}-ink`
+                  ] = `Version of ink (${version}) in ${contract} is higher than supported ink version (${supportedInk})`;
               }
-            });
+
+              if (!(version.startsWith("=") || version.startsWith("v"))) {
+                ctx.looseDefinitionDetected = true;
+              }
+            }
           });
 
           ctx.mismatchedVersions = mismatched;

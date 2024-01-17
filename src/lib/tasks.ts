@@ -1,4 +1,4 @@
-import { execaCommand } from "execa";
+import { execaCommand, execaCommandSync } from "execa";
 import { ensureDir, copy, remove } from "fs-extra/esm";
 import { rename, readFile, rm, writeFile } from "fs/promises";
 import path from "node:path";
@@ -10,7 +10,8 @@ import { nodeInfo } from "./nodeInfo.js";
 import decompress from "decompress";
 import { Spinner } from "./spinner.js";
 import { SupportedPlatforms, SupportedArch } from "../types/index.js";
-import { ConfigError, NetworkError } from "./errors.js";
+import { ConfigError, InputError, NetworkError } from "./errors.js";
+import semver from "semver";
 
 export async function checkCliDependencies(spinner: Spinner) {
   const dependencyList = [
@@ -134,5 +135,29 @@ export async function installDeps(projectPath: string) {
     console.log("\n\t >>Yarn not detected, using NPM");
   } finally {
     await execaCommand(installCommand, { cwd: projectPath });
+  }
+}
+
+export function checkCargoVersion(minimalVersion: string, invalidVersionsList: string[]) {
+  const regex = /cargo-contract-contract (.*)-unknown-x86_64-unknown-linux-gnu/;
+  let cargoVersion;
+  try {
+    const result = execaCommandSync("cargo contract -V");
+    cargoVersion = result.stdout;
+  } catch {
+    cargoVersion = null;
+  }
+  if (cargoVersion) {
+    const match = cargoVersion.match(regex);
+    if (match) {
+      cargoVersion = match[1];
+    }
+  } else {
+    throw new InputError("Verifiable mode requires cargo-contract version >= 4.0.0-rc");
+  }
+  if (!cargoVersion || semver.lt(cargoVersion, "4.0.0-rc") || invalidVersionsList.includes(cargoVersion)) {
+    throw new InputError(
+      "Verifiable mode requires cargo-contract version >= 4.0.0-rc"
+    );
   }
 }
