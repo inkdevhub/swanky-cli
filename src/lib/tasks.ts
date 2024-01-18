@@ -139,7 +139,7 @@ export async function installDeps(projectPath: string) {
 }
 
 export function checkCargoVersion(minimalVersion: string, invalidVersionsList: string[]) {
-  const regex = /cargo-contract-contract (.*)-unknown-x86_64-unknown-linux-gnu/;
+  const regex = /cargo-contract-contract (.*)-unknown-(.*)/;
   let cargoVersion;
   try {
     const result = execaCommandSync("cargo contract -V");
@@ -153,11 +153,11 @@ export function checkCargoVersion(minimalVersion: string, invalidVersionsList: s
       cargoVersion = match[1];
     }
   } else {
-    throw new InputError("Verifiable mode requires cargo-contract version >= 4.0.0-rc");
+    throw new InputError(`Verifiable mode requires cargo-contract version >= ${minimalVersion}`);
   }
   if (!cargoVersion || semver.lt(cargoVersion, "4.0.0-rc") || invalidVersionsList.includes(cargoVersion)) {
     throw new InputError(
-      "Verifiable mode requires cargo-contract version >= 4.0.0-rc"
+      `Verifiable mode requires cargo-contract version >= ${minimalVersion}`
     );
   }
 }
