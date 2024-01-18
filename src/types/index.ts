@@ -39,7 +39,7 @@ export interface DeploymentData {
   address: string;
 }
 
-export interface downloadUrl {
+export interface DownloadUrl {
   darwin: {
     "arm64": string,
     "x64": string
@@ -58,11 +58,13 @@ export interface SwankyConfig {
   accounts: AccountData[];
   contracts: Record<string, ContractData> | Record<string, never>;
   networks: Record<string, {url: string}>
-  zombienet: {
-    version: string,
-    downloadUrl : downloadUrl,
-    binaries: Record<string, {version: string, downloadUrl: downloadUrl}>
-  }
+  zombienet?: ZombienetData;
+}
+
+interface ZombienetData {
+  version: string;
+  downloadUrl: DownloadUrl;
+  binaries: Record<string, { version: string; downloadUrl: DownloadUrl }>;
 }
 
 export interface ZombienetConfig {

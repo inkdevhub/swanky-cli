@@ -135,11 +135,15 @@ export async function copyZombienetTemplateFile(templatePath: string, configPath
     path.resolve(configPath, zombienetConfig)
   );
 }
-export async function downloadZombinetBinaries(projectPath: string, swankyConfig: SwankyConfig, spinner: Spinner) {
+export async function downloadZombienetBinaries(binaries: string[], projectPath: string, swankyConfig: SwankyConfig, spinner: Spinner) {
   const binPath = path.resolve(projectPath, "zombienet", "bin");
   await ensureDir(binPath);
 
   const zombienetInfo = swankyConfig.zombienet;
+
+  if (!zombienetInfo) {
+    throw new ConfigError("No zombienet config found");
+  }
 
   const dlUrls = new Map<string, string>();
   if (zombienetInfo.version) {
@@ -159,7 +163,7 @@ export async function downloadZombinetBinaries(projectPath: string, swankyConfig
     dlUrls.set(binaryName, dlUrl);
   }
 
-  for(const binaryName of Object.keys(zombienetInfo.binaries)){
+  for(const binaryName of Object.keys(zombienetInfo.binaries).filter((binaryName) => binaries.includes(binaryName))){
     const binaryInfo = zombienetInfo.binaries[binaryName as BinaryNames];
     const version = binaryInfo.version;
     const platformDlUrls = binaryInfo.downloadUrl[process.platform as SupportedPlatforms];

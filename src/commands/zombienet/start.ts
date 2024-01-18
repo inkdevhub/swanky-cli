@@ -4,33 +4,33 @@ import { pathExistsSync } from "fs-extra/esm";
 import { execaCommand } from "execa";
 import inquirer from "inquirer";
 import { readdirSync } from "fs";
+import { Flags } from "@oclif/core";
 
 
 export class StartZombienet extends SwankyCommand<typeof StartZombienet> {
-  static description = "Start Zomnienet";
+  static description = "Start Zombienet";
+
+  static flags = {
+    "config-path": Flags.string({
+      char: "c",
+      required: false,
+      default: "./zombienet/config/zombienet.config.toml",
+      description: "Path to zombienet config",
+    }),
+  };
 
   async run(): Promise<void> {
+    const { flags } = await this.parse(StartZombienet);
     const projectPath = path.resolve();
     const binPath = path.resolve(projectPath, "zombienet", "bin")
     if (!pathExistsSync(path.resolve(binPath, "zombienet"))) {
       this.error("Zombienet has not initialized. Run `swanky zombienet:init` first");
     }
 
-    const zombienetConfigPath = path.resolve("zombienet", "config");
-
-    const configList = readdirSync(zombienetConfigPath);
-
-    const zombienetConfig = (await inquirer.prompt([{
-      name: "zombienetConfig",
-      type: "list",
-      choices: configList,
-      message: "Select a zombienet config to use",
-    }])).zombienetConfig;
-
     await execaCommand(
         `./zombienet/bin/zombienet \
             spawn --provider native \
-            ./zombienet/config/${zombienetConfig}
+            ${flags["config-path"]}
         `,
         {
           stdio: "inherit",
