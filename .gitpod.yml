@@ -7,3 +7,7 @@
 tasks:
   - init: yarn install && yarn run build && cargo install cargo-contract --version 4.0.0-rc.1 && cargo install cargo-dylint dylint-link
     command: yarn run dev
+
+ports:
+  - name: Swanky Node
+    port: 9944
