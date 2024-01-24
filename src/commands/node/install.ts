@@ -36,7 +36,7 @@ export class InstallNode extends SwankyCommand<typeof InstallNode> {
 
     await this.spinner.runCommand(
       () =>
-        this.storeLocalConfig(projectPath),
+        this.storeConfig(projectPath),
       "Updating swanky config"
     );
 

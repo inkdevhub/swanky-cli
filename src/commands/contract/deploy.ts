@@ -1,19 +1,20 @@
 import { Args, Flags } from "@oclif/core";
 import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
-import { resolveNetworkUrl, ChainApi, ChainAccount, decrypt, AbiType } from "../../lib/index.js";
+import { resolveNetworkUrl, ChainApi, ChainAccount, decrypt, AbiType, ensureAccountIsSet } from "../../lib/index.js";
 import { AccountData, Encrypted } from "../../types/index.js";
 import inquirer from "inquirer";
 import chalk from "chalk";
 import { Contract } from "../../lib/contract.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { ApiError, ConfigError, FileError } from "../../lib/errors.js";
+import { DEFAULT_ACCOUNT } from "../../lib/consts.js";
 
 export class DeployContract extends SwankyCommand<typeof DeployContract> {
   static description = "Deploy contract to a running node";
 
   static flags = {
     account: Flags.string({
-      default: "",
+      default: DEFAULT_ACCOUNT,
       description: "Alias of account to be used",
     }),
     gas: Flags.integer({
@@ -30,6 +31,7 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
     }),
     network: Flags.string({
       char: "n",
+      default: "local",
       description: "Network name to connect to",
     }),
   };
@@ -44,6 +46,8 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
 
   async run(): Promise<void> {
     const { args, flags } = await this.parse(DeployContract);
+
+    console.log("flags", flags);
 
     const contractRecord = this.swankyConfig.contracts[args.contractName];
     if (!contractRecord) {
@@ -68,9 +72,7 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
       );
     }
 
-    if(!flags.account && this.swankyConfig.defaultAccount === null) {
-      throw new ConfigError("No default account set. Please set one or provide an account alias with --account");
-    }
+    ensureAccountIsSet(flags.account, this.swankyConfig);
 
     const accountAlias = flags.account ?? this.swankyConfig.defaultAccount;
 
@@ -154,7 +156,7 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
         },
       ];
 
-      await this.storeLocalConfig(process.cwd());
+      await this.storeConfig(process.cwd());
     }, "Writing config");
 
     this.log(`Contract deployed!`);

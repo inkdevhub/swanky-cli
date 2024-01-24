@@ -1,6 +1,6 @@
 import { Flags } from "@oclif/core";
 import chalk from "chalk";
-import { ChainAccount, encrypt } from "../../lib/index.js";
+import { ChainAccount, encrypt, isLocalConfigCheck } from "../../lib/index.js";
 import { AccountData } from "../../types/index.js";
 import inquirer from "inquirer";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
@@ -8,6 +8,9 @@ export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
   static description = "Create a new dev account in config";
 
   static flags = {
+    global: Flags.boolean({
+      description: "Create account globally",
+    }),
     generate: Flags.boolean({
       char: "g",
     }),
@@ -79,7 +82,15 @@ export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
     if(this.swankyConfig.defaultAccount === null) {
       this.swankyConfig.defaultAccount = accountData.alias;
     }
-    await this.storeSystemConfig();
+
+    if(flags.global) {
+      await this.storeSystemConfig();
+    }
+    else if(isLocalConfigCheck()) {
+      await this.storeConfig(process.cwd());
+    } else {
+      throw new Error("Cannot store account to config. Please run this command in a swanky project directory");
+    }
 
     this.log(
       `${chalk.greenBright("✔")} Account with alias ${chalk.yellowBright(

@@ -1,10 +1,18 @@
 import { execaCommand } from "execa";
 import { copy, emptyDir, ensureDir, readJSON } from "fs-extra/esm";
 import path from "node:path";
-import { DEFAULT_NETWORK_URL, ARTIFACTS_PATH, TYPED_CONTRACTS_PATH } from "./consts.js";
-import { SwankyConfig, SwankyLocalConfig, SwankySystemConfig } from "../types/index.js";
+import {
+  DEFAULT_NETWORK_URL,
+  ARTIFACTS_PATH,
+  TYPED_CONTRACTS_PATH,
+  DEFAULT_SHIBUYA_NETWORK_URL,
+  DEFAULT_SHIDEN_NETWORK_URL, DEFAULT_ASTAR_NETWORK_URL, DEFAULT_ACCOUNT,
+} from "./consts.js";
+import { SwankyConfig, SwankySystemConfig } from "../types/index.js";
 import { ConfigError, FileError, InputError } from "./errors.js";
 import { userInfo } from "os";
+import { swankyNode } from "./nodeInfo.js";
+import { existsSync } from "fs";
 
 export async function commandStdoutOrNull(command: string): Promise<string | null> {
   try {
@@ -15,9 +23,10 @@ export async function commandStdoutOrNull(command: string): Promise<string | nul
   }
 }
 
-export async function getSwankyLocalConfig(): Promise<SwankyLocalConfig> {
+export async function getSwankyConfig(): Promise<SwankyConfig> {
+  const configPath = process.env.SWANKY_CONFIG ?? "swanky.config.json";
   try {
-    const config = await readJSON("swanky.config.json");
+    const config = await readJSON(configPath);
     return config;
   } catch (cause) {
     throw new InputError("Error reading swanky.config.json in the current directory!", { cause });
@@ -136,4 +145,33 @@ export async function generateTypes(contractName: string) {
   await execaCommand(
     `npx typechain-polkadot --in ${relativeInputPath} --out ${relativeOutputPath}`
   );
+}
+export function ensureAccountIsSet(account: string | undefined, config: SwankyConfig) {
+  if(!account && config.defaultAccount === null) {
+    throw new ConfigError("No default account set. Please set one or provide an account alias with --account");
+  }
+}
+
+export function buildSwankyConfig() {
+  return {
+    node: {
+      localPath: "",
+      polkadotPalletVersions: swankyNode.polkadotPalletVersions,
+      supportedInk: swankyNode.supportedInk,
+    },
+    defaultAccount: DEFAULT_ACCOUNT,
+    accounts: [],
+    networks: {
+      local: { url: DEFAULT_NETWORK_URL },
+      astar: { url: DEFAULT_ASTAR_NETWORK_URL },
+      shiden: { url: DEFAULT_SHIDEN_NETWORK_URL },
+      shibuya: { url: DEFAULT_SHIBUYA_NETWORK_URL },
+    },
+    contracts: {},
+  };
+}
+
+export function isLocalConfigCheck() {
+  console.log("process.env.SWANKY_CONFIG", process.env.SWANKY_CONFIG);
+  return process.env.SWANKY_CONFIG != "" || existsSync(process.cwd() + "/swanky.config.json");
 }

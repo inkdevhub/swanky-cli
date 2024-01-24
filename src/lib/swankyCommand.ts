@@ -1,9 +1,15 @@
 import { Command, Flags, Interfaces } from "@oclif/core";
-import { getSwankySystemConfig, getSwankyLocalConfig, Spinner, findSwankySystemConfigPath } from "./index.js";
-import { SwankyConfig, SwankyLocalConfig, SwankySystemConfig } from "../types/index.js";
+import {
+  getSwankySystemConfig,
+  getSwankyConfig,
+  Spinner,
+  findSwankySystemConfigPath,
+  buildSwankyConfig,
+} from "./index.js";
+import { SwankyConfig, SwankySystemConfig } from "../types/index.js";
 import { writeJSON } from "fs-extra/esm";
 import { mkdirSync, existsSync } from "fs";
-import { BaseError, UnknownError } from "./errors.js";
+import { BaseError, ConfigError, UnknownError } from "./errors.js";
 import { swankyLogger } from "./logger.js";
 import { Logger } from "winston";
 import path from "node:path";
@@ -36,27 +42,7 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
     this.args = args as Args<T>;
 
     this.logger = swankyLogger;
-    this.swankyConfig = {
-      node: {
-        polkadotPalletVersions: "",
-        localPath: "",
-        supportedInk: "",
-      },
-      contracts: {},
-      defaultAccount: null,
-      accounts: [],
-      networks: {},
-    };
-
-    try {
-      const localConfig = await getSwankyLocalConfig();
-      this.swankyConfig = {
-        ...this.swankyConfig,
-        ...localConfig,
-      };
-    } catch (error) {
-      this.logger.warn("No local config found")
-    }
+    this.swankyConfig = buildSwankyConfig();
 
     try {
       const systemConfig = await getSwankySystemConfig();
@@ -68,18 +54,33 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
       this.logger.warn("No system config found")
     }
 
+    try {
+      const localConfig = await getSwankyConfig();
+      this.swankyConfig = {
+        ...this.swankyConfig,
+        ...localConfig,
+      };
+    } catch (error) {
+      this.logger.warn("No local config found")
+      if (error instanceof Error &&
+        error.message.includes("swanky.config.json") &&
+        (this.constructor as typeof SwankyCommand).ENSURE_SWANKY_CONFIG
+      )
+        throw new ConfigError(`Cannot find ${process.env.SWANKY_CONFIG ?? "swanky.config.json"}`, { cause: error });
+    }
+
     this.logger.info(`Running command: ${this.ctor.name}
       Args: ${JSON.stringify(this.args)}
       Flags: ${JSON.stringify(this.flags)}
       Full command: ${JSON.stringify(process.argv)}`);
   }
 
-  protected async storeLocalConfig(projectPath: string) {
-    const localConfig : SwankyLocalConfig = {
-      node: this.swankyConfig.node,
-      contracts: this.swankyConfig.contracts
+  protected async storeConfig(projectPath: string) {
+    const configPath = process.env.SWANKY_CONFIG ?? path.resolve(projectPath, "swanky.config.json");
+    const localConfig : SwankyConfig = {
+      ...this.swankyConfig,
     }
-    await writeJSON(path.resolve(projectPath, "swanky.config.json"), localConfig, { spaces: 2 });
+    await writeJSON(configPath, localConfig, { spaces: 2 });
   }
 
   protected async storeSystemConfig() {
@@ -105,6 +106,7 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
 
   protected async finally(_: Error | undefined): Promise<any> {
     // called after run and catch regardless of whether or not the command errored
+    // console.log("Swanky Config: ", this.swankyConfig);
     return super.finally(_);
   }
 }

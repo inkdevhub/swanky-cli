@@ -1,5 +1,5 @@
 import { Listr } from "listr2";
-import { commandStdoutOrNull } from "../../lib/index.js";
+import { commandStdoutOrNull, isLocalConfigCheck } from "../../lib/index.js";
 import { SwankyConfig } from "../../types/index.js";
 import { pathExistsSync} from "fs-extra/esm";
 import { readFileSync } from "fs";
@@ -7,6 +7,7 @@ import path from "node:path";
 import TOML from "@iarna/toml";
 import semver from "semver";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
+import { FileError } from "../../lib/errors.js";
 
 interface Ctx {
   versions: {
@@ -60,11 +61,20 @@ export default class Check extends SwankyCommand<typeof Check> {
         },
       },
       {
-        title: "Read ink dependencies",
+        title: "Check Swanky Config",
         task: async (ctx) => {
+          if (this.swankyConfig == undefined){
+            throw new FileError("Swanky config not found")
+          }
           ctx.swankyConfig = this.swankyConfig;
-
-          for (const contract in ctx.swankyConfig.contracts) {
+        }
+      },
+      {
+        title: "Read ink dependencies",
+        enabled: isLocalConfigCheck(),
+        skip: (ctx) => ctx.swankyConfig == undefined || Object.keys(ctx.swankyConfig.contracts).length == 0,
+        task: async (ctx) => {
+          for (const contract in ctx.swankyConfig!.contracts) {
             const tomlPath = path.resolve(`contracts/${contract}/Cargo.toml`);
             const doesCargoTomlExist = pathExistsSync(tomlPath);
             if (!doesCargoTomlExist) {
@@ -89,6 +99,8 @@ export default class Check extends SwankyCommand<typeof Check> {
       },
       {
         title: "Verify ink version",
+        enabled: isLocalConfigCheck(),
+        skip: (ctx) => ctx.swankyConfig == undefined || Object.keys(ctx.swankyConfig.contracts).length == 0,
         task: async (ctx) => {
           const supportedInk = ctx.swankyConfig?.node.supportedInk;
 

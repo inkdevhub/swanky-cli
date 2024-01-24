@@ -102,7 +102,7 @@ export class NewContract extends SwankyCommand<typeof NewContract> {
         deployments: [],
       };
 
-      await this.storeLocalConfig(process.cwd())}, "Writing config");
+      await this.storeConfig(process.cwd())}, "Writing config");
 
     this.log("😎 New contract successfully generated! 😎");
   }

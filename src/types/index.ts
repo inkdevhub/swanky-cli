@@ -38,19 +38,7 @@ export interface DeploymentData {
   deployerAlias: string;
   address: string;
 }
-export interface SwankyConfig {
-  node: {
-    polkadotPalletVersions: string;
-    localPath: string;
-    supportedInk: string;
-  };
-  defaultAccount: string | null;
-  accounts: AccountData[];
-  contracts: Record<string, ContractData> | Record<string, never>;
-  networks: Record<string, {url: string}>
-}
-
-export interface SwankyLocalConfig {
+export interface SwankyConfig extends SwankySystemConfig{
   node: {
     polkadotPalletVersions: string;
     localPath: string;

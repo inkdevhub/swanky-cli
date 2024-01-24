@@ -13,23 +13,15 @@ import {
   copyContractTemplateFiles,
   downloadNode,
   installDeps,
-  ChainAccount,
   processTemplates,
   swankyNode,
   getTemplates,
 } from "../../lib/index.js";
-import {
-  DEFAULT_ASTAR_NETWORK_URL,
-  DEFAULT_NETWORK_URL,
-  DEFAULT_SHIBUYA_NETWORK_URL,
-  DEFAULT_SHIDEN_NETWORK_URL,
-} from "../../lib/consts.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { InputError, UnknownError } from "../../lib/errors.js";
 import { GlobEntry, globby } from "globby";
 import { merge } from "lodash-es";
 import inquirerFuzzyPath from "inquirer-fuzzy-path";
-import { SwankyConfig } from "../../types/index.js";
 import chalk from "chalk";
 
 type TaskFunction = (...args: any[]) => any;
@@ -93,22 +85,6 @@ export class Init extends SwankyCommand<typeof Init> {
   }
   projectPath = "";
 
-  configBuilder: Partial<SwankyConfig> = {
-    node: {
-      localPath: "",
-      polkadotPalletVersions: swankyNode.polkadotPalletVersions,
-      supportedInk: swankyNode.supportedInk,
-    },
-    accounts: [],
-    networks: {
-      local: { url: DEFAULT_NETWORK_URL },
-      astar: { url: DEFAULT_ASTAR_NETWORK_URL },
-      shiden: { url: DEFAULT_SHIDEN_NETWORK_URL },
-      shibuya: { url: DEFAULT_SHIBUYA_NETWORK_URL },
-    },
-    contracts: {},
-  };
-
   taskQueue: Task[] = [];
 
   async run(): Promise<void> {
@@ -166,42 +142,19 @@ export class Init extends SwankyCommand<typeof Init> {
           args: [this.projectPath, swankyNode, this.spinner],
           runningMessage: "Downloading Swanky node",
           callback: (result) =>
-            this.configBuilder.node ? (this.configBuilder.node.localPath = result) : null,
+            this.swankyConfig.node ? (this.swankyConfig.node.localPath = result) : null,
         });
       }
     }
 
-    this.configBuilder.accounts = [
-      {
-        alias: "alice",
-        mnemonic: "//Alice",
-        isDev: true,
-        address: new ChainAccount("//Alice").pair.address,
-      },
-      {
-        alias: "bob",
-        mnemonic: "//Bob",
-        isDev: true,
-        address: new ChainAccount("//Bob").pair.address,
-      },
-    ];
-
-    this.configBuilder.defaultAccount = "alice";
-
-    Object.keys(this.configBuilder.contracts!).forEach(async (contractName) => {
+    Object.keys(this.swankyConfig.contracts).forEach(async (contractName) => {
       await ensureDir(path.resolve(this.projectPath, "artifacts", contractName));
       await ensureDir(path.resolve(this.projectPath, "tests", contractName));
     });
 
     this.taskQueue.push({
       task: () => {
-        if (Object.keys(this.swankyConfig.networks).length === 0 || this.swankyConfig.accounts.length === 0) {
-          this.swankyConfig = this.configBuilder as SwankyConfig;
-        } else {
-          this.swankyConfig.node = this.configBuilder.node!;
-          this.swankyConfig.contracts = this.configBuilder.contracts!;
-        }
-        this.storeLocalConfig(this.projectPath);
+        this.storeConfig(this.projectPath);
         this.storeSystemConfig();
       },
       args: [],
@@ -294,7 +247,7 @@ export class Init extends SwankyCommand<typeof Init> {
       runningMessage: "Processing templates",
     });
 
-    this.configBuilder.contracts = {
+    this.swankyConfig.contracts = {
       [contractName as string]: {
         name: contractName,
         moduleName: snakeCase(contractName),
@@ -370,10 +323,10 @@ export class Init extends SwankyCommand<typeof Init> {
       },
     });
 
-    if (!this.configBuilder.contracts) this.configBuilder.contracts = {};
+    if (!this.swankyConfig.contracts) this.swankyConfig.contracts = {};
 
     for (const contract of confirmedCopyList.contracts) {
-      this.configBuilder.contracts[contract.name] = {
+      this.swankyConfig.contracts[contract.name] = {
         name: contract.name,
         moduleName: contract.moduleName!,
         deployments: [],

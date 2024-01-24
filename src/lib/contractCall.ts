@@ -1,4 +1,4 @@
-import { AbiType, ChainAccount, ChainApi, decrypt, resolveNetworkUrl } from "./index.js";
+import { AbiType, ChainAccount, ChainApi, decrypt, ensureAccountIsSet, resolveNetworkUrl } from "./index.js";
 import { AccountData, ContractData, DeploymentData, Encrypted } from "../types/index.js";
 import { Args, Command, Flags, Interfaces } from "@oclif/core";
 import inquirer from "inquirer";
@@ -77,9 +77,7 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
 
     this.deploymentInfo = deploymentData;
 
-    if(!flags.account && this.swankyConfig.defaultAccount === null) {
-      throw new ConfigError("No default account set in swanky.config.json and no account provided");
-    }
+    ensureAccountIsSet(flags.account, this.swankyConfig);
 
     const accountAlias = flags.account ?? this.swankyConfig.defaultAccount;
 

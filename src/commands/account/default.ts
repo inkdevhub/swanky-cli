@@ -1,11 +1,19 @@
-import { Args } from "@oclif/core";
+import { Args, Flags } from "@oclif/core";
 import chalk from "chalk";
 import { AccountData } from "../../types/index.js";
 import inquirer from "inquirer";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { ConfigError } from "../../lib/errors.js";
+import { isLocalConfigCheck } from "../../lib/index.js";
 export class DefaultAccount extends SwankyCommand<typeof DefaultAccount> {
   static description = "Set default account to use";
+
+  static flags = {
+    global: Flags.boolean({
+      char: "g",
+      description: "Set default account globally",
+    }),
+  }
 
   static args = {
     accountAlias: Args.string({
@@ -16,7 +24,7 @@ export class DefaultAccount extends SwankyCommand<typeof DefaultAccount> {
   };
 
   async run(): Promise<void> {
-    const { args } = await this.parse(DefaultAccount);
+    const { args, flags } = await this.parse(DefaultAccount);
 
     if(args.accountAlias) {
       const accountData = this.swankyConfig.accounts.find(
@@ -43,7 +51,16 @@ export class DefaultAccount extends SwankyCommand<typeof DefaultAccount> {
         this.swankyConfig.defaultAccount = answers.defaultAccount;
       });
     }
-    await this.storeSystemConfig();
+
+    if(flags.global) {
+      await this.storeSystemConfig();
+    }
+    else if(isLocalConfigCheck()) {
+      await this.storeConfig(process.cwd());
+    } else {
+      throw new Error("Cannot store account to config. Please run this command in a swanky project directory");
+    }
+
     console.log(chalk.greenBright(`Default account set to ${chalk.yellowBright(this.swankyConfig.defaultAccount)}`));
   }
 }
