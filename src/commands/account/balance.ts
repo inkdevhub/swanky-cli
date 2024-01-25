@@ -1,5 +1,5 @@
 import { Args } from "@oclif/core";
-import { ApiPromise, WsProvider } from "@polkadot/api";
+import { ApiPromise } from "@polkadot/api";
 import { ChainApi, resolveNetworkUrl } from "../../lib/index.js";
 import { AccountData } from "../../types/index.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
