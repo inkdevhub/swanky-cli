@@ -5,3 +5,8 @@ export const DEFAULT_SHIBUYA_NETWORK_URL = "wss://shibuya.public.blastapi.io";
 
 export const ARTIFACTS_PATH = "artifacts";
 export const TYPED_CONTRACTS_PATH = "typedContracts";
+
+export const LOCAL_FAUCET_AMOUNT = 100;
+export const KEYRING_TYPE = "sr25519";
+export const ALICE_URI = "//Alice";
+export const BOB_URI = "//Bob";

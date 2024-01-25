@@ -1,9 +1,10 @@
 import { Args } from "@oclif/core";
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import { resolveNetworkUrl } from "../../lib/index.js";
+import { ChainApi, resolveNetworkUrl } from "../../lib/index.js";
 import { AccountData } from "../../types/index.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { ConfigError } from "../../lib/errors.js";
+import { formatBalance } from "@polkadot/util";
 
 export class Balance extends SwankyCommand<typeof Balance> {
   static description = "Balance of an account";
@@ -27,14 +28,20 @@ export class Balance extends SwankyCommand<typeof Balance> {
 
     const networkUrl = resolveNetworkUrl(this.swankyConfig, "");
 
-    const wsProvider = new WsProvider(networkUrl);
-    const api = await ApiPromise.create({ provider: wsProvider });
-    await api.isReady;
+    const api = (await this.spinner.runCommand(async () => {
+      const api = await ChainApi.create(networkUrl);
+      await api.start();
+      return api.apiInst;
+    }, "Connecting to node")) as ApiPromise;
 
-    const balance = (await api.query.system.account(accountData.address)).data.free.toBigInt();
-
-    this.log(`Account balance now is: ${balance}`);
-
-    await wsProvider.disconnect();
+    const {nonce, data: balance} = (await api.query.system.account(accountData.address));
+    const decimals = api.registry.chainDecimals[0];
+    console.log('Raw balance:', balance.free.toBigInt())
+    formatBalance.setDefaults({ unit: 'UNIT', decimals });
+    const defaults = formatBalance.getDefaults();
+    const free = formatBalance(balance.free, { withSiFull: true });
+    const reserved = formatBalance(balance.reserved, { withSiFull: true });
+    console.log('Formatted balance:', `{"free": "${free}", "unit": "${defaults.unit}", "reserved": "${reserved}", "nonce": "${nonce.toHuman()}"}`);
+    await api.disconnect();
   }
 }

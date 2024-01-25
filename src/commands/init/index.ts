@@ -19,6 +19,7 @@ import {
   getTemplates,
 } from "../../lib/index.js";
 import {
+  ALICE_URI, BOB_URI,
   DEFAULT_ASTAR_NETWORK_URL,
   DEFAULT_NETWORK_URL,
   DEFAULT_SHIBUYA_NETWORK_URL,
@@ -174,15 +175,15 @@ export class Init extends SwankyCommand<typeof Init> {
     this.configBuilder.accounts = [
       {
         alias: "alice",
-        mnemonic: "//Alice",
+        mnemonic: ALICE_URI,
         isDev: true,
-        address: new ChainAccount("//Alice").pair.address,
+        address: new ChainAccount(ALICE_URI).pair.address,
       },
       {
         alias: "bob",
-        mnemonic: "//Bob",
+        mnemonic: BOB_URI,
         isDev: true,
-        address: new ChainAccount("//Bob").pair.address,
+        address: new ChainAccount(BOB_URI).pair.address,
       },
     ];
 

@@ -4,6 +4,8 @@ import { ChainAccount, ChainApi, encrypt, resolveNetworkUrl } from "../../lib/in
 import { AccountData } from "../../types/index.js";
 import inquirer from "inquirer";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
+import { ApiError } from "../../lib/errors.js";
+import { LOCAL_FAUCET_AMOUNT } from "../../lib/consts.js";
 export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
   static description = "Create a new dev account in config";
 
@@ -94,7 +96,18 @@ export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
     }, "Connecting to node")) as ChainApi;
 
 
-    await this.spinner.runCommand( async () => {await api.faucet(accountData)}
-      , `Fauceting 100000000000000000000 units to ${accountData.alias}`);
+    await this.spinner.runCommand(
+      async () => {
+        try {
+          await api.faucet(accountData);
+        } catch (cause) {
+          throw new ApiError("Error transferring tokens from faucet account", { cause });
+        }
+      },
+      `Transferring ${LOCAL_FAUCET_AMOUNT} units from faucet account to ${accountData.alias}`,
+      `Transferred ${LOCAL_FAUCET_AMOUNT} units from faucet account to ${accountData.alias}`,
+      `Failed to transfer ${LOCAL_FAUCET_AMOUNT} units from faucet account to ${accountData.alias}`,
+      true
+    );
   }
 }

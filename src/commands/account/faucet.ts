@@ -2,10 +2,11 @@ import { Args } from "@oclif/core";
 import { ChainApi, resolveNetworkUrl } from "../../lib/index.js";
 import { AccountData } from "../../types/index.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-import { ConfigError } from "../../lib/errors.js";
+import { ApiError, ConfigError } from "../../lib/errors.js";
+import { LOCAL_FAUCET_AMOUNT } from "../../lib/consts.js";
 
 export class Faucet extends SwankyCommand<typeof Faucet> {
-  static description = "Faucet some tokens to an account";
+  static description = "Transfer some tokens from faucet to an account";
 
   static aliases = [`account:faucet`];
 
@@ -34,8 +35,18 @@ export class Faucet extends SwankyCommand<typeof Faucet> {
       return api;
     }, "Connecting to node")) as ChainApi;
 
-
-    await this.spinner.runCommand( async () => {await api.faucet(accountData)}
-    , `Fauceting 100000000000000000000 units to ${args.alias}`);
+    await this.spinner.runCommand(
+      async () => {
+        try {
+          await api.faucet(accountData);
+        } catch (cause) {
+          throw new ApiError("Error transferring tokens from faucet account", { cause });
+        }
+      },
+      `Transferring ${LOCAL_FAUCET_AMOUNT} units from faucet account to ${args.alias}`,
+      `Transferred ${LOCAL_FAUCET_AMOUNT} units from faucet account to ${args.alias}`,
+      `Failed to transfer ${LOCAL_FAUCET_AMOUNT} units from faucet account to ${args.alias}`,
+      true
+    );
   }
 }

@@ -12,6 +12,8 @@ import { ChainProperty, ExtrinsicPayload, AccountData } from "../types/index.js"
 import { KeyringPair } from "@polkadot/keyring/types";
 import { Abi, CodePromise } from "@polkadot/api-contract";
 import { ApiError, UnknownError } from "./errors.js";
+import { ALICE_URI, LOCAL_FAUCET_AMOUNT } from "./consts.js";
+import { BN_TEN } from "@polkadot/util";
 
 export type AbiType = Abi;
 // const AUTO_CONNECT_MS = 10_000; // [ms]
@@ -247,14 +249,27 @@ export class ChainApi {
     });
   }
 
-  public async faucet(accountData: AccountData) {
+  public async faucet(accountData: AccountData) : Promise<void> {
     const keyring = new Keyring({ type: "sr25519" });
-    const alicePair = keyring.addFromUri("//Alice");
+    const alicePair = keyring.addFromUri(ALICE_URI);
 
-    await this._api.tx.balances
-      .transfer(accountData.address, BigInt(100000000000000000000n))
-      .signAndSend(alicePair);
+    const chainDecimals = this._api.registry.chainDecimals[0];
+    const amount = new BN(LOCAL_FAUCET_AMOUNT).mul(BN_TEN.pow(new BN(chainDecimals)));
 
-    await this._provider.disconnect();
+    const tx = this._api.tx.balances.transfer(accountData.address, amount);
+
+    return new Promise((resolve, reject) => {
+      this.signAndSend(alicePair, tx, {}, ({ status, events }) => {
+        if (status.isInBlock || status.isFinalized) {
+          const transferEvent = events.find(({ event }) => event?.method === "Transfer");
+          if (!transferEvent) {
+            reject();
+            return;
+          }
+          resolve();
+          this._provider.disconnect();
+        }
+      }).catch(error => reject(error));
+    });
   }
 }
