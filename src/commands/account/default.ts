@@ -3,7 +3,7 @@ import chalk from "chalk";
 import { AccountData } from "../../types/index.js";
 import inquirer from "inquirer";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-import { ConfigError } from "../../lib/errors.js";
+import { ConfigError, FileError } from "../../lib/errors.js";
 import { isLocalConfigCheck } from "../../lib/index.js";
 export class DefaultAccount extends SwankyCommand<typeof DefaultAccount> {
   static description = "Set default account to use";
@@ -11,7 +11,7 @@ export class DefaultAccount extends SwankyCommand<typeof DefaultAccount> {
   static flags = {
     global: Flags.boolean({
       char: "g",
-      description: "Set default account globally",
+      description: "Set default account globally: stored in both Swanky system and local configs.",
     }),
   }
 
@@ -52,13 +52,17 @@ export class DefaultAccount extends SwankyCommand<typeof DefaultAccount> {
       });
     }
 
-    if(flags.global) {
-      await this.storeSystemConfig();
-    }
-    else if(isLocalConfigCheck()) {
-      await this.storeConfig(process.cwd());
-    } else {
-      throw new Error("Cannot store account to config. Please run this command in a swanky project directory");
+    try {
+      if (isLocalConfigCheck()) {
+        await this.storeConfig(process.cwd());
+        if (flags.global) {
+          await this.storeSystemConfig();
+        }
+      } else {
+        await this.storeSystemConfig();
+      }
+    } catch (cause) {
+      throw new FileError("Error storing created account in config", { cause });
     }
 
     console.log(chalk.greenBright(`Default account set to ${chalk.yellowBright(this.swankyConfig.defaultAccount)}`));

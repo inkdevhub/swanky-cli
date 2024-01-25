@@ -4,12 +4,13 @@ import { ChainAccount, encrypt, isLocalConfigCheck } from "../../lib/index.js";
 import { AccountData } from "../../types/index.js";
 import inquirer from "inquirer";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
+import { FileError } from "../../lib/errors.js";
 export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
   static description = "Create a new dev account in config";
 
   static flags = {
     global: Flags.boolean({
-      description: "Create account globally",
+      description: "Create account globally: stored in both Swanky system and local configs.",
     }),
     generate: Flags.boolean({
       char: "g",
@@ -79,17 +80,21 @@ export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
     }
 
     this.swankyConfig.accounts.push(accountData);
-    if(this.swankyConfig.defaultAccount === null) {
+    if (this.swankyConfig.defaultAccount === null) {
       this.swankyConfig.defaultAccount = accountData.alias;
     }
 
-    if(flags.global) {
-      await this.storeSystemConfig();
-    }
-    else if(isLocalConfigCheck()) {
-      await this.storeConfig(process.cwd());
-    } else {
-      throw new Error("Cannot store account to config. Please run this command in a swanky project directory");
+    try {
+      if (isLocalConfigCheck()) {
+        await this.storeConfig(process.cwd());
+        if (flags.global) {
+          await this.storeSystemConfig();
+        }
+      } else {
+        await this.storeSystemConfig();
+      }
+    } catch (cause) {
+      throw new FileError("Error storing created account in config", { cause });
     }
 
     this.log(
