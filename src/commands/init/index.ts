@@ -153,12 +153,13 @@ export class Init extends SwankyCommand<typeof Init> {
     });
 
     this.taskQueue.push({
-      task: () => {
-        this.storeConfig(this.projectPath);
-        this.storeSystemConfig();
+      task: async () => {
+        await this.storeConfig(this.projectPath);
+        await this.storeSystemConfig();
       },
       args: [],
       runningMessage: "Writing config",
+      shouldExitOnError: true
     });
 
     for (const {
