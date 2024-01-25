@@ -20,6 +20,11 @@ export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
     }),
   };
 
+  constructor(argv: string[], baseConfig: any) {
+    super(argv, baseConfig);
+    (this.constructor as typeof SwankyCommand).ENSURE_SWANKY_CONFIG = false;
+  }
+
   async run(): Promise<void> {
     const { flags } = await this.parse(CreateAccount);
 

@@ -5,6 +5,11 @@ export class ListAccounts extends SwankyCommand<typeof ListAccounts> {
   static description = "List dev accounts stored in config";
   static aliases = [`account:ls`];
 
+  constructor(argv: string[], baseConfig: any) {
+    super(argv, baseConfig);
+    (this.constructor as typeof SwankyCommand).ENSURE_SWANKY_CONFIG = false;
+  }
+
   async run(): Promise<void> {
     const countOfDevAccounts = this.swankyConfig.accounts.filter((account) => account.isDev).length;
 

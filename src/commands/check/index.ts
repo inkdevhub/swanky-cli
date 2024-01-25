@@ -27,6 +27,11 @@ interface Ctx {
 export default class Check extends SwankyCommand<typeof Check> {
   static description = "Check installed package versions and compatibility";
 
+  constructor(argv: string[], baseConfig: any) {
+    super(argv, baseConfig);
+    (this.constructor as typeof SwankyCommand).ENSURE_SWANKY_CONFIG = false;
+  }
+
   public async run(): Promise<void> {
     const tasks = new Listr<Ctx>([
       {

@@ -23,6 +23,11 @@ export class DefaultAccount extends SwankyCommand<typeof DefaultAccount> {
     }),
   };
 
+  constructor(argv: string[], baseConfig: any) {
+    super(argv, baseConfig);
+    (this.constructor as typeof SwankyCommand).ENSURE_SWANKY_CONFIG = false;
+  }
+
   async run(): Promise<void> {
     const { args, flags } = await this.parse(DefaultAccount);
 
