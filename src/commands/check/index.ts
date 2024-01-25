@@ -7,7 +7,6 @@ import path from "node:path";
 import TOML from "@iarna/toml";
 import semver from "semver";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-import { FileError } from "../../lib/errors.js";
 
 interface Ctx {
   versions: {
@@ -20,7 +19,7 @@ interface Ctx {
     };
     contracts: Record<string, Record<string, string>>;
   };
-  swankyConfig?: SwankyConfig;
+  swankyConfig: SwankyConfig;
   mismatchedVersions?: Record<string, string>;
   looseDefinitionDetected: boolean;
 }
@@ -61,20 +60,11 @@ export default class Check extends SwankyCommand<typeof Check> {
         },
       },
       {
-        title: "Check Swanky Config",
-        task: async (ctx) => {
-          if (this.swankyConfig == undefined){
-            throw new FileError("Swanky config not found")
-          }
-          ctx.swankyConfig = this.swankyConfig;
-        }
-      },
-      {
         title: "Read ink dependencies",
         enabled: isLocalConfigCheck(),
-        skip: (ctx) => ctx.swankyConfig == undefined || Object.keys(ctx.swankyConfig.contracts).length == 0,
+        skip: (ctx) => Object.keys(ctx.swankyConfig.contracts).length == 0,
         task: async (ctx) => {
-          for (const contract in ctx.swankyConfig!.contracts) {
+          for (const contract in ctx.swankyConfig.contracts) {
             const tomlPath = path.resolve(`contracts/${contract}/Cargo.toml`);
             const doesCargoTomlExist = pathExistsSync(tomlPath);
             if (!doesCargoTomlExist) {
@@ -100,14 +90,14 @@ export default class Check extends SwankyCommand<typeof Check> {
       {
         title: "Verify ink version",
         enabled: isLocalConfigCheck(),
-        skip: (ctx) => ctx.swankyConfig == undefined || Object.keys(ctx.swankyConfig.contracts).length == 0,
+        skip: (ctx) => Object.keys(ctx.swankyConfig.contracts).length == 0,
         task: async (ctx) => {
-          const supportedInk = ctx.swankyConfig?.node.supportedInk;
+          const supportedInk = ctx.swankyConfig.node.supportedInk;
 
           const mismatched: Record<string, string> = {};
           Object.entries(ctx.versions.contracts).forEach(([contract, inkPackages]) => {
             Object.entries(inkPackages).forEach(([inkPackage, version]) => {
-              if (semver.gt(version, supportedInk!)) {
+              if (semver.gt(version, supportedInk)) {
                 mismatched[
                   `${contract}-${inkPackage}`
                 ] = `Version of ${inkPackage} (${version}) in ${contract} is higher than supported ink version (${supportedInk})`;
@@ -125,6 +115,7 @@ export default class Check extends SwankyCommand<typeof Check> {
     ]);
     const context = await tasks.run({
       versions: { tools: {}, contracts: {} },
+      swankyConfig: this.swankyConfig,
       looseDefinitionDetected: false,
     });
     console.log(context.versions);
