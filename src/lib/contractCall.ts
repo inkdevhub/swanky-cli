@@ -2,9 +2,9 @@ import {
   AbiType,
   ChainAccount,
   ChainApi,
+  configName,
   decrypt,
   ensureAccountIsSet,
-  configName,
   resolveNetworkUrl,
 } from "./index.js";
 import { AccountData, ContractData, DeploymentData, Encrypted } from "../types/index.js";
@@ -52,7 +52,7 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
     const contractRecord = this.swankyConfig.contracts[args.contractName];
     if (!contractRecord) {
       throw new ConfigError(
-        `Cannot find a contract named ${args.contractName} in "${configName()}"`
+        `Cannot find a contract named ${args.contractName} in "${configName()}"`,
       );
     }
 
@@ -60,7 +60,7 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
 
     if (!(await contract.pathExists())) {
       throw new FileError(
-        `Path to contract ${args.contractName} does not exist: ${contract.contractPath}`
+        `Path to contract ${args.contractName} does not exist: ${contract.contractPath}`,
       );
     }
 
@@ -68,19 +68,19 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
 
     if (!artifactsCheck.result) {
       throw new FileError(
-        `No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`
+        `No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`,
       );
     }
 
     const deploymentData = flags.address
       ? contract.deployments.find(
-          (deployment: DeploymentData) => deployment.address === flags.address
-        )
+        (deployment: DeploymentData) => deployment.address === flags.address,
+      )
       : contract.deployments[0];
 
     if (!deploymentData?.address)
       throw new NetworkError(
-        `Cannot find a deployment with address: ${flags.address} in "${configName()}"`
+        `Cannot find a deployment with address: ${flags.address} in "${configName()}"`,
       );
 
     this.deploymentInfo = deploymentData;
@@ -90,13 +90,13 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
     const accountAlias = flags.account ?? this.swankyConfig.defaultAccount;
 
     const accountData = this.swankyConfig.accounts.find(
-      (account: AccountData) => account.alias === accountAlias
+      (account: AccountData) => account.alias === accountAlias,
     );
     if (!accountData) {
       throw new ConfigError(`Provided account alias(${chalk.redBright(accountAlias)}) not found in ${configName()}`);
     }
 
-    if(accountData.isDev && (flags.network !== "local" || !flags.network)) {
+    if (accountData.isDev && (flags.network !== "local" || !flags.network)) {
       throw new ConfigError(`Account ${chalk.redBright(accountAlias)} is a dev account and can only be used on the local network`);
     }
 
@@ -108,17 +108,17 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
     const mnemonic = accountData.isDev
       ? (accountData.mnemonic as string)
       : decrypt(
-          accountData.mnemonic as Encrypted,
-          (
-            await inquirer.prompt([
-              {
-                type: "password",
-                message: `Enter password for ${chalk.yellowBright(accountData.alias)}: `,
-                name: "password",
-              },
-            ])
-          ).password
-        );
+        accountData.mnemonic as Encrypted,
+        (
+          await inquirer.prompt([
+            {
+              type: "password",
+              message: `Enter password for ${chalk.yellowBright(accountData.alias)}: `,
+              name: "password",
+            },
+          ])
+        ).password,
+      );
 
     const account = (await this.spinner.runCommand(async () => {
       await cryptoWaitReady();
