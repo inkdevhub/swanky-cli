@@ -1,5 +1,6 @@
 import { Args } from "@oclif/core";
 import { ApiPromise } from "@polkadot/api";
+import type { AccountInfo, Balance as BalanceType } from "@polkadot/types/interfaces";
 import { ChainApi, resolveNetworkUrl } from "../../lib/index.js";
 import { AccountData } from "../../types/index.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
@@ -34,14 +35,31 @@ export class Balance extends SwankyCommand<typeof Balance> {
       return api.apiInst;
     }, "Connecting to node")) as ApiPromise;
 
-    const {nonce, data: balance} = (await api.query.system.account(accountData.address));
     const decimals = api.registry.chainDecimals[0];
-    console.log('Raw balance:', balance.free.toBigInt())
-    formatBalance.setDefaults({ unit: 'UNIT', decimals });
-    const defaults = formatBalance.getDefaults();
-    const free = formatBalance(balance.free, { withSiFull: true });
-    const reserved = formatBalance(balance.reserved, { withSiFull: true });
-    console.log('Formatted balance:', `{"free": "${free}", "unit": "${defaults.unit}", "reserved": "${reserved}", "nonce": "${nonce.toHuman()}"}`);
+    formatBalance.setDefaults({ unit: "UNIT", decimals });
+
+    const { nonce, data: balance } = await api.query.system.account<AccountInfo>(
+      accountData.address
+    );
+    const { free, reserved, miscFrozen, feeFrozen } = balance;
+
+    let frozen: BalanceType;
+    if (feeFrozen.gt(miscFrozen)) {
+      frozen = feeFrozen;
+    } else {
+      frozen = miscFrozen;
+    }
+
+    const transferrableBalance = free.sub(frozen);
+    const totalBalance = free.add(reserved);
+
+    console.log("Transferrable Balance:", formatBalance(transferrableBalance));
+    if (!transferrableBalance.eq(totalBalance)) {
+      console.log("Total Balance:", formatBalance(totalBalance));
+      console.log("Raw Balances:", balance.toHuman());
+    }
+    console.log("Account Nonce:", nonce.toHuman());
+
     await api.disconnect();
   }
 }
