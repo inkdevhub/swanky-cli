@@ -55,8 +55,6 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(DeployContract);
 
-    console.log("flags", flags);
-
     const contractRecord = this.swankyConfig.contracts[args.contractName];
     if (!contractRecord) {
       throw new ConfigError(
