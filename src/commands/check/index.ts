@@ -24,6 +24,7 @@ interface Ctx {
       cargoDylint?: string | null;
       cargoContract?: string | null;
     };
+    supportedInk?: string;
     missingTools: string[];
     contracts: Record<string, Record<string, string>>;
     node?: string | null;
@@ -40,7 +41,7 @@ export default class Check extends SwankyCommand<typeof Check> {
     file: Flags.string({
       char: "f",
       description: "File to write output to",
-    })
+    }),
   };
 
   public async run(): Promise<void> {
@@ -51,43 +52,84 @@ export default class Check extends SwankyCommand<typeof Check> {
         task: async (ctx) => {
           ctx.os.platform = process.platform;
           ctx.os.architecture = process.arch;
+          const supportedPlatforms = ["darwin", "linux"];
+          const supportedArch = ["arm64", "x64"];
+
+          if (!supportedPlatforms.includes(ctx.os.platform)) {
+            throw new Error(`Platform ${ctx.os.platform} is not supported!`);
+          }
+          if (!supportedArch.includes(ctx.os.architecture)) {
+            throw new Error(`Architecture ${ctx.os.architecture} is not supported!`);
+          }
         },
+        exitOnError: false,
       },
       {
         title: "Check Rust",
         task: async (ctx) => {
           ctx.versions.tools.rust = await commandStdoutOrNull("rustc --version");
+          if (!ctx.versions.tools.rust) {
+            throw new Error("Rust is not installed!");
+          }
         },
+        exitOnError: false,
       },
       {
         title: "Check cargo",
         task: async (ctx) => {
           ctx.versions.tools.cargo = await commandStdoutOrNull("cargo -V");
+          if (!ctx.versions.tools.cargo) {
+            throw new Error("Cargo is not installed!");
+          }
         },
+        exitOnError: false,
       },
       {
         title: "Check cargo nightly",
         task: async (ctx) => {
           ctx.versions.tools.cargoNightly = await commandStdoutOrNull("cargo +nightly -V");
+          if (!ctx.versions.tools.cargoNightly) {
+            throw new Error("Cargo nightly is not installed!");
+          }
         },
+        exitOnError: false,
       },
       {
         title: "Check cargo dylint",
         task: async (ctx) => {
           ctx.versions.tools.cargoDylint = await commandStdoutOrNull("cargo dylint -V");
+          if (!ctx.versions.tools.cargoDylint) {
+            throw new Error("Cargo dylint is not installed!");
+          }
         },
+        exitOnError: false,
       },
       {
         title: "Check cargo-contract",
         task: async (ctx) => {
           ctx.versions.tools.cargoContract = await commandStdoutOrNull("cargo contract -V");
+          if (!ctx.versions.tools.cargoContract) {
+            throw new Error("Cargo contract is not installed!");
+          }
+          const regex = /cargo-contract-contract (.*)-unknown-(.*)/;
+          const match = ctx.versions.tools.cargoContract.match(regex);
+          if (match) {
+            ctx.versions.tools.cargoContract = match[1];
+          } else {
+            throw new Error("Cargo contract version not found!");
+          }
         },
+        exitOnError: false,
       },
       {
         title: "Check swanky node",
         task: async (ctx) => {
           ctx.versions.node = this.swankyConfig.node.version !== "" ? this.swankyConfig.node.version : null;
+          if (!ctx.versions.node) {
+            throw new Error("Swanky node version not found in swanky.config.json");
+          }
         },
+        exitOnError: false,
       },
       {
         title: "Read ink dependencies",
@@ -120,28 +162,34 @@ export default class Check extends SwankyCommand<typeof Check> {
       },
       {
         title: "Verify ink version",
+        skip: (ctx): boolean => {
+          return !ctx.versions.tools.cargoContract;
+        },
         task: async (ctx) => {
           let supportedInk = ctx.swankyConfig?.node.supportedInk;
-          const regex = /cargo-contract-contract (.*)-unknown-x86_64-unknown-linux-gnu/;
-          const cargoContract = ctx.versions.tools.cargoContract;
-          if (cargoContract) {
-            const match = cargoContract.match(regex);
-            if (match) {
-              const cargoVersion = match[1];
-              const version = cargoContractDeps.get(cargoVersion);
-              if (version && semver.gt(supportedInk!, version[0])) {
-                supportedInk = version[0];
-              }
-            }
+          const versions = cargoContractDeps.get(ctx.versions.tools.cargoContract!);
+          if (versions && semver.gt(versions[versions.length - 1], supportedInk!)) {
+            supportedInk = versions[0];
           }
 
+          ctx.versions.supportedInk = supportedInk;
+          if (!supportedInk) {
+            throw new Error("Supported ink version not found in swanky.config.json");
+          }
+        },
+        exitOnError: false,
+      },
+      {
+        title: "Verify ink dependencies",
+        skip: (ctx) => !ctx.versions.supportedInk,
+        task: async (ctx) => {
           const mismatched: Record<string, string> = {};
           Object.entries(ctx.versions.contracts).forEach(([contract, inkPackages]) => {
             Object.entries(inkPackages).forEach(([inkPackage, version]) => {
-              if (semver.gt(version, supportedInk!)) {
+              if (semver.gt(version, ctx.versions.supportedInk!)) {
                 mismatched[
                   `${contract}-${inkPackage}`
-                ] = `Version of ${inkPackage} (${version}) in ${contract} is higher than supported ink version (${supportedInk})`;
+                  ] = `Version of ${inkPackage} (${version}) in ${contract} is higher than supported ink version (${ctx.versions.supportedInk})`;
               }
 
               if (!(version.startsWith("=") || version.startsWith("v"))) {
@@ -151,7 +199,11 @@ export default class Check extends SwankyCommand<typeof Check> {
           });
 
           ctx.mismatchedVersions = mismatched;
+          if (Object.entries(mismatched).length > 0) {
+            throw new Error("Ink version mismatch");
+          }
         },
+        exitOnError: false,
       },
       {
         title: "Check for missing tools",
@@ -163,19 +215,22 @@ export default class Check extends SwankyCommand<typeof Check> {
             }
           }
           ctx.versions.missingTools = missingTools;
+          if (Object.entries(missingTools).length > 0) {
+            throw new Error("Missing tools");
+          }
         },
-      }
+        exitOnError: false,
+      },
     ]);
-    process.platform
-    process.arch
+
     const context = await tasks.run({
       os: { platform: "", architecture: "" },
-      versions: {tools: {}, missingTools: [], contracts: {} },
+      versions: { tools: {}, missingTools: [], contracts: {} },
       looseDefinitionDetected: false,
     });
 
     Object.values(context.mismatchedVersions as any).forEach((mismatch) =>
-      console.error(`[ERROR] ${mismatch as string}`)
+      console.error(`[ERROR] ${mismatch as string}`),
     );
     if (context.looseDefinitionDetected) {
       console.log(`\n[WARNING]Some of the ink dependencies do not have a fixed version.
@@ -183,26 +238,19 @@ export default class Check extends SwankyCommand<typeof Check> {
       Please use "=" to install a fixed version (Example: "=3.0.1")
       `);
     }
-    const supportedPlatforms = ["darwin", "linux"];
-    const supportedArch = ["arm64", "x64"];
 
-    if (!supportedPlatforms.includes(context.os.platform)) {
-      console.error(`[ERROR] Platform ${context.os.platform} is not supported`);
-    }
-    if (!supportedArch.includes(context.os.architecture)) {
-      console.error(`[ERROR] Architecture ${context.os.architecture} is not supported`);
-    }
-
-    console.log(context.os, context.versions);
+    console.log(context.os);
+    console.log(context.versions);
 
     const filePath = flags.file ?? null;
-    if(filePath) {
+    if (filePath) {
       await this.spinner.runCommand(async () => {
-        writeJson(filePath, [context.os, context.versions], { spaces: 2 })
-      }, `Writing output to file ${chalk.yellowBright(filePath)}`)
+        writeJson(filePath, [context.os, context.versions], { spaces: 2 });
+      }, `Writing output to file ${chalk.yellowBright(filePath)}`);
     }
   }
 }
+
 interface Dependency {
   version?: string;
   tag?: string;
