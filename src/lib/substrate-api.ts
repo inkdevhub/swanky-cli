@@ -12,7 +12,7 @@ import { ChainProperty, ExtrinsicPayload, AccountData } from "../types/index.js"
 import { KeyringPair } from "@polkadot/keyring/types";
 import { Abi, CodePromise } from "@polkadot/api-contract";
 import { ApiError, UnknownError } from "./errors.js";
-import { ALICE_URI, LOCAL_FAUCET_AMOUNT } from "./consts.js";
+import { ALICE_URI, KEYPAIR_TYPE, LOCAL_FAUCET_AMOUNT } from "./consts.js";
 import { BN_TEN } from "@polkadot/util";
 
 export type AbiType = Abi;
@@ -250,7 +250,7 @@ export class ChainApi {
   }
 
   public async faucet(accountData: AccountData) : Promise<void> {
-    const keyring = new Keyring({ type: "sr25519" });
+    const keyring = new Keyring({ type: KEYPAIR_TYPE });
     const alicePair = keyring.addFromUri(ALICE_URI);
 
     const chainDecimals = this._api.registry.chainDecimals[0];
