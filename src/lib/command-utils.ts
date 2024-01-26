@@ -173,5 +173,5 @@ export function buildSwankyConfig() {
 
 export function isLocalConfigCheck(): boolean {
   const defaultLocalPath = process.cwd() + "/swanky.config.json";
-  return Boolean(process.env.SWANKY_CONFIG) ?? existsSync(defaultLocalPath);
+  return Boolean(process.env.SWANKY_CONFIG) || existsSync(defaultLocalPath);
 }
