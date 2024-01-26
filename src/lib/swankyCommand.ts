@@ -1,18 +1,20 @@
 import { Command, Flags, Interfaces } from "@oclif/core";
 import {
-  getSwankySystemConfig,
-  getSwankyConfig,
-  Spinner,
+  buildSwankyConfig,
+  configName,
   findSwankySystemConfigPath,
-  buildSwankyConfig, configName,
+  getSwankyConfig,
+  getSwankySystemConfig,
+  Spinner,
 } from "./index.js";
 import { SwankyConfig, SwankySystemConfig } from "../types/index.js";
 import { writeJSON } from "fs-extra/esm";
-import { mkdirSync, existsSync } from "fs";
+import { existsSync, mkdirSync } from "fs";
 import { BaseError, ConfigError, UnknownError } from "./errors.js";
 import { swankyLogger } from "./logger.js";
 import { Logger } from "winston";
 import path from "node:path";
+
 export type Flags<T extends typeof Command> = Interfaces.InferredFlags<
   (typeof SwankyCommand)["baseFlags"] & T["flags"]
 >;
@@ -46,20 +48,28 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
 
     try {
       const systemConfig = await getSwankySystemConfig();
-      this.swankyConfig = {
-        ...this.swankyConfig,
-        ...systemConfig,
-      };
-    } catch(e) { /* empty */ }
+
+      Object.entries(systemConfig).forEach((entry) => {
+        this.swankyConfig[entry[0] as keyof SwankyConfig] = entry[1];
+      });
+    } catch (error) {
+      await this.storeSystemConfig();
+    }
 
     try {
       const localConfig = await getSwankyConfig();
-      this.swankyConfig = {
-        ...this.swankyConfig,
-        ...localConfig,
-      };
+
+      Object.entries(this.swankyConfig).forEach((entry) => {
+        if (Object.entries(localConfig[entry[0] as keyof SwankyConfig] as object).length === 0) {
+          localConfig[entry[0] as keyof SwankyConfig] = entry[1];
+        }
+      });
+
+      Object.entries(localConfig).forEach((entry) => {
+        this.swankyConfig[entry[0] as keyof SwankyConfig] = entry[1];
+      });
     } catch (error) {
-      this.logger.warn("No local config found")
+      this.logger.warn("No local config found");
       if (error instanceof Error &&
         error.message.includes(configName()) &&
         (this.constructor as typeof SwankyCommand).ENSURE_SWANKY_CONFIG
@@ -79,11 +89,11 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
   }
 
   protected async storeSystemConfig() {
-    const systemConfig : SwankySystemConfig = {
+    const systemConfig: SwankySystemConfig = {
       defaultAccount: this.swankyConfig.defaultAccount,
       accounts: this.swankyConfig.accounts,
-      networks: this.swankyConfig.networks
-    }
+      networks: this.swankyConfig.networks,
+    };
 
     const configPath = findSwankySystemConfigPath();
 
@@ -92,6 +102,7 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
     }
     await writeJSON(configPath + "/swanky.config.json", systemConfig, { spaces: 2 });
   }
+
   protected async catch(err: Error & { exitCode?: number }): Promise<any> {
     // add any custom logic to handle errors from the command
     // or simply return the parent class error handling
