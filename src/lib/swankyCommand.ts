@@ -50,9 +50,7 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
         ...this.swankyConfig,
         ...systemConfig,
       };
-    } catch (error) {
-      this.logger.warn("No system config found")
-    }
+    } catch(e) { /* empty */ }
 
     try {
       const localConfig = await getSwankyConfig();
@@ -77,10 +75,7 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
 
   protected async storeConfig(projectPath: string) {
     const configPath = process.env.SWANKY_CONFIG ?? path.resolve(projectPath, "swanky.config.json");
-    const localConfig : SwankyConfig = {
-      ...this.swankyConfig,
-    }
-    await writeJSON(configPath, localConfig, { spaces: 2 });
+    await writeJSON(configPath, this.swankyConfig, { spaces: 2 });
   }
 
   protected async storeSystemConfig() {
@@ -106,7 +101,6 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
 
   protected async finally(_: Error | undefined): Promise<any> {
     // called after run and catch regardless of whether or not the command errored
-    // console.log("Swanky Config: ", this.swankyConfig);
     return super.finally(_);
   }
 }
