@@ -36,6 +36,14 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
     }),
   };
 
+  static callFlags = {
+    network: Flags.string({
+      char: "n",
+      default: "local",
+      description: "Name of network to connect to",
+    }),
+  }
+
   protected flags!: JoinedFlagsType<T>;
   protected args!: Record<string, any>;
   protected contractInfo!: ContractData;
@@ -48,6 +56,7 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
     await super.init();
     const { flags, args } = await this.parse(this.ctor);
     this.args = args;
+    this.flags = flags as JoinedFlagsType<T>;
 
     const contractRecord = this.swankyConfig.contracts[args.contractName];
     if (!contractRecord) {

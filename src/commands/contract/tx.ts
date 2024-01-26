@@ -17,6 +17,7 @@ export class Tx extends ContractCall<typeof Tx> {
       char: "a",
       description: "Account to sign the transaction with",
     }),
+    ...ContractCall.callFlags,
   };
 
   static args = { ...ContractCall.callArgs };
