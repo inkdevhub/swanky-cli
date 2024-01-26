@@ -28,6 +28,9 @@ export class StartNode extends SwankyCommand<typeof StartNode> {
   async run(): Promise<void> {
     const { flags } = await this.parse(StartNode);
 
+    if(this.swankyConfig.node.localPath === "") {
+      this.error("Swanky node is not installed. Please run `swanky node:install` first.");
+    }
     // Run persistent mode by default. non-persistent mode in case flag is provided.
     // Non-Persistent mode (`--dev`) allows all CORS origin, without `--dev`, users need to specify origins by `--rpc-cors`.
     await execaCommand(
