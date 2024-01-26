@@ -88,7 +88,7 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
       (account: AccountData) => account.alias === accountAlias
     );
     if (!accountData) {
-      throw new ConfigError(`Provided account alias not found in "${configName()}"`);
+      throw new ConfigError(`Provided account alias ${chalk.yellowBright(accountAlias)} not found in "${configName()}"`);
     }
 
     if (accountData.isDev && flags.network !== "local") {
