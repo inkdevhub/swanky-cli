@@ -124,9 +124,11 @@ export default class Check extends SwankyCommand<typeof Check> {
       looseDefinitionDetected: false,
     });
     console.log(context.versions);
-    Object.values(context.mismatchedVersions as any).forEach((mismatch) =>
-      console.error(`[ERROR] ${mismatch as string}`)
-    );
+    if(context.mismatchedVersions !== undefined) {
+      Object.values(context.mismatchedVersions).forEach((mismatch) =>
+        console.error(`[ERROR] ${mismatch}`)
+      );
+    }
     if (context.looseDefinitionDetected) {
       console.log(`\n[WARNING]Some of the ink dependencies do not have a fixed version.
       This can lead to accidentally installing version higher than supported by the node.
