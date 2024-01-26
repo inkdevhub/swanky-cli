@@ -100,6 +100,14 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
     if (!existsSync(path.resolve(configPath))) {
       mkdirSync(path.resolve(configPath), { recursive: true });
     }
+    if (existsSync(path.resolve(configPath + "/swanky.config.json"))) {
+      const oldSystemConfig = await getSwankySystemConfig();
+      const oldAccounts = oldSystemConfig.accounts;
+      oldAccounts
+        .filter((oldAccount) => systemConfig.accounts
+          .filter((newAccount) => newAccount.alias === oldAccount.alias).length === 0)
+        .forEach((oldAccount) => systemConfig.accounts.push(oldAccount));
+    }
     await writeJSON(configPath + "/swanky.config.json", systemConfig, { spaces: 2 });
   }
 
