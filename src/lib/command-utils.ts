@@ -29,7 +29,7 @@ export async function getSwankyConfig(): Promise<SwankyConfig> {
     const config = await readJSON(configPath);
     return config;
   } catch (cause) {
-    throw new InputError("Error reading swanky.config.json in the current directory!", { cause });
+    throw new InputError(`Error reading "${configName()}" in the current directory!`, { cause });
   }
 }
 
@@ -173,5 +173,15 @@ export function buildSwankyConfig() {
 
 export function isLocalConfigCheck(): boolean {
   const defaultLocalPath = process.cwd() + "/swanky.config.json";
-  return Boolean(process.env.SWANKY_CONFIG) ?? existsSync(defaultLocalPath);
+  return process.env.SWANKY_CONFIG === undefined ? existsSync(defaultLocalPath) : existsSync(process.env.SWANKY_CONFIG);
+}
+
+export function configName() {
+  if(isLocalConfigCheck()) {
+    const configPathArray = (process.env.SWANKY_CONFIG === undefined ?
+      ["swanky.config.json"] : process.env.SWANKY_CONFIG.split("/"));
+
+    return configPathArray[configPathArray.length - 1];
+  }
+  return "swanky.config.json";
 }

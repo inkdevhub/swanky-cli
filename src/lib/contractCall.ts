@@ -1,4 +1,12 @@
-import { AbiType, ChainAccount, ChainApi, decrypt, ensureAccountIsSet, resolveNetworkUrl } from "./index.js";
+import {
+  AbiType,
+  ChainAccount,
+  ChainApi,
+  decrypt,
+  ensureAccountIsSet,
+  configName,
+  resolveNetworkUrl,
+} from "./index.js";
 import { AccountData, ContractData, DeploymentData, Encrypted } from "../types/index.js";
 import { Args, Command, Flags, Interfaces } from "@oclif/core";
 import inquirer from "inquirer";
@@ -44,7 +52,7 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
     const contractRecord = this.swankyConfig.contracts[args.contractName];
     if (!contractRecord) {
       throw new ConfigError(
-        `Cannot find a contract named ${args.contractName} in swanky.config.json`
+        `Cannot find a contract named ${args.contractName} in "${configName()}"`
       );
     }
 
@@ -72,7 +80,7 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
 
     if (!deploymentData?.address)
       throw new NetworkError(
-        `Cannot find a deployment with address: ${flags.address} in swanky.config.json`
+        `Cannot find a deployment with address: ${flags.address} in "${configName()}"`
       );
 
     this.deploymentInfo = deploymentData;
@@ -85,7 +93,7 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
       (account: AccountData) => account.alias === accountAlias
     );
     if (!accountData) {
-      throw new ConfigError(`Provided account alias(${chalk.redBright(accountAlias)}) not found in swanky.config.json`);
+      throw new ConfigError(`Provided account alias(${chalk.redBright(accountAlias)}) not found in ${configName()}`);
     }
 
     if(accountData.isDev && (flags.network !== "local" || !flags.network)) {

@@ -21,7 +21,7 @@ export class TypegenCommand extends SwankyCommand<typeof TypegenCommand> {
     const contractRecord = this.swankyConfig.contracts[args.contractName];
     if (!contractRecord) {
       throw new ConfigError(
-        `Cannot find a contract named ${args.contractName} in swanky.config.json`
+        `Cannot find a contract named ${args.contractName} in "${configName()}"`
       );
     }
 

@@ -4,7 +4,7 @@ import {
   getSwankyConfig,
   Spinner,
   findSwankySystemConfigPath,
-  buildSwankyConfig,
+  buildSwankyConfig, configName,
 } from "./index.js";
 import { SwankyConfig, SwankySystemConfig } from "../types/index.js";
 import { writeJSON } from "fs-extra/esm";
@@ -63,7 +63,7 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
     } catch (error) {
       this.logger.warn("No local config found")
       if (error instanceof Error &&
-        error.message.includes("swanky.config.json") &&
+        error.message.includes(configName()) &&
         (this.constructor as typeof SwankyCommand).ENSURE_SWANKY_CONFIG
       )
         throw new ConfigError(`Cannot find ${process.env.SWANKY_CONFIG ?? "swanky.config.json"}`, { cause: error });

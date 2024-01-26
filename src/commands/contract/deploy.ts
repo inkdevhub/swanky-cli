@@ -1,6 +1,14 @@
 import { Args, Flags } from "@oclif/core";
 import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
-import { resolveNetworkUrl, ChainApi, ChainAccount, decrypt, AbiType, ensureAccountIsSet } from "../../lib/index.js";
+import {
+  resolveNetworkUrl,
+  ChainApi,
+  ChainAccount,
+  decrypt,
+  AbiType,
+  ensureAccountIsSet,
+  configName,
+} from "../../lib/index.js";
 import { AccountData, Encrypted } from "../../types/index.js";
 import inquirer from "inquirer";
 import chalk from "chalk";
@@ -52,7 +60,7 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
     const contractRecord = this.swankyConfig.contracts[args.contractName];
     if (!contractRecord) {
       throw new ConfigError(
-        `Cannot find a contract named ${args.contractName} in swanky.config.json`
+        `Cannot find a contract named ${args.contractName} in "${configName()}"`
       );
     }
 
@@ -80,7 +88,7 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
       (account: AccountData) => account.alias === accountAlias
     );
     if (!accountData) {
-      throw new ConfigError("Provided account alias not found in swanky.config.json");
+      throw new ConfigError(`Provided account alias not found in "${configName()}"`);
     }
 
     if (accountData.isDev && flags.network !== "local") {

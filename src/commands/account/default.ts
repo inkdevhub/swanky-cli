@@ -4,7 +4,7 @@ import { AccountData } from "../../types/index.js";
 import inquirer from "inquirer";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { ConfigError, FileError } from "../../lib/errors.js";
-import { isLocalConfigCheck } from "../../lib/index.js";
+import { isLocalConfigCheck, configName } from "../../lib/index.js";
 export class DefaultAccount extends SwankyCommand<typeof DefaultAccount> {
   static description = "Set default account to use";
 
@@ -36,7 +36,7 @@ export class DefaultAccount extends SwankyCommand<typeof DefaultAccount> {
         (account: AccountData) => account.alias === args.accountAlias
       );
       if (!accountData) {
-        throw new ConfigError("Provided account alias not found in swanky.config.json");
+        throw new ConfigError(`Provided account alias not found in "${configName()}"`);
       }
       this.swankyConfig.defaultAccount = accountData.alias;
     } else {
