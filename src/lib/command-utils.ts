@@ -160,7 +160,20 @@ export function buildSwankyConfig() {
       supportedInk: swankyNode.supportedInk,
     },
     defaultAccount: DEFAULT_ACCOUNT,
-    accounts: [],
+    accounts: [
+      {
+        "alias": "alice",
+        "mnemonic": "//Alice",
+        "isDev": true,
+        "address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+      },
+      {
+        "alias": "bob",
+        "mnemonic": "//Bob",
+        "isDev": true,
+        "address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+      },
+    ],
     networks: {
       local: { url: DEFAULT_NETWORK_URL },
       astar: { url: DEFAULT_ASTAR_NETWORK_URL },
