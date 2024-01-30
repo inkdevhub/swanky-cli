@@ -15,15 +15,13 @@ import chalk from "chalk";
 import { Contract } from "../../lib/contract.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { ApiError, ConfigError, FileError } from "../../lib/errors.js";
-import { DEFAULT_ACCOUNT } from "../../lib/consts.js";
 
 export class DeployContract extends SwankyCommand<typeof DeployContract> {
   static description = "Deploy contract to a running node";
 
   static flags = {
     account: Flags.string({
-      default: DEFAULT_ACCOUNT,
-      description: "Alias of account to be used",
+      description: "Account alias to deploy contract with",
     }),
     gas: Flags.integer({
       char: "g",
@@ -158,7 +156,7 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
           timestamp: Date.now(),
           address: contractAddress,
           networkUrl,
-          deployerAlias: flags.account,
+          deployerAlias: accountAlias!,
         },
       ];
 

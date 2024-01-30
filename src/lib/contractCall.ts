@@ -174,7 +174,7 @@ ContractCall.baseFlags = {
   }),
   account: Flags.string({
     char: "a",
-    description: "Account to sign the transaction with",
+    description: "Account alias to sign the transaction with",
   }),
   address: Flags.string({
     required: false,
