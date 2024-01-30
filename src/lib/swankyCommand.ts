@@ -59,12 +59,6 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
     try {
       const localConfig = await getSwankyConfig();
 
-      Object.entries(this.swankyConfig).forEach((entry) => {
-        if (Object.entries(localConfig[entry[0] as keyof SwankyConfig] as object).length === 0) {
-          localConfig[entry[0] as keyof SwankyConfig] = entry[1];
-        }
-      });
-
       Object.entries(localConfig).forEach((entry) => {
         this.swankyConfig[entry[0] as keyof SwankyConfig] = entry[1];
       });
