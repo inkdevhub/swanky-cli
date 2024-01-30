@@ -1,25 +1,26 @@
 import { Args, Flags } from "@oclif/core";
 import path from "node:path";
-import { ensureDir, writeJSON, pathExists, copy, outputFile, readJSON, remove } from "fs-extra/esm";
-import { stat, readdir, readFile } from "fs/promises";
+import { copy, ensureDir, outputFile, pathExists, readJSON, remove, writeJSON } from "fs-extra/esm";
+import { readdir, readFile, stat } from "fs/promises";
 import { execaCommand, execaCommandSync } from "execa";
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer from "inquirer";
 import TOML from "@iarna/toml";
 import { choice, email, name, pickTemplate } from "../../lib/prompts.js";
 import {
+  buildSwankyConfig,
   checkCliDependencies,
   copyCommonTemplateFiles,
   copyContractTemplateFiles,
   downloadNode,
+  getTemplates,
   installDeps,
   processTemplates,
   swankyNode,
-  getTemplates,
 } from "../../lib/index.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { InputError, UnknownError } from "../../lib/errors.js";
-import { GlobEntry, globby } from "globby";
+import { globby, GlobEntry } from "globby";
 import { merge } from "lodash-es";
 import inquirerFuzzyPath from "inquirer-fuzzy-path";
 import chalk from "chalk";
@@ -83,6 +84,7 @@ export class Init extends SwankyCommand<typeof Init> {
     super(argv, config);
     (this.constructor as typeof SwankyCommand).ENSURE_SWANKY_CONFIG = false;
   }
+
   projectPath = "";
 
   taskQueue: Task[] = [];
@@ -154,12 +156,15 @@ export class Init extends SwankyCommand<typeof Init> {
 
     this.taskQueue.push({
       task: async () => {
-        await this.storeConfig(this.projectPath);
         await this.storeSystemConfig();
+        const defaultConfig = buildSwankyConfig();
+        this.swankyConfig.accounts = defaultConfig.accounts;
+        this.swankyConfig.defaultAccount = defaultConfig.defaultAccount;
+        await this.storeConfig(this.projectPath);
       },
       args: [],
       runningMessage: "Writing config",
-      shouldExitOnError: true
+      shouldExitOnError: true,
     });
 
     for (const {
@@ -176,7 +181,7 @@ export class Init extends SwankyCommand<typeof Init> {
         runningMessage,
         successMessage,
         failMessage,
-        shouldExitOnError
+        shouldExitOnError,
       );
       if (result && callback) {
         callback(result as string);
@@ -268,7 +273,7 @@ export class Init extends SwankyCommand<typeof Init> {
     } catch (cause) {
       throw new InputError(
         `Error reading target directory [${chalk.yellowBright(pathToExistingProject)}]`,
-        { cause }
+        { cause },
       );
     }
 
@@ -288,7 +293,7 @@ export class Init extends SwankyCommand<typeof Init> {
 
     const candidatesList: CopyCandidates = await getCopyCandidatesList(
       pathToExistingProject,
-      copyGlobsList
+      copyGlobsList,
     );
 
     const testDir = await detectTests(pathToExistingProject);
@@ -456,10 +461,10 @@ async function confirmCopyList(candidatesList: CopyCandidates) {
     (
       item: PathEntry & {
         group: "contracts" | "crates" | "tests";
-      }
+      },
     ) => {
       resultingList[item.group]?.push(item);
-    }
+    },
   );
   return resultingList;
 }
@@ -486,7 +491,7 @@ async function detectTests(pathToExistingProject: string): Promise<string | unde
       type: "confirm",
       name: "shouldUseDetectedTestDir",
       message: `Detected test directory [${path.basename(
-        testDir!
+        testDir!,
       )}]. Do you want to copy it to your new project?`,
       default: true,
     },
@@ -519,7 +524,7 @@ async function readRootCargoToml(pathToProject: string) {
 async function getManualPaths(
   pathToProject: string,
   directoryType: "contracts" | "crates" | "tests",
-  paths: string[] = []
+  paths: string[] = [],
 ): Promise<string[]> {
   const { selectedDirectory } = await inquirer.prompt([
     {
@@ -557,7 +562,7 @@ async function getCopyCandidatesList(
   pathsToCopy: {
     contractsDirectories: string[];
     cratesDirectories: string[];
-  }
+  },
 ) {
   const detectedPaths = {
     contracts: await getDirsAndFiles(projectPath, pathsToCopy.contractsDirectories),
@@ -578,7 +583,7 @@ async function getGlobPaths(projectPath: string, globList: string[], isDirOnly: 
       onlyDirectories: isDirOnly,
       deep: 1,
       objectMode: true,
-    }
+    },
   );
 }
 

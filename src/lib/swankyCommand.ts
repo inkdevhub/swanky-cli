@@ -88,12 +88,12 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
     await writeJSON(configPath, this.swankyConfig, { spaces: 2 });
   }
 
-  protected async storeSystemConfig() {
-    const systemConfig: SwankySystemConfig = {
+  protected async storeSystemConfig(config?: SwankySystemConfig) {
+    const systemConfig: SwankySystemConfig = !config ? {
       defaultAccount: this.swankyConfig.defaultAccount,
       accounts: this.swankyConfig.accounts,
       networks: this.swankyConfig.networks,
-    };
+    } : config;
 
     const configPath = findSwankySystemConfigPath();
 

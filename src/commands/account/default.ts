@@ -3,8 +3,9 @@ import chalk from "chalk";
 import { AccountData } from "../../types/index.js";
 import inquirer from "inquirer";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-import { ConfigError, FileError } from "../../lib/errors.js";
-import { isLocalConfigCheck, configName } from "../../lib/index.js";
+import { ConfigError } from "../../lib/errors.js";
+import { configName, getSwankySystemConfig, isLocalConfigCheck } from "../../lib/index.js";
+
 export class DefaultAccount extends SwankyCommand<typeof DefaultAccount> {
   static description = "Set default account to use";
 
@@ -13,7 +14,7 @@ export class DefaultAccount extends SwankyCommand<typeof DefaultAccount> {
       char: "g",
       description: "Set default account globally: stored in both Swanky system and local configs.",
     }),
-  }
+  };
 
   static args = {
     accountAlias: Args.string({
@@ -31,45 +32,88 @@ export class DefaultAccount extends SwankyCommand<typeof DefaultAccount> {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(DefaultAccount);
 
-    if(args.accountAlias) {
+    console.log(this.swankyConfig.accounts);
+
+    const systemConfig = await getSwankySystemConfig();
+
+    if (args.accountAlias) {
       const accountData = this.swankyConfig.accounts.find(
-        (account: AccountData) => account.alias === args.accountAlias
+        (account: AccountData) => account.alias === args.accountAlias,
       );
-      if (!accountData) {
-        throw new ConfigError(`Provided account alias ${chalk.yellowBright(args.accountAlias)} not found in "${configName()}"`);
+      const systemAccountData = systemConfig.accounts.find(
+        (account: AccountData) => account.alias === args.accountAlias,
+      );
+      if (isLocalConfigCheck()) {
+        if (!accountData) {
+          if (!systemAccountData) {
+            throw new ConfigError(`Provided account alias ${chalk.yellowBright(args.accountAlias)} not found in "${configName()}" and system config`);
+          }
+          systemConfig.defaultAccount = systemAccountData.alias;
+          await this.storeSystemConfig(systemConfig);
+          console.log(chalk.greenBright(`Default account set to ${chalk.yellowBright(systemConfig.defaultAccount)} in system config`));
+        } else {
+          this.swankyConfig.defaultAccount = accountData.alias;
+          await this.storeConfig(process.cwd());
+          if (flags.global) {
+            if (!systemAccountData) {
+              throw new ConfigError(`Provided account alias ${chalk.yellowBright(args.accountAlias)} not found in system config`);
+            }
+            systemConfig.defaultAccount = accountData.alias;
+            await this.storeSystemConfig(systemConfig);
+          }
+          console.log(chalk.greenBright(`Default account set to ${chalk.yellowBright(this.swankyConfig.defaultAccount)}`));
+        }
+      } else {
+        if (!accountData) {
+          throw new ConfigError(`Provided account alias ${chalk.yellowBright(args.accountAlias)} not found in system config`);
+        }
+        this.swankyConfig.defaultAccount = accountData.alias;
+        await this.storeSystemConfig();
+        console.log(chalk.greenBright(`Default account set to ${chalk.yellowBright(this.swankyConfig.defaultAccount)} in system config`));
       }
-      this.swankyConfig.defaultAccount = accountData.alias;
     } else {
+      const choices = this.swankyConfig.accounts.map((account: AccountData) => {
+        return {
+          name: `${account.alias} (${account.address})`,
+          value: { alias: account.alias, systemConfig: false },
+        };
+      });
+      systemConfig.accounts.forEach((account: AccountData) => {
+        if (!choices.find((choice: any) => choice.value.alias === account.alias)) {
+          choices.push({
+            name: `${account.alias} (${account.address}) [system config]`,
+            value: { alias: account.alias, systemConfig: true },
+          });
+        }
+      });
       await inquirer.prompt([
         {
           type: "list",
           name: "defaultAccount",
           message: "Select default account",
-          choices: this.swankyConfig.accounts.map((account: AccountData) => {
-            return {
-              name: `${account.alias} (${account.address})`,
-              value: account.alias,
-            };
-          }),
+          choices: choices,
         },
       ]).then((answers) => {
-        this.swankyConfig.defaultAccount = answers.defaultAccount;
+        if (answers.defaultAccount.systemConfig) {
+          systemConfig.defaultAccount = answers.defaultAccount.alias;
+          this.storeSystemConfig(systemConfig);
+          console.log(chalk.greenBright(`Default account set to ${chalk.yellowBright(systemConfig.defaultAccount)} in system config`));
+        } else {
+          this.swankyConfig.defaultAccount = answers.defaultAccount.alias;
+          this.storeConfig(process.cwd());
+          if (flags.global) {
+            const systemAccountData = systemConfig.accounts.find(
+              (account: AccountData) => account.alias === answers.defaultAccount.alias,
+            );
+            if (!systemAccountData) {
+              throw new ConfigError(`Provided account alias ${chalk.yellowBright(answers.defaultAccount.alias)} not found in system config`);
+            }
+            systemConfig.defaultAccount = answers.defaultAccount.alias;
+            this.storeSystemConfig(systemConfig);
+          }
+          console.log(chalk.greenBright(`Default account set to ${chalk.yellowBright(this.swankyConfig.defaultAccount)}`));
+        }
       });
     }
-
-    try {
-      if (isLocalConfigCheck()) {
-        await this.storeConfig(process.cwd());
-        if (flags.global) {
-          await this.storeSystemConfig();
-        }
-      } else {
-        await this.storeSystemConfig();
-      }
-    } catch (cause) {
-      throw new FileError("Error storing created account in config", { cause });
-    }
-
-    console.log(chalk.greenBright(`Default account set to ${chalk.yellowBright(this.swankyConfig.defaultAccount)}`));
   }
 }
