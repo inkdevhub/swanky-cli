@@ -14,7 +14,7 @@ export interface nodeInfo {
   };
 }
 
-export const swankyNode = new Map<string, nodeInfo>([
+export const swankyNodeVersions = new Map<string, nodeInfo>([
   ["1.6.0", {
     version: "1.6.0",
     polkadotPalletVersions: "polkadot-v0.9.39",

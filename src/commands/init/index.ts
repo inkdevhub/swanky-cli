@@ -15,8 +15,7 @@ import {
   installDeps,
   ChainAccount,
   processTemplates,
-  swankyNode,
-  getTemplates,
+  getTemplates, swankyNodeVersions,
 } from "../../lib/index.js";
 import {
   DEFAULT_ASTAR_NETWORK_URL,
@@ -163,7 +162,7 @@ export class Init extends SwankyCommand<typeof Init> {
         choice("useSwankyNode", "Do you want to download Swanky node?"),
       ]);
       if (useSwankyNode) {
-        const versions = Array.from(swankyNode.keys());
+        const versions = Array.from(swankyNodeVersions.keys());
         let nodeVersion = DEFAULT_NODE_INFO.version;
         await inquirer.prompt([
           pickNodeVersion(versions),
@@ -171,7 +170,7 @@ export class Init extends SwankyCommand<typeof Init> {
            nodeVersion = answers.version;
         });
 
-        const nodeInfo = swankyNode.get(nodeVersion)!;
+        const nodeInfo = swankyNodeVersions.get(nodeVersion)!;
 
         this.taskQueue.push({
           task: downloadNode,

@@ -6,13 +6,14 @@ import { writeJSON } from "fs-extra/esm";
 import inquirer from "inquirer";
 import { DEFAULT_NODE_INFO } from "../../lib/consts.js";
 import { choice, pickNodeVersion } from "../../lib/prompts.js";
+import { InputError } from "../../lib/errors.js";
 
 export class InstallNode extends SwankyCommand<typeof InstallNode> {
   static description = "Install swanky node binary";
 
   static flags = {
     "set-version": Flags.string({
-      description: "Specify version of swanky node to install",
+      description: "Specify version of swanky node to install. \n List of supported versions: " + Array.from(swankyNodeVersions.keys()).join(", "),
       required: false,
     }),
   }
@@ -23,10 +24,13 @@ export class InstallNode extends SwankyCommand<typeof InstallNode> {
     }
     let nodeVersion= DEFAULT_NODE_INFO.version;
 
-    if (flags.specifyVersion) {
-      nodeVersion = flags.specifyVersion;
+    if (flags["set-version"]) {
+      nodeVersion = flags["set-version"];
+      if(!swankyNodeVersions.has(nodeVersion)) {
+        throw new InputError(`Version ${nodeVersion} is not supported.\n List of supported versions: ${Array.from(swankyNodeVersions.keys()).join(", ")}`);
+      }
     } else {
-      const versions = Array.from(swankyNode.keys());
+      const versions = Array.from(swankyNodeVersions.keys());
       await inquirer.prompt([
         pickNodeVersion(versions),
       ]).then((answers) => {
@@ -45,7 +49,7 @@ export class InstallNode extends SwankyCommand<typeof InstallNode> {
       }
     }
 
-    const nodeInfo = swankyNode.get(nodeVersion)!;
+    const nodeInfo = swankyNodeVersions.get(nodeVersion)!;
 
     const taskResult = (await this.spinner.runCommand(
       () => downloadNode(projectPath, nodeInfo, this.spinner),
