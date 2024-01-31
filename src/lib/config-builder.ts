@@ -1,4 +1,5 @@
 import { AccountData, SwankyConfig, SwankySystemConfig } from "../index.js";
+import { snakeCase } from "change-case";
 
 export class ConfigBuilder<T extends SwankySystemConfig | SwankyConfig> {
   private config: T;
@@ -34,6 +35,17 @@ export class ConfigBuilder<T extends SwankySystemConfig | SwankyConfig> {
   updateContracts(contracts: SwankyConfig['contracts']): ConfigBuilder<T> {
     if ('contracts' in this.config) {
       this.config.contracts = { ...contracts };
+    }
+    return this;
+  }
+
+  addContract(name: string, moduleName?: string): ConfigBuilder<T> {
+    if ('contracts' in this.config) {
+      this.config.contracts[name] = {
+        name: name,
+        moduleName: moduleName ?? snakeCase(name),
+        deployments: []
+      };
     }
     return this;
   }

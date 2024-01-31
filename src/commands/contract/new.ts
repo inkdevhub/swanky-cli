@@ -13,6 +13,7 @@ import { execaCommandSync } from "execa";
 import inquirer from "inquirer";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { InputError } from "../../lib/errors.js";
+import { ConfigBuilder } from "../../lib/config-builder.js";
 
 export class NewContract extends SwankyCommand<typeof NewContract> {
   static description = "Generate a new smart contract template inside a project";
@@ -96,13 +97,10 @@ export class NewContract extends SwankyCommand<typeof NewContract> {
     await ensureDir(path.resolve(projectPath, "tests", args.contractName));
 
     await this.spinner.runCommand(async () => {
-      this.swankyConfig.contracts[args.contractName] = {
-        name: args.contractName,
-        moduleName: snakeCase(args.contractName),
-        deployments: [],
-      };
+      const configBuilder = new ConfigBuilder(this.swankyConfig);
+      configBuilder.addContract(args.contractName);
 
-      await this.storeConfig(this.swankyConfig, 'local')}, "Writing config");
+      await this.storeConfig(configBuilder.build(), 'local')}, "Writing config");
 
     this.log("😎 New contract successfully generated! 😎");
   }

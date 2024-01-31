@@ -2,6 +2,7 @@ import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { ux } from "@oclif/core";
 import { downloadNode, swankyNode } from "../../lib/index.js";
 import path from "node:path";
+import { ConfigBuilder } from "../../lib/config-builder.js";
 export class InstallNode extends SwankyCommand<typeof InstallNode> {
   static description = "Install swanky node binary";
 
@@ -26,16 +27,19 @@ export class InstallNode extends SwankyCommand<typeof InstallNode> {
       () => downloadNode(projectPath, swankyNode, this.spinner),
       "Downloading Swanky node"
     )) as string;
-    const nodePath = path.relative(projectPath, taskResult);
-
-    this.swankyConfig.node = {
-      localPath: nodePath,
-      polkadotPalletVersions: swankyNode.polkadotPalletVersions,
-      supportedInk: swankyNode.supportedInk,
-    };
+    const nodePath = path.resolve(projectPath, taskResult);
 
     await this.spinner.runCommand(
-      async () => await this.storeConfig(this.swankyConfig, 'local'),
+      async () => {
+        const configBuilder = new ConfigBuilder(this.swankyConfig);
+        configBuilder.updateNodeSettings({
+          localPath: nodePath,
+          polkadotPalletVersions: swankyNode.polkadotPalletVersions,
+          supportedInk: swankyNode.supportedInk,
+        })
+        this.swankyConfig = configBuilder.build();
+        await this.storeConfig(this.swankyConfig, 'local')
+      },
       "Updating swanky config"
     );
 

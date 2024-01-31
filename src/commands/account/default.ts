@@ -48,21 +48,21 @@ export class DefaultAccount extends SwankyCommand<typeof DefaultAccount> {
               throw new ConfigError(`Provided account alias ${chalk.yellowBright(args.accountAlias)} not found in "${configName()}" and system config`);
             }
             systemConfig.defaultAccount = systemAccountData.alias;
-            await this.storeConfig(systemConfig, 'global');
+            await this.storeConfig(systemConfig, "global");
             console.log(chalk.greenBright(`Default account set to ${chalk.yellowBright(systemConfig.defaultAccount)} in system config`));
           } else {
             throw new ConfigError(`Provided account alias ${chalk.yellowBright(args.accountAlias)} not found in "${configName()}"`);
           }
         } else {
-          this.swankyConfig.defaultAccount = accountData.alias;
-          await this.storeConfig(this.swankyConfig, 'local');
           if (flags.global) {
             if (!systemAccountData) {
               throw new ConfigError(`Provided account alias ${chalk.yellowBright(args.accountAlias)} not found in system config`);
             }
             systemConfig.defaultAccount = accountData.alias;
-            await this.storeConfig(systemConfig, 'global');
+            await this.storeConfig(systemConfig, "global");
           }
+          this.swankyConfig.defaultAccount = accountData.alias;
+          await this.storeConfig(this.swankyConfig, "local");
           console.log(chalk.greenBright(`Default account set to ${chalk.yellowBright(this.swankyConfig.defaultAccount)}`));
         }
       } else {
@@ -70,16 +70,22 @@ export class DefaultAccount extends SwankyCommand<typeof DefaultAccount> {
           throw new ConfigError(`Provided account alias ${chalk.yellowBright(args.accountAlias)} not found in system config`);
         }
         this.swankyConfig.defaultAccount = accountData.alias;
-        await this.storeConfig(this.swankyConfig, 'global');
+        await this.storeConfig(this.swankyConfig, "global");
         console.log(chalk.greenBright(`Default account set to ${chalk.yellowBright(this.swankyConfig.defaultAccount)} in system config`));
       }
     } else {
-      const choices = this.swankyConfig.accounts.map((account: AccountData) => {
-        return {
-          name: `${account.alias} (${account.address})`,
-          value: { alias: account.alias, systemConfig: false },
-        };
-      });
+      let choices: {
+        name: string,
+        value: { alias: string, systemConfig: boolean }
+      }[] = [];
+      if(isLocalConfigCheck()) {
+        this.swankyConfig.accounts.forEach((account: AccountData) => {
+          choices.push({
+            name: `${account.alias} (${account.address})`,
+            value: { alias: account.alias, systemConfig: false },
+          });
+        });
+      }
       if (!isEnvConfigCheck() || flags.global) {
         systemConfig.accounts.forEach((account: AccountData) => {
           if (!choices.find((choice: any) => choice.value.alias === account.alias)) {
@@ -100,11 +106,9 @@ export class DefaultAccount extends SwankyCommand<typeof DefaultAccount> {
       ]).then((answers) => {
         if (answers.defaultAccount.systemConfig) {
           systemConfig.defaultAccount = answers.defaultAccount.alias;
-          this.storeConfig(systemConfig, 'global');
+          this.storeConfig(systemConfig, "global");
           console.log(chalk.greenBright(`Default account set to ${chalk.yellowBright(systemConfig.defaultAccount)} in system config`));
         } else {
-          this.swankyConfig.defaultAccount = answers.defaultAccount.alias;
-          this.storeConfig(this.swankyConfig, 'local');
           if (flags.global) {
             const systemAccountData = systemConfig.accounts.find(
               (account: AccountData) => account.alias === answers.defaultAccount.alias,
@@ -113,8 +117,10 @@ export class DefaultAccount extends SwankyCommand<typeof DefaultAccount> {
               throw new ConfigError(`Provided account alias ${chalk.yellowBright(answers.defaultAccount.alias)} not found in system config`);
             }
             systemConfig.defaultAccount = answers.defaultAccount.alias;
-            this.storeConfig(systemConfig, 'global');
+            this.storeConfig(systemConfig, "global");
           }
+          this.swankyConfig.defaultAccount = answers.defaultAccount.alias;
+          this.storeConfig(this.swankyConfig, "local");
           console.log(chalk.greenBright(`Default account set to ${chalk.yellowBright(this.swankyConfig.defaultAccount)}`));
         }
       });

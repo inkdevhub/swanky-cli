@@ -45,7 +45,6 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
 
     this.logger = swankyLogger;
     this.swankyConfig = buildSwankyConfig();
-
     try {
       const systemConfig = await getSwankySystemConfig();
 
@@ -98,7 +97,7 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
           networks: config.networks,
         };
       }
-      this.mergeWithExistingSystemConfig(config, configPath);
+      await this.mergeWithExistingSystemConfig(config, configPath);
     }
 
     this.ensureDirectoryExists(configPath);
@@ -115,7 +114,14 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
   private async mergeWithExistingSystemConfig(newConfig: SwankySystemConfig, configPath: string) {
     if (existsSync(configPath)) {
       const oldConfig = await getSwankySystemConfig();
-      newConfig.accounts = [...new Set([...oldConfig.accounts, ...newConfig.accounts])];
+
+      newConfig.accounts.forEach((account) => {
+        if (!oldConfig.accounts.find((oldAccount) => oldAccount.alias === account.alias)) {
+          oldConfig.accounts.push(account);
+        }
+      });
+
+      newConfig.accounts = oldConfig.accounts;
     }
   }
 
