@@ -32,7 +32,7 @@ interface Ctx {
     swankyNode: string | null;
   };
   swankyConfig?: SwankyConfig;
-  mismatchedVersions?: Record<string, string>;
+  mismatchedVersions: Record<string, string>;
   looseDefinitionDetected: boolean;
 }
 
@@ -48,7 +48,8 @@ export default class Check extends SwankyCommand<typeof Check> {
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Check);
-    const isSwankyNodeInstalled = !!this.swankyConfig?.node?.version;
+    const swankyNodeVersion = this.swankyConfig.node.version;
+    const isSwankyNodeInstalled = !!swankyNodeVersion;
     const anyContracts = Object.keys(this.swankyConfig?.contracts).length > 0;
     const tasks = new Listr<Ctx>([
       {
@@ -60,10 +61,10 @@ export default class Check extends SwankyCommand<typeof Check> {
           const supportedArch = ["arm64", "x64"];
 
           if (!supportedPlatforms.includes(ctx.os.platform)) {
-            throw new Warn(`Platform ${ctx.os.platform} is not supported!`);
+            throw new Error(`Platform ${ctx.os.platform} is not supported`);
           }
           if (!supportedArch.includes(ctx.os.architecture)) {
-            throw new Warn(`Architecture ${ctx.os.architecture} is not supported!`);
+            throw new Error(`Architecture ${ctx.os.architecture} is not supported`);
           }
 
           task.title = `Check OS: '${ctx.os.platform}-${ctx.os.architecture}'`;
@@ -75,7 +76,7 @@ export default class Check extends SwankyCommand<typeof Check> {
         task: async (ctx, task) => {
           ctx.versions.tools.rust = (await commandStdoutOrNull("rustc --version"))?.match(/rustc (.*) \((.*)/)?.[1];
           if (!ctx.versions.tools.rust) {
-            throw new Warn("Rust is not installed!");
+            throw new Error("Rust is not installed");
           }
           task.title = `Check Rust: ${ctx.versions.tools.rust}`;
         },
@@ -86,7 +87,7 @@ export default class Check extends SwankyCommand<typeof Check> {
         task: async (ctx, task) => {
           ctx.versions.tools.cargo = (await commandStdoutOrNull("cargo -V"))?.match(/cargo (.*) \((.*)/)?.[1];
           if (!ctx.versions.tools.cargo) {
-            throw new Warn("Cargo is not installed!");
+            throw new Error("Cargo is not installed");
           }
           task.title = `Check cargo: ${ctx.versions.tools.cargo}`;
         },
@@ -97,7 +98,7 @@ export default class Check extends SwankyCommand<typeof Check> {
         task: async (ctx, task) => {
           ctx.versions.tools.cargoNightly = (await commandStdoutOrNull("cargo +nightly -V"))?.match(/cargo (.*)-nightly \((.*)/)?.[1];
           if (!ctx.versions.tools.cargoNightly) {
-            throw new Warn("Cargo nightly is not installed!");
+            throw new Error("Cargo nightly is not installed");
           }
           task.title = `Check cargo nightly: ${ctx.versions.tools.cargoNightly}`;
         },
@@ -108,7 +109,7 @@ export default class Check extends SwankyCommand<typeof Check> {
         task: async (ctx, task) => {
           ctx.versions.tools.cargoDylint = (await commandStdoutOrNull("cargo dylint -V"))?.match(/cargo-dylint (.*)/)?.[1];
           if (!ctx.versions.tools.cargoDylint) {
-            throw new Warn("Cargo dylint is not installed!");
+            throw new Warn("Cargo dylint is not installed");
           }
           task.title = `Check cargo dylint: ${ctx.versions.tools.cargoDylint}`;
         },
@@ -119,7 +120,7 @@ export default class Check extends SwankyCommand<typeof Check> {
         task: async (ctx, task) => {
           ctx.versions.tools.cargoContract = await commandStdoutOrNull("cargo contract -V");
           if (!ctx.versions.tools.cargoContract) {
-            throw new Warn("Cargo contract is not installed!");
+            throw new Error("Cargo contract is not installed");
           }
 
           const regex = /cargo-contract-contract (\d+\.\d+\.\d+(?:-[\w.]+)?)(?:-unknown-[\w-]+)/;
@@ -127,7 +128,7 @@ export default class Check extends SwankyCommand<typeof Check> {
           if (match?.[1]) {
             ctx.versions.tools.cargoContract = match[1];
           } else {
-            throw new Warn("Cargo contract version not found!");
+            throw new Error("Cargo contract version not found");
           }
           task.title = `Check cargo-contract: ${ctx.versions.tools.cargoContract}`;
         },
@@ -175,7 +176,7 @@ export default class Check extends SwankyCommand<typeof Check> {
               if (semver.gt(version, supportedInk)) {
                 mismatched[
                   `${contract}-${inkPackage}`
-                  ] = `Version of ${inkPackage} (${version}) in ${contract} is higher than supported ink version (${supportedInk})`;
+                ] = `Version of ${inkPackage} (${version}) in ${chalk.yellowBright(contract)} is higher than supported ink version (${supportedInk}) in current Swanky node version (${swankyNodeVersion}). A Swanky node update can fix this warning.`;
               }
 
               if (version.startsWith(">") || version.startsWith("<") || version.startsWith("^") || version.startsWith("~")) {
@@ -186,13 +187,13 @@ export default class Check extends SwankyCommand<typeof Check> {
 
           ctx.mismatchedVersions = mismatched;
           if (Object.entries(mismatched).length > 0) {
-            throw new Warn("Ink version mismatch");
+            throw new Warn("Ink versions in contracts don't match the Swanky node's supported version.");
           }
         },
         exitOnError: false,
       },
       {
-        title: "Verify cargo-contract version",
+        title: "Verify cargo contract compatibility",
         skip: (ctx) => !ctx.versions.tools.cargoContract,
         enabled: anyContracts,
         task: async (ctx) => {
@@ -215,8 +216,8 @@ export default class Check extends SwankyCommand<typeof Check> {
             Object.entries(inkPackages).forEach(([inkPackage, version]) => {
               if (!semver.satisfies(version, validInkVersionRange)) {
                 mismatched[
-                  `${contract} contract`
-                ] = `Version of ${inkPackage} (${version}) in ${contract} requires cargo-contract version >=${minCargoContractVersion}, but version ${cargoContractVersion} is installed`;
+                  `${contract}-${inkPackage}`
+                ] = `Version of ${inkPackage} (${version}) in ${chalk.yellowBright(contract)} requires cargo-contract version >=${minCargoContractVersion}, but version ${cargoContractVersion} is installed`;
               }
             });
           });
@@ -235,12 +236,13 @@ export default class Check extends SwankyCommand<typeof Check> {
           for (const [toolName, toolVersion] of Object.entries(ctx.versions.tools)) {
             if (!toolVersion) {
               missingTools.push(toolName);
-              console.error(`[ERROR] ${toolName} is not installed!`);
+              if (toolName === "cargoDylint") this.warn("Cargo dylint is not installed");
+              else this.error(`${toolName} is not installed`);
             }
           }
           ctx.versions.missingTools = missingTools;
           if (Object.entries(missingTools).length > 0) {
-            throw new Warn("Missing tools");
+            throw new Warn(`Missing tools: ${missingTools.join(", ")}`);
           }
         },
         exitOnError: false,
@@ -249,16 +251,20 @@ export default class Check extends SwankyCommand<typeof Check> {
 
     const context = await tasks.run({
       os: { platform: "", architecture: "" },
-      versions: { tools: {}, missingTools: [], contracts: {}, swankyNode: this.swankyConfig.node.version },
+      versions: {
+        tools: {},
+        missingTools: [],
+        contracts: {},
+        swankyNode: swankyNodeVersion || null,
+      },
       looseDefinitionDetected: false,
+      mismatchedVersions: {}
     });
-    if (context.mismatchedVersions !== undefined) {
-      Object.values(context.mismatchedVersions).forEach((mismatch) =>
-        console.error(`[ERROR] ${mismatch}`),
-      );
-    }
+
+    Object.values(context.mismatchedVersions).forEach((mismatch) => this.warn(mismatch));
+
     if (context.looseDefinitionDetected) {
-      console.log(`\n[WARNING]Some of the ink dependencies do not have a fixed version.
+      this.warn(`Some of the ink dependencies do not have a fixed version.
       This can lead to accidentally installing version higher than supported by the node.
       Please use "=" to install a fixed version (Example: "=3.0.1")
       `);
@@ -268,8 +274,6 @@ export default class Check extends SwankyCommand<typeof Check> {
       ...context.os,
       ...context.versions
     }
-
-    console.log(output);
 
     const filePath = flags.print;
     if (filePath !== undefined) {
