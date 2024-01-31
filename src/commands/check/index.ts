@@ -188,22 +188,29 @@ export default class Check extends SwankyCommand<typeof Check> {
       },
       {
         title: "Verify cargo-contract version",
-        skip: (ctx) => ctx.versions.tools.cargoContract === null,
+        skip: (ctx) => !ctx.versions.tools.cargoContract,
         task: async (ctx) => {
-          const cargoContractVersion = ctx.versions.tools.cargoContract!.replace(/-.*$/, "");
-          const compatibleInkVersion = CARGO_CONTRACT_INK_DEPS.find(dep =>
-            semver.satisfies(cargoContractVersion, `>=${dep.minCargoContractVersion}`),
-          )?.inkVersion;
-          if (!compatibleInkVersion) {
+          const cargoContractVersion = ctx.versions.tools.cargoContract!;
+          const dependencyIdx = CARGO_CONTRACT_INK_DEPS.findIndex((dep) =>
+            semver.satisfies(cargoContractVersion.replace(/-.*$/, ""), `>=${dep.minCargoContractVersion}`)
+          );
+
+          if (dependencyIdx === -1) {
             throw new Warn(`cargo-contract version ${cargoContractVersion} is not supported`);
           }
+      
+          const validInkVersionRange = CARGO_CONTRACT_INK_DEPS[dependencyIdx].validInkVersionRange;
+          const minCargoContractVersion = dependencyIdx === 0
+            ? CARGO_CONTRACT_INK_DEPS[dependencyIdx].minCargoContractVersion
+            : CARGO_CONTRACT_INK_DEPS[dependencyIdx - 1].minCargoContractVersion
+
           const mismatched: Record<string, string> = {};
           Object.entries(ctx.versions.contracts).forEach(([contract, inkPackages]) => {
             Object.entries(inkPackages).forEach(([inkPackage, version]) => {
-              if (semver.gt(version, compatibleInkVersion)) {
+              if (!semver.satisfies(version, validInkVersionRange)) {
                 mismatched[
-                  `${contract}-${inkPackage}`
-                  ] = `Version of ${inkPackage} (${version}) in ${contract} is higher than compatible ink version (${compatibleInkVersion})`;
+                  `${contract} contract`
+                ] = `Version of ${inkPackage} (${version}) in ${contract} requires cargo-contract version >=${minCargoContractVersion}, but version ${cargoContractVersion} is installed`;
               }
             });
           });
