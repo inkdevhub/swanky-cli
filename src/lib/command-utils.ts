@@ -33,8 +33,10 @@ export async function getSwankyConfig(): Promise<SwankyConfig> {
   }
 }
 
+// consider merging config getters like storeConfig
 export async function getSwankySystemConfig(): Promise<SwankySystemConfig> {
   try {
+    // consider using readJSONsync instead to remove async
     const config = await readJSON(findSwankySystemConfigPath() + "/swanky.config.json");
     return config;
   } catch (cause) {

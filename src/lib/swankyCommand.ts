@@ -77,32 +77,46 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
       Full command: ${JSON.stringify(process.argv)}`);
   }
 
-  protected async storeConfig(projectPath: string) {
-    const configPath = process.env.SWANKY_CONFIG ?? path.resolve(projectPath, "swanky.config.json");
-    await writeJSON(configPath, this.swankyConfig, { spaces: 2 });
+  protected async storeConfig(
+    config: SwankyConfig | SwankySystemConfig,
+    configType: "local" | "global",
+    projectPath?: string
+  ) {
+    let configPath: string;
+
+    if (configType === "local") {
+      configPath =
+        process.env.SWANKY_CONFIG ?? path.resolve(projectPath ?? ".", "swanky.config.json");
+    } else {
+      // global
+      configPath = findSwankySystemConfigPath() + "/swanky.config.json";
+      if ("node" in config) {
+        // If it's a SwankyConfig, extract only the system relevant parts for the global SwankySystemConfig config
+        config = {
+          defaultAccount: config.defaultAccount,
+          accounts: config.accounts,
+          networks: config.networks,
+        };
+      }
+      this.mergeWithExistingSystemConfig(config, configPath);
+    }
+
+    this.ensureDirectoryExists(configPath);
+    await writeJSON(configPath, config, { spaces: 2 });
   }
 
-  protected async storeSystemConfig(config?: SwankySystemConfig) {
-    const systemConfig: SwankySystemConfig = !config ? {
-      defaultAccount: this.swankyConfig.defaultAccount,
-      accounts: this.swankyConfig.accounts,
-      networks: this.swankyConfig.networks,
-    } : config;
-
-    const configPath = findSwankySystemConfigPath();
-
-    if (!existsSync(path.resolve(configPath))) {
-      mkdirSync(path.resolve(configPath), { recursive: true });
+  private ensureDirectoryExists(filePath: string) {
+    const directory = path.dirname(filePath);
+    if (!existsSync(directory)) {
+      mkdirSync(directory, { recursive: true });
     }
-    if (existsSync(path.resolve(configPath + "/swanky.config.json"))) {
-      const oldSystemConfig = await getSwankySystemConfig();
-      const oldAccounts = oldSystemConfig.accounts;
-      oldAccounts
-        .filter((oldAccount) => systemConfig.accounts
-          .filter((newAccount) => newAccount.alias === oldAccount.alias).length === 0)
-        .forEach((oldAccount) => systemConfig.accounts.push(oldAccount));
+  }
+
+  private async mergeWithExistingSystemConfig(newConfig: SwankySystemConfig, configPath: string) {
+    if (existsSync(configPath)) {
+      const oldConfig = await getSwankySystemConfig();
+      newConfig.accounts = [...new Set([...oldConfig.accounts, ...newConfig.accounts])];
     }
-    await writeJSON(configPath + "/swanky.config.json", systemConfig, { spaces: 2 });
   }
 
   protected async catch(err: Error & { exitCode?: number }): Promise<any> {

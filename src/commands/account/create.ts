@@ -5,6 +5,7 @@ import { AccountData } from "../../types/index.js";
 import inquirer from "inquirer";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { FileError } from "../../lib/errors.js";
+import { ConfigBuilder } from "../../lib/config-builder.js";
 export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
   static description = "Create a new dev account in config";
 
@@ -84,19 +85,23 @@ export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
       accountData.mnemonic = tmpMnemonic;
     }
 
-    this.swankyConfig.accounts.push(accountData);
+    const configBuilder = new ConfigBuilder(this.swankyConfig);
+    configBuilder.addAccount(accountData);
+
     if (this.swankyConfig.defaultAccount === null) {
-      this.swankyConfig.defaultAccount = accountData.alias;
+      configBuilder.setDefaultAccount(accountData.alias);
     }
+
+    const updatedConfig = configBuilder.build();
 
     try {
       if (isLocalConfigCheck()) {
-        await this.storeConfig(process.cwd());
+        await this.storeConfig(updatedConfig, 'local', process.cwd());
         if (flags.global) {
-          await this.storeSystemConfig();
+          await this.storeConfig(updatedConfig, 'global');
         }
       } else {
-        await this.storeSystemConfig();
+        await this.storeConfig(updatedConfig, 'global');
       }
     } catch (cause) {
       throw new FileError("Error storing created account in config", { cause });
