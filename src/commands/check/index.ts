@@ -119,9 +119,10 @@ export default class Check extends SwankyCommand<typeof Check> {
           if (!ctx.versions.tools.cargoContract) {
             throw new Warn("Cargo contract is not installed!");
           }
-          const regex = /cargo-contract-contract (.*)-unknown-(.*)-unknown-(.*)/;
+
+          const regex = /cargo-contract-contract (\d+\.\d+\.\d+(?:-[\w.]+)?)(?:-unknown-[\w-]+)/;
           const match = ctx.versions.tools.cargoContract.match(regex);
-          if (match) {
+          if (match?.[1]) {
             ctx.versions.tools.cargoContract = match[1];
           } else {
             throw new Warn("Cargo contract version not found!");
