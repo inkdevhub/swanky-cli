@@ -48,6 +48,8 @@ export default class Check extends SwankyCommand<typeof Check> {
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Check);
+    const isSwankyNodeInstalled = !!this.swankyConfig?.node?.version;
+    const anyContracts = Object.keys(this.swankyConfig?.contracts).length > 0;
     const tasks = new Listr<Ctx>([
       {
         title: "Check OS",
@@ -133,6 +135,7 @@ export default class Check extends SwankyCommand<typeof Check> {
       },
       {
         title: "Read ink dependencies",
+        enabled: anyContracts,
         task: async (ctx) => {
           const swankyConfig = await readJSON("swanky.config.json");
           ctx.swankyConfig = swankyConfig;
@@ -161,8 +164,9 @@ export default class Check extends SwankyCommand<typeof Check> {
         },
       },
       {
-        title: "Verify ink version",
-        skip: (ctx) => !ctx.swankyConfig?.node?.version,
+        title: "Verify ink version compatibility with Swanky node",
+        skip: (ctx) => Object.keys(ctx.versions.contracts).length === 0,
+        enabled: anyContracts && isSwankyNodeInstalled,
         task: async (ctx) => {
           const supportedInk = ctx.swankyConfig!.node.supportedInk;
           const mismatched: Record<string, string> = {};
@@ -190,6 +194,7 @@ export default class Check extends SwankyCommand<typeof Check> {
       {
         title: "Verify cargo-contract version",
         skip: (ctx) => !ctx.versions.tools.cargoContract,
+        enabled: anyContracts,
         task: async (ctx) => {
           const cargoContractVersion = ctx.versions.tools.cargoContract!;
           const dependencyIdx = CARGO_CONTRACT_INK_DEPS.findIndex((dep) =>
