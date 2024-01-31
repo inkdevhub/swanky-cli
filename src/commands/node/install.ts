@@ -1,6 +1,6 @@
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { Flags } from "@oclif/core";
-import { downloadNode, swankyNode } from "../../lib/index.js";
+import { downloadNode, swankyNodeVersions } from "../../lib/index.js";
 import path from "node:path";
 import { writeJSON } from "fs-extra/esm";
 import inquirer from "inquirer";
