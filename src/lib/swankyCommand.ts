@@ -53,7 +53,7 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
         this.swankyConfig[entry[0] as keyof SwankyConfig] = entry[1];
       });
     } catch (error) {
-      await this.storeSystemConfig();
+      await this.storeConfig(this.swankyConfig, 'global');
     }
 
     try {

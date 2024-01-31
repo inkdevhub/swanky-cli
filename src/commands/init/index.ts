@@ -156,11 +156,11 @@ export class Init extends SwankyCommand<typeof Init> {
 
     this.taskQueue.push({
       task: async () => {
-        await this.storeSystemConfig();
+        await this.storeConfig(this.swankyConfig, 'global');
         const defaultConfig = buildSwankyConfig();
         this.swankyConfig.accounts = defaultConfig.accounts;
         this.swankyConfig.defaultAccount = defaultConfig.defaultAccount;
-        await this.storeConfig(this.projectPath);
+        await this.storeConfig(this.swankyConfig, 'local');
       },
       args: [],
       runningMessage: "Writing config",
