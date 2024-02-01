@@ -23,7 +23,7 @@ export class InitZombienet extends SwankyCommand<typeof InitZombienet> {
       default: [],
       description: "Binaries to install",
     }),
-  }
+  };
 
   async run(): Promise<void> {
     const { flags } = await this.parse(InitZombienet);

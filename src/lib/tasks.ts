@@ -9,7 +9,7 @@ import process from "node:process";
 import { nodeInfo } from "./nodeInfo.js";
 import decompress from "decompress";
 import { Spinner } from "./spinner.js";
-import { SupportedPlatforms, SupportedArch, SwankyConfig, ZombienetConfig } from "../types/index.js";
+import { SupportedPlatforms, SupportedArch, SwankyConfig, ZombienetConfig, Relaychain } from "../types/index.js";
 import { ConfigError, NetworkError } from "./errors.js";
 import { BinaryNames } from "./zombienetInfo.js";
 import { zombienetConfig } from "../commands/zombienet/init.js";
@@ -176,7 +176,7 @@ export async function downloadZombienetBinaries(binaries: string[], projectPath:
       throw new ConfigError(
         `Could not download ${binaryName}. Platform ${process.platform} Arch ${process.arch} not supported!`
       );
-    dlUrl = dlUrl.replace(/\$\{version\}/gi, version);
+    dlUrl = dlUrl.replace(/\$\{version}/gi, version);
     dlUrls.set(binaryName, dlUrl);
   }
 
@@ -222,7 +222,7 @@ export async function downloadZombienetBinaries(binaries: string[], projectPath:
 
 export async function buildZombienetConfigFromBinaries(binaries: string[], templatePath: string, configPath: string) {
   await ensureDir(configPath);
-  let configBuilder = {
+  const configBuilder = {
     settings: {
       timeout: 1000
     },
@@ -231,13 +231,26 @@ export async function buildZombienetConfigFromBinaries(binaries: string[], templ
       chain: "",
       nodes: []
     },
-    parachains:[],
-    hrmp_channels:[]
+    parachains:[]
   } as ZombienetConfig;
 
   for (const binaryName of binaries) {
-    const tamplate = TOML.parse(readFileSync(path.resolve(templatePath, binaryName+".toml"), "utf8"));
-    configBuilder = {...configBuilder, ...tamplate};
+    const template = TOML.parse(readFileSync(path.resolve(templatePath, binaryName+".toml"), "utf8"));
+    if(template.parachains !== undefined) {
+      (template.parachains as any).forEach((parachain: any) => {
+        configBuilder.parachains.push(parachain);
+      });
+    }
+    if(template.hrmp_channels !== undefined) {
+      configBuilder.hrmp_channels = [];
+      (template.hrmp_channels as any).forEach((hrmp_channel: any) => {
+        configBuilder.hrmp_channels!.push(hrmp_channel);
+      });
+    }
+    if(template.relaychain !== undefined) {
+      configBuilder.relaychain = template.relaychain as unknown as Relaychain;
+    }
+
   }
 
   writeFileSync(path.resolve(configPath, zombienetConfig), TOML.stringify(configBuilder as any));

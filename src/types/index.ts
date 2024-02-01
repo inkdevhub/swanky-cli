@@ -71,30 +71,30 @@ export interface ZombienetConfig {
   settings: { timeout: number },
   relaychain: Relaychain,
   parachains: Parachain[],
-  hrmp_channels: HrmpChannel[],
+  hrmp_channels?: HrmpChannel[],
 }
 
-interface Relaychain {
+export interface Relaychain {
   default_command: string,
   chain: string,
   nodes: Node[]
 }
-interface Node {
+export interface Node {
   name: string,
 }
-interface HrmpChannel {
+export interface HrmpChannel {
   sender: number,
   recipient: number,
   max_capacity: number,
   max_message_size: number
 }
-interface Parachain {
+export interface Parachain {
   id: number,
   chain: string,
   cumulus_based: boolean,
   collator: Collator
 }
-interface Collator {
+export interface Collator {
   name: string,
   command: string,
   rpc_port: number,
