@@ -93,12 +93,6 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
       );
     }
 
-    if(this.swankyConfig.defaultAccount === null)
-    {
-      this.swankyConfig.defaultAccount = accountAlias;
-      await this.storeConfig(this.swankyConfig, 'local');
-    }
-
     const mnemonic = accountData.isDev
       ? (accountData.mnemonic as string)
       : decrypt(

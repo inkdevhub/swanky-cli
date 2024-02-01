@@ -1,15 +1,19 @@
 import { execaCommand } from "execa";
-import { copy, emptyDir, ensureDir, readJSON } from "fs-extra/esm";
+import { copy, emptyDir, ensureDir, readJSONSync } from "fs-extra/esm";
 import path from "node:path";
 import {
   DEFAULT_NETWORK_URL,
   ARTIFACTS_PATH,
   TYPED_CONTRACTS_PATH,
   DEFAULT_SHIBUYA_NETWORK_URL,
-  DEFAULT_SHIDEN_NETWORK_URL, DEFAULT_ASTAR_NETWORK_URL, DEFAULT_ACCOUNT,
+  DEFAULT_SHIDEN_NETWORK_URL,
+  DEFAULT_ASTAR_NETWORK_URL,
+  DEFAULT_ACCOUNT,
+  DEFAULT_CONFIG_NAME,
+  DEFAULT_CONFIG_FOLDER_NAME,
 } from "./consts.js";
 import { SwankyConfig, SwankySystemConfig } from "../types/index.js";
-import { ConfigError, FileError, InputError } from "./errors.js";
+import { ConfigError, FileError } from "./errors.js";
 import { userInfo } from "os";
 import { swankyNode } from "./nodeInfo.js";
 import { existsSync } from "fs";
@@ -23,31 +27,23 @@ export async function commandStdoutOrNull(command: string): Promise<string | nul
   }
 }
 
-export async function getSwankyConfig(): Promise<SwankyConfig> {
-  const configPath : string = isEnvConfigCheck() ? process.env.SWANKY_CONFIG! : "swanky.config.json";
-  try {
-    const config = await readJSON(configPath);
-    return config;
-  } catch (cause) {
-    throw new InputError(`Error reading "${configName()}" in the current directory!`, { cause });
+export function getSwankyConfig(configType: "local" | "global"): SwankyConfig | SwankySystemConfig {
+  let configPath: string;
+
+  if (configType === "global") {
+    configPath = getSystemConfigDirectoryPath() + `/${DEFAULT_CONFIG_NAME}`;
+  } else {
+    configPath = isEnvConfigCheck() ? process.env.SWANKY_CONFIG! : DEFAULT_CONFIG_NAME;
   }
+
+  const config = readJSONSync(configPath);
+  return config;
 }
 
-// consider merging config getters like storeConfig
-export async function getSwankySystemConfig(): Promise<SwankySystemConfig> {
-  try {
-    // consider using readJSONsync instead to remove async
-    const config = await readJSON(findSwankySystemConfigPath() + "/swanky.config.json");
-    return config;
-  } catch (cause) {
-    throw new ConfigError("Error reading swanky.config.json in system directory!", { cause });
-  }
-}
 
-export function findSwankySystemConfigPath(): string {
+export function getSystemConfigDirectoryPath(): string {
   const homeDir = userInfo().homedir;
-  const amountOfDirectories = process.cwd().split("/").length - homeDir.split("/").length;
-  const configPath = "../".repeat(amountOfDirectories)+"swanky";
+  const configPath = homeDir + `/${DEFAULT_CONFIG_FOLDER_NAME}`;
   return configPath;
 }
 
@@ -195,16 +191,18 @@ export function isEnvConfigCheck(): boolean {
     throw new ConfigError(`Provided config path ${process.env.SWANKY_CONFIG} does not exist`);
   }
 }
-export function isLocalConfigCheck(): boolean {
-  const defaultLocalPath = process.cwd() + "/swanky.config.json";
-  return process.env.SWANKY_CONFIG === undefined ? existsSync(defaultLocalPath) : existsSync(process.env.SWANKY_CONFIG);
-}
-export function configName() {
-  if(isLocalConfigCheck()) {
-    const configPathArray = (process.env.SWANKY_CONFIG === undefined ?
-      ["swanky.config.json"] : process.env.SWANKY_CONFIG.split("/"));
 
-    return configPathArray[configPathArray.length - 1];
+export function isLocalConfigCheck(): boolean {
+  const defaultLocalConfigPath = process.cwd() + `/${DEFAULT_CONFIG_NAME}`;
+  return process.env.SWANKY_CONFIG === undefined
+    ? existsSync(defaultLocalConfigPath)
+    : existsSync(process.env.SWANKY_CONFIG);
+}
+
+export function configName(): string {
+  if (!isLocalConfigCheck()) {
+    return DEFAULT_CONFIG_NAME + " [system config]";
   }
-  return "swanky.config.json";
+
+  return process.env.SWANKY_CONFIG?.split("/").pop() ?? DEFAULT_CONFIG_NAME;
 }

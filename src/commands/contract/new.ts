@@ -99,8 +99,8 @@ export class NewContract extends SwankyCommand<typeof NewContract> {
     await this.spinner.runCommand(async () => {
       const configBuilder = new ConfigBuilder(this.swankyConfig);
       configBuilder.addContract(args.contractName);
-
-      await this.storeConfig(configBuilder.build(), 'local')}, "Writing config");
+      await this.storeConfig(configBuilder.build(), "local");
+    }, "Writing config");
 
     this.log("😎 New contract successfully generated! 😎");
   }

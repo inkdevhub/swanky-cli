@@ -1,6 +1,6 @@
 import { Flags } from "@oclif/core";
 import chalk from "chalk";
-import { ChainAccount, encrypt, isLocalConfigCheck } from "../../lib/index.js";
+import { ChainAccount, encrypt, getSwankyConfig, isLocalConfigCheck } from "../../lib/index.js";
 import { AccountData } from "../../types/index.js";
 import inquirer from "inquirer";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
@@ -11,13 +11,17 @@ export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
 
   static flags = {
     global: Flags.boolean({
-      description: "Create account globally: stored in both Swanky system and local configs.",
-    }),
-    generate: Flags.boolean({
       char: "g",
+      description: "Create account globally stored in Swanky system config.",
+      
+    }),
+    new: Flags.boolean({
+      char: "n",
+      description: "Generate a brand new account.",
     }),
     dev: Flags.boolean({
       char: "d",
+      description: "Make this account a dev account for local network usage.",
     }),
   };
 
@@ -46,7 +50,7 @@ export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
     }
 
     let tmpMnemonic = "";
-    if (flags.generate) {
+    if (flags.new) {
       tmpMnemonic = ChainAccount.generate();
       console.log(
         `${
@@ -85,26 +89,22 @@ export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
       accountData.mnemonic = tmpMnemonic;
     }
 
-    const configBuilder = new ConfigBuilder(this.swankyConfig);
+    const configType = flags.global ? "global" : isLocalConfigCheck() ? "local" : "global";
+    const config = configType === "global" ? getSwankyConfig("global") : this.swankyConfig;
+
+    const configBuilder = new ConfigBuilder(config);
     configBuilder.addAccount(accountData);
 
     if (this.swankyConfig.defaultAccount === null) {
       configBuilder.setDefaultAccount(accountData.alias);
     }
 
-    const updatedConfig = configBuilder.build();
-
     try {
-      if (isLocalConfigCheck()) {
-        await this.storeConfig(updatedConfig, 'local', process.cwd());
-        if (flags.global) {
-          await this.storeConfig(updatedConfig, 'global');
-        }
-      } else {
-        await this.storeConfig(updatedConfig, 'global');
-      }
+      await this.storeConfig(configBuilder.build(), configType);
     } catch (cause) {
-      throw new FileError("Error storing created account in config", { cause });
+      throw new FileError(`Error storing created account in ${configType} config`, {
+        cause,
+      });
     }
 
     this.log(

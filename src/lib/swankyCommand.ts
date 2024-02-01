@@ -2,18 +2,18 @@ import { Command, Flags, Interfaces } from "@oclif/core";
 import {
   buildSwankyConfig,
   configName,
-  findSwankySystemConfigPath,
+  getSystemConfigDirectoryPath,
   getSwankyConfig,
-  getSwankySystemConfig,
   Spinner,
 } from "./index.js";
-import { SwankyConfig, SwankySystemConfig } from "../types/index.js";
+import { AccountData, SwankyConfig, SwankySystemConfig } from "../types/index.js";
 import { writeJSON } from "fs-extra/esm";
 import { existsSync, mkdirSync } from "fs";
 import { BaseError, ConfigError, UnknownError } from "./errors.js";
 import { swankyLogger } from "./logger.js";
 import { Logger } from "winston";
 import path from "node:path";
+import { DEFAULT_CONFIG_FOLDER_NAME, DEFAULT_CONFIG_NAME } from "./consts.js";
 
 export type Flags<T extends typeof Command> = Interfaces.InferredFlags<
   (typeof SwankyCommand)["baseFlags"] & T["flags"]
@@ -40,35 +40,14 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
       args: this.ctor.args,
       strict: this.ctor.strict,
     });
+
     this.flags = flags as Flags<T>;
     this.args = args as Args<T>;
 
     this.logger = swankyLogger;
     this.swankyConfig = buildSwankyConfig();
-    try {
-      const systemConfig = await getSwankySystemConfig();
 
-      Object.entries(systemConfig).forEach((entry) => {
-        this.swankyConfig[entry[0] as keyof SwankyConfig] = entry[1];
-      });
-    } catch (error) {
-      await this.storeConfig(this.swankyConfig, 'global');
-    }
-
-    try {
-      const localConfig = await getSwankyConfig();
-
-      Object.entries(localConfig).forEach((entry) => {
-        this.swankyConfig[entry[0] as keyof SwankyConfig] = entry[1];
-      });
-    } catch (error) {
-      this.logger.warn("No local config found");
-      if (error instanceof Error &&
-        error.message.includes(configName()) &&
-        (this.constructor as typeof SwankyCommand).ENSURE_SWANKY_CONFIG
-      )
-        throw new ConfigError(`Cannot find ${process.env.SWANKY_CONFIG ?? "swanky.config.json"}`, { cause: error });
-    }
+    await this.loadAndMergeConfig();
 
     this.logger.info(`Running command: ${this.ctor.name}
       Args: ${JSON.stringify(this.args)}
@@ -76,8 +55,43 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
       Full command: ${JSON.stringify(process.argv)}`);
   }
 
+  protected async loadAndMergeConfig(): Promise<void> {
+    try {
+      const systemConfig = getSwankyConfig("global");
+      this.swankyConfig = { ...this.swankyConfig, ...systemConfig };
+    } catch (error) {
+      this.warn(
+        `No Swanky system config found; creating one in "/${DEFAULT_CONFIG_FOLDER_NAME}/${DEFAULT_CONFIG_NAME}}" at home directory`
+      );
+      await this.storeConfig(this.swankyConfig, "global");
+    }
+
+    try {
+      const localConfig = getSwankyConfig("local") as SwankyConfig;
+      this.mergeAccountsWithExistingConfig(this.swankyConfig, localConfig);
+      const originalDefaultAccount = this.swankyConfig.defaultAccount;
+      this.swankyConfig = { ...this.swankyConfig, ...localConfig };
+      this.swankyConfig.defaultAccount = localConfig.defaultAccount ?? originalDefaultAccount;
+    } catch (error) {
+      this.handleLocalConfigError(error);
+    }
+  }
+
+  private handleLocalConfigError(error: unknown): void {
+    this.logger.warn("No local config found");
+    if (
+      error instanceof Error &&
+      error.message.includes(configName()) &&
+      (this.constructor as typeof SwankyCommand).ENSURE_SWANKY_CONFIG
+    ) {
+      throw new ConfigError(`Cannot find ${process.env.SWANKY_CONFIG ?? DEFAULT_CONFIG_NAME}`, {
+        cause: error,
+      });
+    }
+  }
+
   protected async storeConfig(
-    config: SwankyConfig | SwankySystemConfig,
+    newConfig: SwankyConfig | SwankySystemConfig,
     configType: "local" | "global",
     projectPath?: string
   ) {
@@ -85,23 +99,27 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
 
     if (configType === "local") {
       configPath =
-        process.env.SWANKY_CONFIG ?? path.resolve(projectPath ?? ".", "swanky.config.json");
+        process.env.SWANKY_CONFIG ??
+        path.resolve(projectPath ?? process.cwd(), DEFAULT_CONFIG_NAME);
     } else {
       // global
-      configPath = findSwankySystemConfigPath() + "/swanky.config.json";
-      if ("node" in config) {
+      configPath = getSystemConfigDirectoryPath() + `/${DEFAULT_CONFIG_NAME}`;
+      if ("node" in newConfig) {
         // If it's a SwankyConfig, extract only the system relevant parts for the global SwankySystemConfig config
-        config = {
-          defaultAccount: config.defaultAccount,
-          accounts: config.accounts,
-          networks: config.networks,
+        newConfig = {
+          defaultAccount: newConfig.defaultAccount,
+          accounts: newConfig.accounts,
+          networks: newConfig.networks,
         };
       }
-      await this.mergeWithExistingSystemConfig(config, configPath);
+      if (existsSync(configPath)) {
+        const systemConfig = getSwankyConfig("global");
+        this.mergeAccountsWithExistingConfig(systemConfig, newConfig);
+      }
     }
 
     this.ensureDirectoryExists(configPath);
-    await writeJSON(configPath, config, { spaces: 2 });
+    await writeJSON(configPath, newConfig, { spaces: 2 });
   }
 
   private ensureDirectoryExists(filePath: string) {
@@ -111,18 +129,15 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
     }
   }
 
-  private async mergeWithExistingSystemConfig(newConfig: SwankySystemConfig, configPath: string) {
-    if (existsSync(configPath)) {
-      const oldConfig = await getSwankySystemConfig();
+  private mergeAccountsWithExistingConfig(
+    existingConfig: SwankySystemConfig | SwankyConfig,
+    newConfig: SwankySystemConfig
+  ) {
+    const accountMap = new Map<string, AccountData>(
+      [...existingConfig.accounts, ...newConfig.accounts].map((account) => [account.alias, account])
+    );
 
-      newConfig.accounts.forEach((account) => {
-        if (!oldConfig.accounts.find((oldAccount) => oldAccount.alias === account.alias)) {
-          oldConfig.accounts.push(account);
-        }
-      });
-
-      newConfig.accounts = oldConfig.accounts;
-    }
+    newConfig.accounts = Array.from(accountMap.values());
   }
 
   protected async catch(err: Error & { exitCode?: number }): Promise<any> {

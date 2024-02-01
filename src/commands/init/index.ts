@@ -8,6 +8,7 @@ import inquirer from "inquirer";
 import TOML from "@iarna/toml";
 import { choice, email, name, pickTemplate } from "../../lib/prompts.js";
 import {
+  buildSwankyConfig,
   checkCliDependencies,
   copyCommonTemplateFiles,
   copyContractTemplateFiles,
@@ -24,7 +25,6 @@ import { merge } from "lodash-es";
 import inquirerFuzzyPath from "inquirer-fuzzy-path";
 import chalk from "chalk";
 import { ConfigBuilder } from "../../lib/config-builder.js";
-import { SwankyConfig } from "../../types/index.js";
 
 type TaskFunction = (...args: any[]) => any;
 
@@ -90,13 +90,12 @@ export class Init extends SwankyCommand<typeof Init> {
 
   taskQueue: Task[] = [];
 
-  configBuilder = new ConfigBuilder({} as SwankyConfig);
+  configBuilder = new ConfigBuilder(buildSwankyConfig());
 
   async run(): Promise<void> {
     const { args, flags } = await this.parse(Init);
 
     this.projectPath = path.resolve(args.projectName);
-    this.configBuilder = new ConfigBuilder(this.swankyConfig);
 
     // check if projectPath dir exists and is it empty
     try {
@@ -147,8 +146,7 @@ export class Init extends SwankyCommand<typeof Init> {
           task: downloadNode,
           args: [this.projectPath, swankyNode, this.spinner],
           runningMessage: "Downloading Swanky node",
-          callback: (result) =>
-            this.configBuilder.build().node ? (this.configBuilder.updateNodeSettings({ localPath: result })) : null,
+          callback: (localPath) => this.configBuilder.updateNodeSettings({ localPath }),
         });
       }
     }
@@ -159,11 +157,8 @@ export class Init extends SwankyCommand<typeof Init> {
     });
 
     this.taskQueue.push({
-      task: async () => {
-        this.swankyConfig = this.configBuilder.build();
-        await this.storeConfig(this.swankyConfig, 'global');
-        await this.storeConfig(this.swankyConfig, 'local', this.projectPath);
-      },
+      task: async () =>
+        await this.storeConfig(this.configBuilder.build(), "local", this.projectPath),
       args: [],
       runningMessage: "Writing config",
       shouldExitOnError: true,
@@ -330,10 +325,6 @@ export class Init extends SwankyCommand<typeof Init> {
         console.log(result);
       },
     });
-
-    if (!this.configBuilder.build().contracts){
-      this.configBuilder.updateContracts({})
-    }
 
     for (const contract of confirmedCopyList.contracts) {
       this.configBuilder.addContract(contract.name, contract.moduleName);
