@@ -34,7 +34,7 @@ export class DefaultAccount extends SwankyCommand<typeof DefaultAccount> {
     const { args, flags } = await this.parse(DefaultAccount);
 
     const configType = flags.global ? "global" : isLocalConfigCheck() ? "local" : "global";
-    const config = configType === "global" ? getSwankyConfig("global") : this.swankyConfig;
+    const config = configType === "global" ? getSwankyConfig("global") : getSwankyConfig("local");
 
     const accountAlias = args.accountAlias ?? (await this.promptForAccountAlias(config));
     this.ensureAccountExists(config, accountAlias);

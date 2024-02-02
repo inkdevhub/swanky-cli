@@ -1,6 +1,6 @@
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { ux } from "@oclif/core";
-import { downloadNode, swankyNode } from "../../lib/index.js";
+import { downloadNode, getSwankyConfig, swankyNode } from "../../lib/index.js";
 import path from "node:path";
 import { ConfigBuilder } from "../../lib/config-builder.js";
 export class InstallNode extends SwankyCommand<typeof InstallNode> {
@@ -30,7 +30,7 @@ export class InstallNode extends SwankyCommand<typeof InstallNode> {
     const nodePath = path.resolve(projectPath, taskResult);
 
     await this.spinner.runCommand(async () => {
-      const configBuilder = new ConfigBuilder(this.swankyConfig);
+      const configBuilder = new ConfigBuilder(getSwankyConfig("local"));
       configBuilder.updateNodeSettings({
         localPath: nodePath,
         polkadotPalletVersions: swankyNode.polkadotPalletVersions,

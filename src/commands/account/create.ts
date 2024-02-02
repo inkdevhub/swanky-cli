@@ -90,12 +90,12 @@ export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
     }
 
     const configType = flags.global ? "global" : isLocalConfigCheck() ? "local" : "global";
-    const config = configType === "global" ? getSwankyConfig("global") : this.swankyConfig;
+    const config = configType === "global" ? getSwankyConfig("global") : getSwankyConfig("local");
 
     const configBuilder = new ConfigBuilder(config);
     configBuilder.addAccount(accountData);
 
-    if (this.swankyConfig.defaultAccount === null) {
+    if (config.defaultAccount === null) {
       configBuilder.setDefaultAccount(accountData.alias);
     }
 

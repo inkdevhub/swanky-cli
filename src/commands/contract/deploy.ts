@@ -7,9 +7,9 @@ import {
   decrypt,
   AbiType,
   ensureAccountIsSet,
-  configName,
+  configName, getSwankyConfig,
 } from "../../lib/index.js";
-import { AccountData, Encrypted } from "../../types/index.js";
+import { AccountData, Encrypted, SwankyConfig } from "../../types/index.js";
 import inquirer from "inquirer";
 import chalk from "chalk";
 import { Contract } from "../../lib/contract.js";
@@ -53,7 +53,8 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(DeployContract);
 
-    const contractRecord = this.swankyConfig.contracts[args.contractName];
+    const localConfig = getSwankyConfig("local") as SwankyConfig;
+    const contractRecord = localConfig.contracts[args.contractName];
     if (!contractRecord) {
       throw new ConfigError(
         `Cannot find a contract named ${args.contractName} in "${configName()}"`
@@ -154,7 +155,7 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
         },
       ];
 
-      await this.storeConfig(this.swankyConfig, 'local');
+      await this.storeConfig(localConfig, 'local');
     }, "Writing config");
 
     this.log(`Contract deployed!`);

@@ -5,7 +5,7 @@ import {
   checkCliDependencies,
   copyContractTemplateFiles,
   processTemplates,
-  getTemplates,
+  getTemplates, getSwankyConfig,
 } from "../../lib/index.js";
 import { email, name, pickTemplate } from "../../lib/prompts.js";
 import { paramCase, pascalCase, snakeCase } from "change-case";
@@ -97,7 +97,7 @@ export class NewContract extends SwankyCommand<typeof NewContract> {
     await ensureDir(path.resolve(projectPath, "tests", args.contractName));
 
     await this.spinner.runCommand(async () => {
-      const configBuilder = new ConfigBuilder(this.swankyConfig);
+      const configBuilder = new ConfigBuilder(getSwankyConfig("local"));
       configBuilder.addContract(args.contractName);
       await this.storeConfig(configBuilder.build(), "local");
     }, "Writing config");
