@@ -15,6 +15,7 @@ import chalk from "chalk";
 import { Contract } from "../../lib/contract.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { ApiError, ConfigError, FileError } from "../../lib/errors.js";
+import { ConfigBuilder } from "../../lib/config-builder.js";
 
 export class DeployContract extends SwankyCommand<typeof DeployContract> {
   static description = "Deploy contract to a running node";
@@ -145,17 +146,15 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
     }, "Deploying")) as string;
 
     await this.spinner.runCommand(async () => {
-      contractRecord.deployments = [
-        ...contractRecord.deployments,
-        {
-          timestamp: Date.now(),
-          address: contractAddress,
-          networkUrl,
-          deployerAlias: accountAlias!,
-        },
-      ];
-
-      await this.storeConfig(localConfig, 'local');
+      const deploymentData = {
+        timestamp: Date.now(),
+        address: contractAddress,
+        networkUrl,
+        deployerAlias: accountAlias!,
+      };
+      const configBuilder = new ConfigBuilder(localConfig);
+      configBuilder.addContractDeployment(args.contractName, deploymentData);
+      await this.storeConfig(configBuilder.build(), 'local');
     }, "Writing config");
 
     this.log(`Contract deployed!`);

@@ -1,4 +1,4 @@
-import { AccountData, SwankyConfig, SwankySystemConfig } from "../index.js";
+import { AccountData, DeploymentData, SwankyConfig, SwankySystemConfig } from "../index.js";
 import { snakeCase } from "change-case";
 
 export class ConfigBuilder<T extends SwankySystemConfig | SwankyConfig> {
@@ -25,27 +25,34 @@ export class ConfigBuilder<T extends SwankySystemConfig | SwankyConfig> {
     return this;
   }
 
-  updateNodeSettings(nodeSettings: Partial<SwankyConfig['node']>): ConfigBuilder<T> {
-    if ('node' in this.config) {
+  updateNodeSettings(nodeSettings: Partial<SwankyConfig["node"]>): ConfigBuilder<T> {
+    if ("node" in this.config) {
       this.config.node = { ...this.config.node, ...nodeSettings };
     }
     return this;
   }
 
-  updateContracts(contracts: SwankyConfig['contracts']): ConfigBuilder<T> {
-    if ('contracts' in this.config) {
+  updateContracts(contracts: SwankyConfig["contracts"]): ConfigBuilder<T> {
+    if ("contracts" in this.config) {
       this.config.contracts = { ...contracts };
     }
     return this;
   }
 
   addContract(name: string, moduleName?: string): ConfigBuilder<T> {
-    if ('contracts' in this.config) {
+    if ("contracts" in this.config) {
       this.config.contracts[name] = {
         name: name,
         moduleName: moduleName ?? snakeCase(name),
-        deployments: []
+        deployments: [],
       };
+    }
+    return this;
+  }
+
+  addContractDeployment(name: string, data: DeploymentData): ConfigBuilder<T> {
+    if ("contracts" in this.config) {
+      this.config.contracts[name].deployments.push(data);
     }
     return this;
   }

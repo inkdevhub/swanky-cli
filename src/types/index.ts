@@ -24,7 +24,7 @@ export interface ContractData {
   name: string;
   moduleName: string;
   build?: BuildData;
-  deployments: DeploymentData[] | [];
+  deployments: DeploymentData[];
 }
 
 export interface BuildData {
