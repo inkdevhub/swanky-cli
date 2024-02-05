@@ -2,8 +2,8 @@ import { Args, Flags } from "@oclif/core";
 import path from "node:path";
 import { writeJSON } from "fs-extra/esm";
 import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
-import { resolveNetworkUrl, ChainApi, ChainAccount, decrypt, AbiType } from "../../lib/index.js";
-import { AccountData, Encrypted } from "../../types/index.js";
+import { AbiType, ChainAccount, ChainApi, decrypt, resolveNetworkUrl } from "../../lib/index.js";
+import { AccountData, BuildMode, Encrypted } from "../../types/index.js";
 import inquirer from "inquirer";
 import chalk from "chalk";
 import { Contract } from "../../lib/contract.js";
@@ -98,11 +98,11 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
     }, "Initialising")) as ChainAccount;
 
     const buildMode = await contract.getBuildMode();
-    if(buildMode !== 'Release') {
+    if(buildMode !== BuildMode.Verifiable) {
       await inquirer.prompt([
         {
           type: "confirm",
-          message: `You are deploying a contract in debug mode. Are you sure you want to continue?`,
+          message: `You are deploying a not verified contract in ${buildMode === BuildMode.Release ? "release" : "debug"} mode. Are you sure you want to continue?`,
           name: "confirm",
         },
       ]).then((answers) => {

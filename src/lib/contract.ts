@@ -1,5 +1,5 @@
 import { AbiType, consts, printContractInfo } from "./index.js";
-import { ContractData, DeploymentData } from "../types/index.js";
+import { BuildMode, ContractData, DeploymentData } from "../types/index.js";
 import { pathExists, readJSON } from "fs-extra/esm";
 import path from "node:path";
 import { FileError } from "./errors.js";
@@ -50,7 +50,7 @@ export class Contract {
     return readJSON(path.resolve(this.artifactsPath, `${this.moduleName}.json`));
   }
 
-  async getBuildMode(): Promise<string> {
+  async getBuildMode(): Promise<BuildMode> {
     const check = await this.artifactsExist();
     if (!check.result && check.missingTypes.includes(".contract")) {
       throw new FileError(
@@ -58,7 +58,7 @@ export class Contract {
       );
     }
     const contractJson = JSON.parse(fs.readFileSync(path.resolve(this.artifactsPath, `${this.moduleName}.json`), 'utf8'));
-    return contractJson.source.build_info.build_mode;
+    return contractJson.image && (contractJson.image as string).startsWith("paritytech/contracts-verifiable") ? BuildMode.Verifiable : contractJson.source.build_info.build_mode;
   }
   async getBundle() {
     const check = await this.artifactsExist();

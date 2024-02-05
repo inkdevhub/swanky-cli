@@ -49,5 +49,11 @@ export interface SwankyConfig {
   networks: Record<string, {url: string}>
 }
 
+export enum BuildMode {
+  Debug = "Debug",
+  Release = "Release",
+  Verifiable = "Verifiable",
+}
+
 export type SupportedPlatforms = "darwin" | "linux";
 export type SupportedArch = "arm64" | "x64";
