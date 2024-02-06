@@ -54,12 +54,21 @@ export class Contract {
     const check = await this.artifactsExist();
     if (!check.result && check.missingTypes.includes(".contract")) {
       throw new FileError(
-        `Cannot read .contract bundle, path not found: ${check.missingPaths.toString()}`
+        `Cannot read .contract bundle, path not found: ${check.missingPaths.join(', ')}`
       );
     }
-    const contractJson = JSON.parse(fs.readFileSync(path.resolve(this.artifactsPath, `${this.moduleName}.json`), 'utf8'));
-    return contractJson.image && (contractJson.image as string).startsWith("paritytech/contracts-verifiable") ? BuildMode.Verifiable : contractJson.source.build_info.build_mode;
+
+    const contractFilePath = path.resolve(this.artifactsPath, `${this.moduleName}.json`);
+    const contractFileContents = await fs.promises.readFile(contractFilePath, 'utf8');
+    const contractJson = JSON.parse(contractFileContents);
+
+    const isVerifiable = contractJson.image 
+      && typeof contractJson.image === 'string' 
+      && contractJson.image.startsWith("paritytech/contracts-verifiable");
+    
+    return isVerifiable ? BuildMode.Verifiable : contractJson.source.build_info.build_mode;
   }
+
   async getBundle() {
     const check = await this.artifactsExist();
     if (!check.result && check.missingTypes.includes(".contract")) {
