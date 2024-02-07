@@ -269,7 +269,7 @@ export class ChainApi {
           resolve();
           this._provider.disconnect();
         }
-      }).catch(error => reject(error));
+      }).catch(error => reject(error)).finally(() => this._provider.disconnect());
     });
   }
 }

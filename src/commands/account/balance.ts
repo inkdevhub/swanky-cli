@@ -4,7 +4,7 @@ import type { AccountInfo, Balance as BalanceType } from "@polkadot/types/interf
 import { ChainApi, resolveNetworkUrl } from "../../lib/index.js";
 import { AccountData } from "../../types/index.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-import { ConfigError } from "../../lib/errors.js";
+import { ConfigError, InputError } from "../../lib/errors.js";
 import { formatBalance } from "@polkadot/util";
 
 export class Balance extends SwankyCommand<typeof Balance> {
@@ -13,12 +13,15 @@ export class Balance extends SwankyCommand<typeof Balance> {
   static args = {
     alias: Args.string({
       name: "alias",
-      required: true,
       description: "Alias of account to be used",
     }),
   };
   async run(): Promise<void> {
     const { args } = await this.parse(Balance);
+
+    if(!args.alias) {
+      throw new InputError("Missing argument! Please provide an alias to get the balance of an account.");
+    }
 
     const accountData = this.swankyConfig.accounts.find(
       (account: AccountData) => account.alias === args.alias
