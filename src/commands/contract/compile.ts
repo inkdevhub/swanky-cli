@@ -1,6 +1,6 @@
 import { Args, Flags } from "@oclif/core";
 import path from "node:path";
-import { storeArtifacts, Spinner, generateTypes, checkCargoVersion } from "../../lib/index.js";
+import { checkCargoContractVersion, generateTypes, Spinner, storeArtifacts } from "../../lib/index.js";
 import { spawn } from "node:child_process";
 import { pathExists } from "fs-extra/esm";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
@@ -18,7 +18,6 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
     }),
     verifiable: Flags.boolean({
       default: false,
-      char: "v",
       description:
         "A production contract should be build in `verifiable` mode to deploy on a public network. Ensure Docker Engine is up and running.",
     }),
@@ -55,7 +54,7 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
       const contractInfo = this.swankyConfig.contracts[contractName];
       if (!contractInfo) {
         throw new ConfigError(
-          `Cannot find contract info for ${contractName} contract in swanky.config.json`
+          `Cannot find contract info for ${contractName} contract in swanky.config.json`,
         );
       }
       const contractPath = path.resolve("contracts", contractInfo.name);
@@ -77,7 +76,7 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
               compileArgs.push("--release");
             }
             if (flags.verifiable) {
-              checkCargoVersion("4.0.0", ["4.0.0-alpha"]);
+              checkCargoContractVersion("4.0.0", ["4.0.0-alpha"]);
               compileArgs.push("--verifiable");
             }
             const compile = spawn("cargo", compileArgs);
@@ -110,7 +109,7 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
           });
         },
         `Compiling ${contractName} contract`,
-        `${contractName} Contract compiled successfully`
+        `${contractName} Contract compiled successfully`,
       );
 
       const artifactsPath = compilationResult as string;
@@ -122,7 +121,7 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
       await spinner.runCommand(
         async () => await generateTypes(contractInfo.name),
         `Generating ${contractName} contract ts types`,
-        `${contractName} contract's TS types Generated successfully`
+        `${contractName} contract's TS types Generated successfully`,
       );
 
       this.swankyConfig.contracts[contractName].build = {

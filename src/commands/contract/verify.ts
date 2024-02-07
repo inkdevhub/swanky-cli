@@ -1,6 +1,6 @@
 import { Args, Flags } from "@oclif/core";
 import path from "node:path";
-import { checkCargoVersion, Spinner } from "../../lib/index.js";
+import { checkCargoContractVersion, Spinner } from "../../lib/index.js";
 import { pathExists } from "fs-extra/esm";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { ConfigError, InputError, ProcessError } from "../../lib/errors.js";
@@ -29,7 +29,7 @@ export class VerifyContract extends SwankyCommand<typeof VerifyContract> {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(VerifyContract);
 
-    checkCargoVersion("4.0.0", ["4.0.0-alpha"]);
+    checkCargoContractVersion("4.0.0", ["4.0.0-alpha"]);
 
     if (args.contractName === undefined && !flags.all) {
       throw new InputError("No contracts were selected to verify", { winston: { stack: true } });
@@ -62,6 +62,10 @@ export class VerifyContract extends SwankyCommand<typeof VerifyContract> {
       await spinner.runCommand(
         async () => {
             return new Promise<boolean>((resolve, reject) => {
+              if(contractInfo.build!.isVerified) {
+                this.logger.info(`Contract ${contractName} is already verified`);
+                resolve(true);
+              }
               const compileArgs = [
                 "contract",
                 "verify",

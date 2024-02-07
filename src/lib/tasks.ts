@@ -138,24 +138,25 @@ export async function installDeps(projectPath: string) {
   }
 }
 
-export function checkCargoVersion(minimalVersion: string, invalidVersionsList: string[]) {
-  const regex = /cargo-contract-contract (.*)-unknown-(.*)/;
-  let cargoVersion;
+export function checkCargoContractVersion(minimalVersion: string, invalidVersionsList: string[]) {
+  const regex = /cargo-contract-contract (.*)-unknown-(.*)-unknown-(.*)/;
+  let cargoContractVersion;
   try {
     const result = execaCommandSync("cargo contract -V");
-    cargoVersion = result.stdout;
+    cargoContractVersion = result.stdout;
   } catch {
-    cargoVersion = null;
+    cargoContractVersion = null;
   }
-  if (cargoVersion) {
-    const match = cargoVersion.match(regex);
+  if (cargoContractVersion) {
+    const match = cargoContractVersion.match(regex);
     if (match) {
-      cargoVersion = match[1];
+      cargoContractVersion = match[1];
     }
   } else {
     throw new InputError(`Verifiable mode requires cargo-contract version >= ${minimalVersion}`);
   }
-  if (!cargoVersion || semver.lt(cargoVersion, "4.0.0-rc") || invalidVersionsList.includes(cargoVersion)) {
+  console.log(cargoContractVersion);
+  if (!cargoContractVersion || semver.lt(cargoContractVersion.replace(/-.*$/, ""), "4.0.0") || invalidVersionsList.includes(cargoContractVersion)) {
     throw new InputError(
       `Verifiable mode requires cargo-contract version >= ${minimalVersion}`
     );
