@@ -41,7 +41,7 @@ export default class Check extends SwankyCommand<typeof Check> {
 
   static flags = {
     print: Flags.string({
-      char: "p",
+      char: "o",
       description: "File to write output to",
     }),
   };
