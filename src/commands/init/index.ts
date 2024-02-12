@@ -269,14 +269,16 @@ export class Init extends SwankyCommand<typeof Init> {
       runningMessage: "Copying contract template files",
     });
 
-    this.taskQueue.push({
-      task: copyTestHelpers,
-      args: [
-        path.resolve(templates.templatesPath),
-        this.projectPath,
-      ],
-      runningMessage: "Copying test helpers",
-    });
+    if (contractTemplate === "psp22") {
+      this.taskQueue.push({
+        task: copyTestHelpers,
+        args: [
+          path.resolve(templates.templatesPath),
+          this.projectPath,
+        ],
+        runningMessage: "Copying test helpers",
+      });
+    }
 
     this.taskQueue.push({
       task: processTemplates,

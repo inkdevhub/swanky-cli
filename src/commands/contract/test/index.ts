@@ -24,6 +24,10 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
       char: "a",
       description: "Set all to true to compile all contracts",
     }),
+    "local-node": Flags.boolean({
+      default: false,
+      description: "Run tests on a local node",
+    }),
     mocha: Flags.boolean({
         default: false,
         description: "Run tests with mocha",
@@ -67,6 +71,14 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
         throw new FileError(
           `Path to contract ${args.contractName} does not exist: ${contract.contractPath}`
         );
+      }
+
+      if (flags["local-node"]) {
+        if (!this.swankyConfig.node.localPath)
+        {
+          throw new ConfigError("Local node path not found in swanky.config.json");
+        }
+        process.env.CONTRACTS_NODE = this.swankyConfig.node.localPath;
       }
 
       console.log(`Testing contract: ${contractName}`);
