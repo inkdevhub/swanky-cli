@@ -3,7 +3,7 @@ import path from "node:path";
 import { writeJSON } from "fs-extra/esm";
 import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
 import { resolveNetworkUrl, ChainApi, ChainAccount, decrypt, AbiType } from "../../lib/index.js";
-import { AccountData, Encrypted } from "../../types/index.js";
+import { Encrypted } from "../../types/index.js";
 import inquirer from "inquirer";
 import chalk from "chalk";
 import { Contract } from "../../lib/contract.js";
@@ -70,13 +70,7 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
       );
     }
 
-    const accountData = this.swankyConfig.accounts.find(
-      (account: AccountData) => account.alias === flags.account
-    );
-    if (!accountData) {
-      throw new ConfigError("Provided account alias not found in swanky.config.json");
-    }
-
+    const accountData = this.findAccountByAlias(flags.account);
     const mnemonic = accountData.isDev
       ? (accountData.mnemonic as string)
       : decrypt(

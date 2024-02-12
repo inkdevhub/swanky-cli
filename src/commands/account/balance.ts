@@ -2,9 +2,8 @@ import { Args } from "@oclif/core";
 import { ApiPromise } from "@polkadot/api";
 import type { AccountInfo, Balance as BalanceType } from "@polkadot/types/interfaces";
 import { ChainApi, resolveNetworkUrl } from "../../lib/index.js";
-import { AccountData } from "../../types/index.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-import { ConfigError, InputError } from "../../lib/errors.js";
+import { InputError } from "../../lib/errors.js";
 import { formatBalance } from "@polkadot/util";
 
 export class Balance extends SwankyCommand<typeof Balance> {
@@ -25,13 +24,7 @@ export class Balance extends SwankyCommand<typeof Balance> {
       );
     }
 
-    const accountData = this.swankyConfig.accounts.find(
-      (account: AccountData) => account.alias === args.alias
-    );
-    if (!accountData) {
-      throw new ConfigError("Provided account alias not found in swanky.config.json");
-    }
-
+    const accountData = this.findAccountByAlias(args.alias);
     const networkUrl = resolveNetworkUrl(this.swankyConfig, "");
 
     const api = (await this.spinner.runCommand(async () => {
