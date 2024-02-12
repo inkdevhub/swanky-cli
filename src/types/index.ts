@@ -11,7 +11,7 @@ export interface ChainProperty {
 
 export type ExtrinsicPayload = SubmittableExtrinsic<"promise">;
 
-export interface Encrypted { iv: string; data: string };
+export interface Encrypted { iv: string; data: string }
 
 export interface AccountData {
   isDev: boolean;
@@ -43,6 +43,7 @@ export interface SwankyConfig {
     polkadotPalletVersions: string;
     localPath: string;
     supportedInk: string;
+    version: string;
   };
   accounts: AccountData[];
   contracts: Record<string, ContractData> | Record<string, never>;

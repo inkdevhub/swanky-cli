@@ -18,6 +18,7 @@ interface Ctx {
       cargoContract?: string | null;
     };
     contracts: Record<string, Record<string, string>>;
+    node?: string | null;
   };
   swankyConfig?: SwankyConfig;
   mismatchedVersions?: Record<string, string>;
@@ -57,6 +58,12 @@ export default class Check extends SwankyCommand<typeof Check> {
         title: "Check cargo-contract",
         task: async (ctx) => {
           ctx.versions.tools.cargoContract = await commandStdoutOrNull("cargo contract -V");
+        },
+      },
+      {
+        title: "Check swanky node",
+        task: async (ctx) => {
+          ctx.versions.node = this.swankyConfig.node.version !== "" ? this.swankyConfig.node.version : null;
         },
       },
       {
