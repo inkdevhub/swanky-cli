@@ -1,4 +1,4 @@
-import { execaCommand, execaCommandSync } from "execa";
+import { execaCommand } from "execa";
 import { ensureDir, copy, remove } from "fs-extra/esm";
 import { rename, readFile, rm, writeFile } from "fs/promises";
 import path from "node:path";
@@ -12,6 +12,7 @@ import { Spinner } from "./spinner.js";
 import { SupportedPlatforms, SupportedArch } from "../types/index.js";
 import { ConfigError, InputError, NetworkError } from "./errors.js";
 import semver from "semver";
+import { commandStdoutOrNull } from "./command-utils.js";
 
 export async function checkCliDependencies(spinner: Spinner) {
   const dependencyList = [
@@ -138,27 +139,35 @@ export async function installDeps(projectPath: string) {
   }
 }
 
-export function checkCargoContractVersion(minimalVersion: string, invalidVersionsList: string[]) {
-  const regex = /cargo-contract-contract (.*)-unknown-(.*)-unknown-(.*)/;
-  let cargoContractVersion;
-  try {
-    const result = execaCommandSync("cargo contract -V");
-    cargoContractVersion = result.stdout;
-  } catch {
-    cargoContractVersion = null;
-  }
-  if (cargoContractVersion) {
-    const match = cargoContractVersion.match(regex);
-    if (match) {
-      cargoContractVersion = match[1];
-    }
-  } else {
-    throw new InputError(`Verifiable mode requires cargo-contract version >= ${minimalVersion}`);
-  }
-  console.log(cargoContractVersion);
-  if (!cargoContractVersion || semver.lt(cargoContractVersion.replace(/-.*$/, ""), "4.0.0") || invalidVersionsList.includes(cargoContractVersion)) {
+export function ensureCargoContractVersionCompatibility(
+  minimalVersion: string,
+  invalidVersionsList: string[]
+) {
+  const regex = /cargo-contract-contract (\d+\.\d+\.\d+(?:-[\w.]+)?)(?:-unknown-[\w-]+)/;
+  const cargoContractVersionOutput = commandStdoutOrNull("cargo contract -V");
+  if (!cargoContractVersionOutput) {
     throw new InputError(
-      `Verifiable mode requires cargo-contract version >= ${minimalVersion}`
+      `Cargo contract tool is required for verifiable mode. Please ensure it is installed.`
+    );
+  }
+
+  const match = cargoContractVersionOutput.match(regex);
+  if (!match) {
+    throw new InputError(
+      `Unable to determine cargo-contract version. Please verify its installation.`
+    );
+  }
+
+  const cargoContractVersion = match[1].replace(/-.*$/, ""); // Remove pre-release identifiers for version comparison
+  if (invalidVersionsList.includes(cargoContractVersion)) {
+    throw new InputError(
+      `The cargo-contract version ${cargoContractVersion} is not supported. Please update or change the version.`
+    );
+  }
+
+  if (!semver.satisfies(cargoContractVersion, `>=${minimalVersion}`)) {
+    throw new InputError(
+      `Verifiable mode requires cargo-contract version >= ${minimalVersion}, but found version ${cargoContractVersion}. Please update to a compatible version.`
     );
   }
 }
