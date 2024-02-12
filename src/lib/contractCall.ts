@@ -1,5 +1,5 @@
 import { AbiType, ChainAccount, ChainApi, decrypt, resolveNetworkUrl } from "./index.js";
-import { AccountData, ContractData, DeploymentData, Encrypted } from "../types/index.js";
+import { ContractData, DeploymentData, Encrypted } from "../types/index.js";
 import { Args, Command, Flags, Interfaces } from "@oclif/core";
 import inquirer from "inquirer";
 import chalk from "chalk";
@@ -77,13 +77,7 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
 
     this.deploymentInfo = deploymentData;
 
-    const accountData = this.swankyConfig.accounts.find(
-      (account: AccountData) => account.alias === flags.account || "alice"
-    );
-    if (!accountData) {
-      throw new ConfigError("Provided account alias not found in swanky.config.json");
-    }
-
+    const accountData = this.findAccountByAlias(flags.account || "alice");
     const networkUrl = resolveNetworkUrl(this.swankyConfig, flags.network ?? "");
     const api = await ChainApi.create(networkUrl);
     this.api = api;

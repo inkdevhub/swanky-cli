@@ -1,6 +1,7 @@
 import { Command, Flags, Interfaces } from "@oclif/core";
+import chalk from "chalk";
 import { getSwankyConfig, Spinner } from "./index.js";
-import { SwankyConfig } from "../types/index.js";
+import { AccountData, SwankyConfig } from "../types/index.js";
 import { writeJSON } from "fs-extra/esm";
 import { BaseError, ConfigError, UnknownError } from "./errors.js";
 import { swankyLogger } from "./logger.js";
@@ -49,6 +50,18 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
       Args: ${JSON.stringify(this.args)}
       Flags: ${JSON.stringify(this.flags)}
       Full command: ${JSON.stringify(process.argv)}`);
+  }
+
+  protected findAccountByAlias(alias: string): AccountData {
+    const accountData = this.swankyConfig.accounts.find(
+      (account: AccountData) => account.alias === alias
+    );
+
+    if (!accountData) {
+      throw new ConfigError(`Provided account alias ${chalk.yellowBright(alias)} not found in swanky.config.json`);
+    }
+
+    return accountData;
   }
 
   protected async storeConfig() {
