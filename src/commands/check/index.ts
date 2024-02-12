@@ -74,7 +74,7 @@ export default class Check extends SwankyCommand<typeof Check> {
       {
         title: "Check Rust",
         task: async (ctx, task) => {
-          ctx.versions.tools.rust = (await commandStdoutOrNull("rustc --version"))?.match(/rustc (.*) \((.*)/)?.[1];
+          ctx.versions.tools.rust = commandStdoutOrNull("rustc --version")?.match(/rustc (.*) \((.*)/)?.[1];
           if (!ctx.versions.tools.rust) {
             throw new Error("Rust is not installed");
           }
@@ -85,7 +85,7 @@ export default class Check extends SwankyCommand<typeof Check> {
       {
         title: "Check cargo",
         task: async (ctx, task) => {
-          ctx.versions.tools.cargo = (await commandStdoutOrNull("cargo -V"))?.match(/cargo (.*) \((.*)/)?.[1];
+          ctx.versions.tools.cargo = commandStdoutOrNull("cargo -V")?.match(/cargo (.*) \((.*)/)?.[1];
           if (!ctx.versions.tools.cargo) {
             throw new Error("Cargo is not installed");
           }
@@ -96,7 +96,7 @@ export default class Check extends SwankyCommand<typeof Check> {
       {
         title: "Check cargo nightly",
         task: async (ctx, task) => {
-          ctx.versions.tools.cargoNightly = (await commandStdoutOrNull("cargo +nightly -V"))?.match(/cargo (.*)-nightly \((.*)/)?.[1];
+          ctx.versions.tools.cargoNightly = commandStdoutOrNull("cargo +nightly -V")?.match(/cargo (.*)-nightly \((.*)/)?.[1];
           if (!ctx.versions.tools.cargoNightly) {
             throw new Error("Cargo nightly is not installed");
           }
@@ -107,7 +107,7 @@ export default class Check extends SwankyCommand<typeof Check> {
       {
         title: "Check cargo dylint",
         task: async (ctx, task) => {
-          ctx.versions.tools.cargoDylint = (await commandStdoutOrNull("cargo dylint -V"))?.match(/cargo-dylint (.*)/)?.[1];
+          ctx.versions.tools.cargoDylint = commandStdoutOrNull("cargo dylint -V")?.match(/cargo-dylint (.*)/)?.[1];
           if (!ctx.versions.tools.cargoDylint) {
             throw new Warn("Cargo dylint is not installed");
           }
@@ -118,7 +118,7 @@ export default class Check extends SwankyCommand<typeof Check> {
       {
         title: "Check cargo-contract",
         task: async (ctx, task) => {
-          ctx.versions.tools.cargoContract = await commandStdoutOrNull("cargo contract -V");
+          ctx.versions.tools.cargoContract = commandStdoutOrNull("cargo contract -V");
           if (!ctx.versions.tools.cargoContract) {
             throw new Error("Cargo contract is not installed");
           }
@@ -188,7 +188,7 @@ export default class Check extends SwankyCommand<typeof Check> {
               if (version.startsWith(">") || version.startsWith("<") || version.startsWith("^") || version.startsWith("~")) {
                 ctx.looseDefinitionDetected = true;
               }
-            }
+            });
           });
 
           ctx.mismatchedVersions = mismatched;
