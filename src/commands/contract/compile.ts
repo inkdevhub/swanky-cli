@@ -1,6 +1,6 @@
 import { Args, Flags } from "@oclif/core";
 import path from "node:path";
-import { ensureCargoContractVersionCompatibility, generateTypes, Spinner, storeArtifacts } from "../../lib/index.js";
+import { ensureCargoContractVersionCompatibility, extractCargoContractVersion, generateTypes, Spinner, storeArtifacts } from "../../lib/index.js";
 import { spawn } from "node:child_process";
 import { pathExists } from "fs-extra/esm";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
@@ -76,7 +76,15 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
               compileArgs.push("--release");
             }
             if (flags.verifiable) {
-              ensureCargoContractVersionCompatibility("4.0.0", ["4.0.0-alpha"]);
+              const cargoContractVersion = extractCargoContractVersion();
+              if (cargoContractVersion === null)
+                throw new InputError(
+                  `Cargo contract tool is required for verifiable mode. Please ensure it is installed.`
+                );
+
+              ensureCargoContractVersionCompatibility(cargoContractVersion, "4.0.0", [
+                "4.0.0-alpha",
+              ]);
               compileArgs.push("--verifiable");
             }
             const compile = spawn("cargo", compileArgs);

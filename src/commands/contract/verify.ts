@@ -1,6 +1,6 @@
 import { Args, Flags } from "@oclif/core";
 import path from "node:path";
-import { ensureCargoContractVersionCompatibility, Spinner } from "../../lib/index.js";
+import { ensureCargoContractVersionCompatibility, extractCargoContractVersion, Spinner } from "../../lib/index.js";
 import { pathExists } from "fs-extra/esm";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { ConfigError, InputError, ProcessError } from "../../lib/errors.js";
@@ -29,7 +29,15 @@ export class VerifyContract extends SwankyCommand<typeof VerifyContract> {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(VerifyContract);
 
-    ensureCargoContractVersionCompatibility("4.0.0", ["4.0.0-alpha"]);
+    const cargoContractVersion = extractCargoContractVersion();
+    if (cargoContractVersion === null)
+      throw new InputError(
+        `Cargo contract tool is required for verifiable mode. Please ensure it is installed.`
+      );
+
+    ensureCargoContractVersionCompatibility(cargoContractVersion, "4.0.0", [
+      "4.0.0-alpha",
+    ]);
 
     if (args.contractName === undefined && !flags.all) {
       throw new InputError("No contracts were selected to verify", { winston: { stack: true } });

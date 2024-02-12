@@ -1,5 +1,5 @@
 import { Listr } from "listr2";
-import { commandStdoutOrNull } from "../../lib/index.js";
+import { commandStdoutOrNull, extractCargoContractVersion } from "../../lib/index.js";
 import { SwankyConfig } from "../../types/index.js";
 import { pathExistsSync, readJSON, writeJson } from "fs-extra/esm";
 import { readFileSync } from "fs";
@@ -118,19 +118,12 @@ export default class Check extends SwankyCommand<typeof Check> {
       {
         title: "Check cargo-contract",
         task: async (ctx, task) => {
-          ctx.versions.tools.cargoContract = commandStdoutOrNull("cargo contract -V");
-          if (!ctx.versions.tools.cargoContract) {
+          const cargoContractVersion = extractCargoContractVersion();
+          ctx.versions.tools.cargoContract = cargoContractVersion;
+          if (!cargoContractVersion) {
             throw new Error("Cargo contract is not installed");
           }
-
-          const regex = /cargo-contract-contract (\d+\.\d+\.\d+(?:-[\w.]+)?)(?:-unknown-[\w-]+)/;
-          const match = ctx.versions.tools.cargoContract.match(regex);
-          if (match?.[1]) {
-            ctx.versions.tools.cargoContract = match[1];
-          } else {
-            throw new Error("Cargo contract version not found");
-          }
-          task.title = `Check cargo-contract: ${ctx.versions.tools.cargoContract}`;
+          task.title = `Check cargo-contract: ${cargoContractVersion}`;
         },
         exitOnError: false,
       },

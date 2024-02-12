@@ -10,7 +10,7 @@ import { nodeInfo } from "./nodeInfo.js";
 import decompress from "decompress";
 import { Spinner } from "./spinner.js";
 import { SupportedPlatforms, SupportedArch } from "../types/index.js";
-import { ConfigError, InputError, NetworkError } from "./errors.js";
+import { ConfigError, NetworkError, ProcessError } from "./errors.js";
 import semver from "semver";
 import { commandStdoutOrNull } from "./command-utils.js";
 
@@ -139,35 +139,37 @@ export async function installDeps(projectPath: string) {
   }
 }
 
-export function ensureCargoContractVersionCompatibility(
-  minimalVersion: string,
-  invalidVersionsList: string[]
-) {
+export function extractCargoContractVersion() {
   const regex = /cargo-contract-contract (\d+\.\d+\.\d+(?:-[\w.]+)?)(?:-unknown-[\w-]+)/;
   const cargoContractVersionOutput = commandStdoutOrNull("cargo contract -V");
   if (!cargoContractVersionOutput) {
-    throw new InputError(
-      `Cargo contract tool is required for verifiable mode. Please ensure it is installed.`
-    );
+    return null
   }
 
   const match = cargoContractVersionOutput.match(regex);
   if (!match) {
-    throw new InputError(
+    throw new ProcessError(
       `Unable to determine cargo-contract version. Please verify its installation.`
     );
   }
 
-  const cargoContractVersion = match[1].replace(/-.*$/, ""); // Remove pre-release identifiers for version comparison
-  if (invalidVersionsList.includes(cargoContractVersion)) {
-    throw new InputError(
+  return match[1];
+}
+
+export function ensureCargoContractVersionCompatibility(
+  cargoContractVersion: string,
+  minimalVersion: string,
+  invalidVersionsList?: string[]
+) {
+  if (invalidVersionsList?.includes(cargoContractVersion)) {
+    throw new ProcessError(
       `The cargo-contract version ${cargoContractVersion} is not supported. Please update or change the version.`
     );
   }
 
-  if (!semver.satisfies(cargoContractVersion, `>=${minimalVersion}`)) {
-    throw new InputError(
-      `Verifiable mode requires cargo-contract version >= ${minimalVersion}, but found version ${cargoContractVersion}. Please update to a compatible version.`
+  if (!semver.satisfies(cargoContractVersion.replace(/-.*$/, ""), `>=${minimalVersion}`)) {
+    throw new ProcessError(
+      `cargo-contract version >= ${minimalVersion} required, but found version ${cargoContractVersion}. Please update to a compatible version.`
     );
   }
 }
