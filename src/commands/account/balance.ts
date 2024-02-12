@@ -19,8 +19,10 @@ export class Balance extends SwankyCommand<typeof Balance> {
   async run(): Promise<void> {
     const { args } = await this.parse(Balance);
 
-    if(!args.alias) {
-      throw new InputError("Missing argument! Please provide an alias to get the balance of an account.");
+    if (!args.alias) {
+      throw new InputError(
+        "Missing argument! Please provide an alias account to get the balance from. Example usage: `swanky account balance <YourAliasAccount>`"
+      );
     }
 
     const accountData = this.swankyConfig.accounts.find(

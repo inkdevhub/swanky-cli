@@ -1,12 +1,11 @@
 import { Flags } from "@oclif/core";
 import chalk from "chalk";
-import { ChainAccount, ChainApi, encrypt, resolveNetworkUrl } from "../../lib/index.js";
+import { ChainAccount, encrypt } from "../../lib/index.js";
 import { AccountData } from "../../types/index.js";
 import inquirer from "inquirer";
-import { SwankyCommand } from "../../lib/swankyCommand.js";
-import { ApiError } from "../../lib/errors.js";
-import { LOCAL_FAUCET_AMOUNT } from "../../lib/consts.js";
-export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
+import { SwankyAccountCommand } from "./swankyAccountCommands.js";
+
+export class CreateAccount extends SwankyAccountCommand<typeof CreateAccount> {
   static description = "Create a new dev account in config";
 
   static flags = {
@@ -87,27 +86,6 @@ export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
       )} stored to config`
     );
 
-    const networkUrl = resolveNetworkUrl(this.swankyConfig, "");
-
-    const api = (await this.spinner.runCommand(async () => {
-      const api = await ChainApi.create(networkUrl);
-      await api.start();
-      return api;
-    }, "Connecting to node")) as ChainApi;
-
-
-    await this.spinner.runCommand(
-      async () => {
-        try {
-          await api.faucet(accountData);
-        } catch (cause) {
-          throw new ApiError("Error transferring tokens from faucet account", { cause });
-        }
-      },
-      `Transferring ${LOCAL_FAUCET_AMOUNT} units from faucet account to ${accountData.alias}`,
-      `Transferred ${LOCAL_FAUCET_AMOUNT} units from faucet account to ${accountData.alias}`,
-      `Failed to transfer ${LOCAL_FAUCET_AMOUNT} units from faucet account to ${accountData.alias}`,
-      true
-    );
+    await this.performFaucetTransfer(accountData, true);
   }
 }

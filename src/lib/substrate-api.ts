@@ -103,6 +103,10 @@ export class ChainApi {
     return this._registry;
   }
 
+  public async disconnect(): Promise<void> {
+    await this._provider.disconnect();
+  }
+
   public async start(): Promise<void> {
     const chainProperties = await this._api.rpc.system.properties();
 
@@ -249,7 +253,7 @@ export class ChainApi {
     });
   }
 
-  public async faucet(accountData: AccountData) : Promise<void> {
+  public async faucet(accountData: AccountData): Promise<void> {
     const keyring = new Keyring({ type: KEYPAIR_TYPE });
     const alicePair = keyring.addFromUri(ALICE_URI);
 
@@ -267,9 +271,8 @@ export class ChainApi {
             return;
           }
           resolve();
-          this._provider.disconnect();
         }
-      }).catch(error => reject(error)).finally(() => this._provider.disconnect());
+      }).catch((error) => reject(error));
     });
   }
 }
