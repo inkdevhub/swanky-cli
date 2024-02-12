@@ -11,6 +11,16 @@ export function pickTemplate(templateList: string[]): ListQuestion<Answers> {
   };
 }
 
+export function pickNodeVersion(nodeVersions: string[]): ListQuestion<Answers> {
+  if (!nodeVersions?.length) throw new ConfigError("Node version list is empty!");
+  return {
+    name: "version",
+    type: "list",
+    choices: nodeVersions,
+    message: "Which node version should we use?",
+  };
+}
+
 export function name(
   subject: string,
   initial?: (answers: Answers) => string,

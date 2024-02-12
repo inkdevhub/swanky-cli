@@ -44,6 +44,7 @@ export interface SwankyConfig {
     polkadotPalletVersions: string;
     localPath: string;
     supportedInk: string;
+    version: string;
   };
   accounts: AccountData[];
   contracts: Record<string, ContractData> | Record<string, never>;
