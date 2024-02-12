@@ -1,11 +1,11 @@
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-import { ux, Flags } from "@oclif/core";
+import { Flags } from "@oclif/core";
 import { downloadNode, swankyNodeVersions } from "../../lib/index.js";
 import path from "node:path";
 import { writeJSON } from "fs-extra/esm";
 import inquirer from "inquirer";
 import { DEFAULT_NODE_INFO } from "../../lib/consts.js";
-import { pickNodeVersion } from "../../lib/prompts.js";
+import { choice, pickNodeVersion } from "../../lib/prompts.js";
 import { InputError } from "../../lib/errors.js";
 
 export class InstallNode extends SwankyCommand<typeof InstallNode> {
@@ -41,9 +41,9 @@ export class InstallNode extends SwankyCommand<typeof InstallNode> {
     const projectPath = path.resolve();
 
     if (this.swankyConfig.node.localPath !== "") {
-      const overwrite = await ux.confirm(
-        "Swanky node already installed. Do you want to overwrite it? (y/n)"
-      );
+      const { overwrite } =await inquirer.prompt([
+        choice("overwrite", "Swanky node already installed. Do you want to overwrite it?"),
+      ]);
       if (!overwrite) {
         return;
       }

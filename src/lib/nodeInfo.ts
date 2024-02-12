@@ -18,7 +18,7 @@ export const swankyNodeVersions = new Map<string, nodeInfo>([
   ["1.6.0", {
     version: "1.6.0",
     polkadotPalletVersions: "polkadot-v0.9.39",
-    supportedInk: "v4.2.0",
+    supportedInk: "v4.3.0",
     downloadUrl: {
       darwin: {
         "arm64": "https://github.com/AstarNetwork/swanky-node/releases/download/v1.6.0/swanky-node-v1.6.0-macOS-universal.tar.gz",
