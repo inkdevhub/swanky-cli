@@ -1,6 +1,6 @@
 import { Args, Flags } from "@oclif/core";
 import path from "node:path";
-import { storeArtifacts, Spinner, generateTypes } from "../../lib/index.js";
+import { ensureCargoContractVersionCompatibility, extractCargoContractVersion, generateTypes, Spinner, storeArtifacts } from "../../lib/index.js";
 import { spawn } from "node:child_process";
 import { pathExists } from "fs-extra/esm";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
@@ -15,6 +15,11 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
       char: "r",
       description:
         "A production contract should always be build in `release` mode for building optimized wasm",
+    }),
+    verifiable: Flags.boolean({
+      default: false,
+      description:
+        "A production contract should be build in `verifiable` mode to deploy on a public network. Ensure Docker Engine is up and running.",
     }),
     all: Flags.boolean({
       default: false,
@@ -49,7 +54,7 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
       const contractInfo = this.swankyConfig.contracts[contractName];
       if (!contractInfo) {
         throw new ConfigError(
-          `Cannot find contract info for ${contractName} contract in swanky.config.json`
+          `Cannot find contract info for ${contractName} contract in swanky.config.json`,
         );
       }
       const contractPath = path.resolve("contracts", contractInfo.name);
@@ -65,10 +70,22 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
               "contract",
               "build",
               "--manifest-path",
-              `${contractPath}/Cargo.toml`,
+              `contracts/${contractName}/Cargo.toml`,
             ];
-            if (flags.release) {
+            if (flags.release && !flags.verifiable) {
               compileArgs.push("--release");
+            }
+            if (flags.verifiable) {
+              const cargoContractVersion = extractCargoContractVersion();
+              if (cargoContractVersion === null)
+                throw new InputError(
+                  `Cargo contract tool is required for verifiable mode. Please ensure it is installed.`
+                );
+
+              ensureCargoContractVersionCompatibility(cargoContractVersion, "4.0.0", [
+                "4.0.0-alpha",
+              ]);
+              compileArgs.push("--verifiable");
             }
             const compile = spawn("cargo", compileArgs);
             this.logger.info(`Running compile command: [${JSON.stringify(compile.spawnargs)}]`);
@@ -100,7 +117,7 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
           });
         },
         `Compiling ${contractName} contract`,
-        `${contractName} Contract compiled successfully`
+        `${contractName} Contract compiled successfully`,
       );
 
       const artifactsPath = compilationResult as string;
@@ -112,8 +129,16 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
       await spinner.runCommand(
         async () => await generateTypes(contractInfo.name),
         `Generating ${contractName} contract ts types`,
-        `${contractName} contract's TS types Generated successfully`
+        `${contractName} contract's TS types Generated successfully`,
       );
+
+      this.swankyConfig.contracts[contractName].build = {
+        timestamp: Date.now(),
+        artifactsPath,
+        isVerified: false,
+      };
+
+      await this.storeConfig();
     }
   }
 }

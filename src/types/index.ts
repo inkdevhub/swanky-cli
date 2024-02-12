@@ -30,6 +30,7 @@ export interface ContractData {
 export interface BuildData {
   timestamp: number;
   artifactsPath: string;
+  isVerified: boolean;
 }
 
 export interface DeploymentData {

@@ -56,7 +56,7 @@ export class Contract {
         `Cannot read .contract bundle, path not found: ${check.missingPaths.toString()}`
       );
     }
-    return readJSON(path.resolve(this.artifactsPath, `${this.moduleName}.contract`));
+    return readJSON(path.resolve(this.artifactsPath, `${this.moduleName}.contract`), 'utf-8');
   }
 
   async getWasm(): Promise<Buffer> {
