@@ -137,7 +137,7 @@ export default class Check extends SwankyCommand<typeof Check> {
       {
         title: "Check swanky node",
         task: async (ctx) => {
-          ctx.versions.node = this.swankyConfig.node.version !== "" ? this.swankyConfig.node.version : null;
+          ctx.versions.swankyNode = this.swankyConfig.node.version !== "" ? this.swankyConfig.node.version : null;
         },
       },
       {
