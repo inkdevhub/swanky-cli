@@ -93,7 +93,6 @@ export class NewContract extends SwankyCommand<typeof NewContract> {
     );
 
     await ensureDir(path.resolve(projectPath, "artifacts", args.contractName));
-    await ensureDir(path.resolve(projectPath, "tests", args.contractName));
 
     await this.spinner.runCommand(async () => {
       this.swankyConfig.contracts[args.contractName] = {

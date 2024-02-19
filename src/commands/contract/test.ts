@@ -3,13 +3,13 @@ import { Flags, Args } from "@oclif/core";
 import path from "node:path";
 import { globby } from "globby";
 import Mocha from "mocha";
-import { emptyDir } from "fs-extra/esm";
+import { emptyDir, pathExists } from "fs-extra/esm";
 import shell from "shelljs";
-import { Contract } from "../../../lib/contract.js";
-import { SwankyCommand } from "../../../lib/swankyCommand.js";
-import { ConfigError, FileError, InputError, ProcessError, TestError } from "../../../lib/errors.js";
+import { Contract } from "../../lib/contract.js";
+import { SwankyCommand } from "../../lib/swankyCommand.js";
+import { ConfigError, FileError, InputError, ProcessError, TestError } from "../../lib/errors.js";
 import { spawn } from "node:child_process";
-import { Spinner } from "../../../lib/index.js";
+import { Spinner } from "../../lib/index.js";
 
 declare global {
   var contractTypesPath: string; // eslint-disable-line no-var
@@ -52,8 +52,6 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
     const contractNames = flags.all
       ? Object.keys(this.swankyConfig.contracts)
       : [args.contractName];
-
-    const testDir = path.resolve("tests");
 
     const spinner = new Spinner();
 
@@ -129,6 +127,12 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
           `${contractName} testing finished successfully`
         );
       } else {
+
+        const testDir = path.resolve("tests");
+
+        if (!pathExists(testDir)) {
+          throw new FileError(`Tests folder does not exist: ${testDir}`);
+        }
 
         const artifactsCheck = await contract.artifactsExist();
 

@@ -53,20 +53,26 @@ export async function copyContractTemplateFiles(
     path.resolve(contractTemplatePath, "contract"),
     path.resolve(projectPath, "contracts", contractName)
   );
-  await copy(
-    path.resolve(contractTemplatePath, "test"),
-    path.resolve(projectPath, "tests", contractName)
-  );
 }
 
-export async function copyTestHelpers(
+export async function prepareTestFiles(
+  testType: "e2e" | "mocha",
   templatePath: string,
-  projectPath: string
+  projectPath: string,
+  contractName: string
 ) {
-  await copy(
-    path.resolve(templatePath, "test_helpers"),
-    path.resolve(projectPath, "tests", "test_helpers")
-  );
+  if (testType === "e2e") {
+    await copy(
+      path.resolve(templatePath, "test_helpers"),
+      path.resolve(projectPath, "tests", "test_helpers")
+    );
+  }
+  else {
+    await copy(
+      path.resolve(templatePath, "contracts", contractName, "test"),
+      path.resolve(projectPath, "tests", contractName)
+    );
+  }
 }
 
 export async function processTemplates(projectPath: string, templateData: Record<string, string>) {
