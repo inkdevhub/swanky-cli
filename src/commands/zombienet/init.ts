@@ -2,16 +2,18 @@ import path from "node:path";
 import { Flags } from "@oclif/core";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import {
-  copyZombienetTemplateFile, downloadZombienetBinaries,
   buildZombienetConfigFromBinaries,
-  getSwankyConfig,
+  copyZombienetTemplateFile,
+  downloadZombienetBinaries,
   getTemplates,
+  osCheck,
   Spinner,
 } from "../../lib/index.js";
 import { pathExistsSync } from "fs-extra/esm";
-import { zombienet } from "../../lib/zombienetInfo.js";
+import { zombienet, zombienetBinariesList } from "../../lib/zombienetInfo.js";
 
 export const zombienetConfig = "zombienet.config.toml";
+
 export class InitZombienet extends SwankyCommand<typeof InitZombienet> {
   static description = "Initialize Zombienet";
 
@@ -20,6 +22,7 @@ export class InitZombienet extends SwankyCommand<typeof InitZombienet> {
       char: "b",
       multiple: true,
       required: false,
+      options: zombienetBinariesList,
       default: [],
       description: "Binaries to install",
     }),
@@ -27,7 +30,12 @@ export class InitZombienet extends SwankyCommand<typeof InitZombienet> {
 
   async run(): Promise<void> {
     const { flags } = await this.parse(InitZombienet);
-    await getSwankyConfig();
+
+    const platform = osCheck().platform;
+    if (platform === "darwin") {
+      this.warn(`Note for MacOs users: Polkadot binary is not currently supported for MacOs.
+As a result users of MacOS need to clone the Polkadot repo(https://github.com/paritytech/polkadot),create a release and add it in your PATH manually (setup will advice you so as well).`);
+    }
 
     const projectPath = path.resolve();
     if (pathExistsSync(path.resolve(projectPath, "zombienet", "bin", "zombienet"))) {
@@ -42,12 +50,15 @@ export class InitZombienet extends SwankyCommand<typeof InitZombienet> {
       binaries: {},
     };
 
-    if(!flags.binaries.includes("polkadot")) {
+    if (!flags.binaries.includes("polkadot")) {
       flags.binaries.push("polkadot");
     }
 
-    for(const binaryName of flags.binaries){
-      if(!Object.keys(zombienet.binaries).includes(binaryName)) {
+    for (const binaryName of flags.binaries) {
+      if (platform === "darwin" && binaryName.startsWith("polkadot")) {
+        continue;
+      }
+      if (!Object.keys(zombienet.binaries).includes(binaryName)) {
         this.error(`Binary ${binaryName} not found in Zombienet config`);
       }
       this.swankyConfig.zombienet.binaries[binaryName] = zombienet.binaries[binaryName as keyof typeof zombienet.binaries];
@@ -57,29 +68,26 @@ export class InitZombienet extends SwankyCommand<typeof InitZombienet> {
 
     const zombienetTemplatePath = getTemplates().zombienetTemplatesPath;
 
-    const configPath = path.resolve(projectPath, "zombienet", "config")
+    const configPath = path.resolve(projectPath, "zombienet", "config");
 
-    if(flags.binaries.length < 2) {
+    if (flags.binaries.length < 2) {
       await spinner.runCommand(
         () =>
           copyZombienetTemplateFile(zombienetTemplatePath, configPath),
-        "Copying template files"
+        "Copying template files",
       );
-    }
-    else {
+    } else {
       await spinner.runCommand(
         () => buildZombienetConfigFromBinaries(flags.binaries, zombienetTemplatePath, configPath),
-        "Copying template files"
+        "Copying template files",
       );
     }
 
     // Install binaries based on zombie config
     await this.spinner.runCommand(
       () => downloadZombienetBinaries(flags.binaries, projectPath, this.swankyConfig, this.spinner),
-      "Downloading Zombienet binaries"
+      "Downloading Zombienet binaries",
     );
-
-
 
     this.log("ZombieNet config Installed successfully");
   }

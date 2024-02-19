@@ -1,6 +1,7 @@
 export type zombienetInfo = typeof zombienet;
 
-export type BinaryNames = "zombienet" | "polkadot" | "astar-collator";
+export type BinaryNames = "zombienet" | "polkadot" | "polkadot-parachain" | "astar-collator";
+
 export const zombienet = {
   version: "1.3.89",
   downloadUrl: {
@@ -55,3 +56,5 @@ export const zombienet = {
     },
   },
 };
+
+export const zombienetBinariesList = Object.keys(zombienet.binaries);
