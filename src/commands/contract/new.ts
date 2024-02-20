@@ -1,6 +1,6 @@
 import { Args, Flags } from "@oclif/core";
 import path from "node:path";
-import { ensureDir, pathExists, writeJSON } from "fs-extra/esm";
+import { ensureDir, pathExists, pathExistsSync, writeJSON } from "fs-extra/esm";
 import {
   checkCliDependencies,
   copyContractTemplateFiles,
@@ -80,10 +80,15 @@ export class NewContract extends SwankyCommand<typeof NewContract> {
     );
 
     if (contractTemplate === "psp22") {
-      await this.spinner.runCommand(
-        () => prepareTestFiles("e2e", path.resolve(templates.templatesPath), projectPath),
-        "Copying test helpers"
-      );
+      const e2eTestHelpersPath = path.resolve(projectPath, "tests", "test_helpers");
+      if (!pathExistsSync(e2eTestHelpersPath)) {
+        await this.spinner.runCommand(
+          () => prepareTestFiles("e2e", path.resolve(templates.templatesPath), projectPath),
+          "Copying e2e test helpers"
+        );
+      } else {
+        console.log("e2e test helpers already exist. No files were copied.");
+      }
     }
 
     await this.spinner.runCommand(

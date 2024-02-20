@@ -1,5 +1,5 @@
 import { execaCommand } from "execa";
-import { ensureDir, copy, remove, pathExistsSync } from "fs-extra/esm";
+import { ensureDir, copy, remove } from "fs-extra/esm";
 import { rename, readFile, rm, writeFile } from "fs/promises";
 import path from "node:path";
 import { globby } from "globby";
@@ -59,26 +59,28 @@ export async function prepareTestFiles(
   testType: TestType,
   templatePath: string,
   projectPath: string,
+  templateName?: string,
   contractName?: string
 ) {
   switch (testType) {
     case "e2e": {
-      const e2ePath = path.resolve(projectPath, "tests", "test_helpers");
-      if (pathExistsSync(e2ePath)) {
-        throw new ProcessError(`${e2ePath} already exists and will not be overwritten.`);
-      }
-      await copy(path.resolve(templatePath, "test_helpers"), e2ePath);
+      await copy(
+        path.resolve(templatePath, "test_helpers"),
+        path.resolve(projectPath, "tests", "test_helpers")
+      );
       break;
     }
     case "mocha": {
+      if (!templateName) {
+        throw new ProcessError("'templateName' argument is required for mocha tests");
+      }
       if (!contractName) {
-        throw new ProcessError("contractName is required for mocha tests");
+        throw new ProcessError("'contractName' argument is required for mocha tests");
       }
-      const mochaPath = path.resolve(projectPath, "tests", contractName);
-      if (pathExistsSync(mochaPath)) {
-        throw new ProcessError(`${mochaPath} already exists and will not be overwritten.`);
-      }
-      await copy(path.resolve(templatePath, "contracts", contractName, "test"), mochaPath);
+      await copy(
+        path.resolve(templatePath, "contracts", templateName, "test"),
+        path.resolve(projectPath, "tests", contractName)
+      );
       break;
     }
     default: {
