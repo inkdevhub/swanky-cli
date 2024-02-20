@@ -34,7 +34,7 @@ export class InitZombienet extends SwankyCommand<typeof InitZombienet> {
     const platform = osCheck().platform;
     if (platform === "darwin") {
       this.warn(`Note for MacOs users: Polkadot binary is not currently supported for MacOs.
-As a result users of MacOS need to clone the Polkadot repo(https://github.com/paritytech/polkadot),create a release and add it in your PATH manually (setup will advice you so as well).`);
+As a result users of MacOS need to clone the Polkadot repo (https://github.com/paritytech/polkadot), create a release and add it in your PATH manually (setup will advice you so as well). Check the official zombienet documentation for manual settings: https://paritytech.github.io/zombienet/.`);
     }
 
     const projectPath = path.resolve();

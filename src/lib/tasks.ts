@@ -37,15 +37,19 @@ export function osCheck() {
   const platform = process.platform;
   const arch = process.arch;
 
-  const supportedPlatforms = ["darwin", "linux"];
-  if (!supportedPlatforms.includes(platform)) {
-    throw new ConfigError(`Could not download swanky-node. Platform ${platform} not supported!`);
+  const supportedConfigs = {
+    darwin: ["x64", "arm64"],
+    linux: ["x64", "arm64"],
+  };
+
+  if (!(platform in supportedConfigs)) {
+    throw new ConfigError(`Platform '${platform}' is not supported!`);
   }
 
-  const supportedArch = ["x64", "arm64"];
-  if (!supportedArch.includes(arch)) {
+  const supportedArchs = supportedConfigs[platform as keyof typeof supportedConfigs];
+  if (!supportedArchs.includes(arch)) {
     throw new ConfigError(
-      `Architecture ${arch} is not supported`,
+      `Architecture '${arch}' is not supported on platform '${platform}'.`
     );
   }
 
