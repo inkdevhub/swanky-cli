@@ -6,6 +6,7 @@ import {
   copyContractTemplateFiles,
   processTemplates,
   getTemplates,
+  prepareTestFiles,
 } from "../../lib/index.js";
 import { email, name, pickTemplate } from "../../lib/prompts.js";
 import { paramCase, pascalCase, snakeCase } from "change-case";
@@ -77,6 +78,13 @@ export class NewContract extends SwankyCommand<typeof NewContract> {
         ),
       "Copying contract template files"
     );
+
+    if (contractTemplate === "psp22") {
+      await this.spinner.runCommand(
+        () => prepareTestFiles("e2e", path.resolve(templates.templatesPath), projectPath),
+        "Copying test helpers"
+      );
+    }
 
     await this.spinner.runCommand(
       () =>

@@ -273,11 +273,7 @@ export class Init extends SwankyCommand<typeof Init> {
     if (contractTemplate === "psp22") {
       this.taskQueue.push({
         task: prepareTestFiles,
-        args: [
-          "e2e",
-          path.resolve(templates.templatesPath),
-          this.projectPath,
-        ],
+        args: ["e2e", path.resolve(templates.templatesPath), this.projectPath],
         runningMessage: "Copying test helpers",
       });
     }
