@@ -1,8 +1,8 @@
 import { Args } from "@oclif/core";
-import { generateTypes } from "../../../lib/index.js";
-import { Contract } from "../../../lib/contract.js";
-import { SwankyCommand } from "../../../lib/swankyCommand.js";
-import { ConfigError, FileError } from "../../../lib/errors.js";
+import { generateTypes } from "../../lib/index.js";
+import { Contract } from "../../lib/contract.js";
+import { SwankyCommand } from "../../lib/swankyCommand.js";
+import { ConfigError, FileError } from "../../lib/errors.js";
 
 export class GenerateTypes extends SwankyCommand<typeof GenerateTypes> {
   static description = "Generate types from compiled contract metadata";
