@@ -1,5 +1,5 @@
 import { execaCommand } from "execa";
-import { ensureDir, copy, remove } from "fs-extra/esm";
+import { ensureDir, copy, remove, pathExistsSync } from "fs-extra/esm";
 import { rename, readFile, rm, writeFile } from "fs/promises";
 import path from "node:path";
 import { globby } from "globby";
@@ -9,8 +9,8 @@ import process from "node:process";
 import { nodeInfo } from "./nodeInfo.js";
 import decompress from "decompress";
 import { Spinner } from "./spinner.js";
-import { SupportedPlatforms, SupportedArch } from "../types/index.js";
-import { ConfigError, NetworkError } from "./errors.js";
+import { SupportedPlatforms, SupportedArch, TestType } from "../types/index.js";
+import { ConfigError, NetworkError, ProcessError } from "./errors.js";
 
 export async function checkCliDependencies(spinner: Spinner) {
   const dependencyList = [
@@ -56,22 +56,35 @@ export async function copyContractTemplateFiles(
 }
 
 export async function prepareTestFiles(
-  testType: "e2e" | "mocha",
+  testType: TestType,
   templatePath: string,
   projectPath: string,
-  contractName: string
+  contractName?: string
 ) {
-  if (testType === "e2e") {
-    await copy(
-      path.resolve(templatePath, "test_helpers"),
-      path.resolve(projectPath, "tests", "test_helpers")
-    );
-  }
-  else {
-    await copy(
-      path.resolve(templatePath, "contracts", contractName, "test"),
-      path.resolve(projectPath, "tests", contractName)
-    );
+  switch (testType) {
+    case "e2e": {
+      const e2ePath = path.resolve(projectPath, "tests", "test_helpers");
+      if (pathExistsSync(e2ePath)) {
+        throw new ProcessError(`${e2ePath} already exists and will not be overwritten.`);
+      }
+      await copy(path.resolve(templatePath, "test_helpers"), e2ePath);
+      break;
+    }
+    case "mocha": {
+      if (!contractName) {
+        throw new ProcessError("contractName is required for mocha tests");
+      }
+      const mochaPath = path.resolve(projectPath, "tests", contractName);
+      if (pathExistsSync(mochaPath)) {
+        throw new ProcessError(`${mochaPath} already exists and will not be overwritten.`);
+      }
+      await copy(path.resolve(templatePath, "contracts", contractName, "test"), mochaPath);
+      break;
+    }
+    default: {
+      // This case will make the switch exhaustive
+      throw new ProcessError("Unhandled test type");
+    }
   }
 }
 
