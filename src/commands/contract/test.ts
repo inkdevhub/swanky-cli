@@ -3,7 +3,7 @@ import { Flags, Args } from "@oclif/core";
 import path from "node:path";
 import { globby } from "globby";
 import Mocha from "mocha";
-import { emptyDir, pathExists } from "fs-extra/esm";
+import { emptyDir, pathExistsSync } from "fs-extra/esm";
 import shell from "shelljs";
 import { Contract } from "../../lib/contract.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
@@ -22,11 +22,7 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
     all: Flags.boolean({
       default: false,
       char: "a",
-      description: "Set all to true to compile all contracts",
-    }),
-    "local-node": Flags.boolean({
-      default: false,
-      description: "Run tests on a local node",
+      description: "Run tests for all contracts",
     }),
     mocha: Flags.boolean({
         default: false,
@@ -69,14 +65,6 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
         throw new FileError(
           `Path to contract ${args.contractName} does not exist: ${contract.contractPath}`
         );
-      }
-
-      if (flags["local-node"]) {
-        if (!this.swankyConfig.node.localPath)
-        {
-          throw new ConfigError("Local node path not found in swanky.config.json");
-        }
-        process.env.CONTRACTS_NODE = this.swankyConfig.node.localPath;
       }
 
       console.log(`Testing contract: ${contractName}`);
@@ -130,7 +118,7 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
 
         const testDir = path.resolve("tests");
 
-        if (!pathExists(testDir)) {
+        if (!pathExistsSync(testDir)) {
           throw new FileError(`Tests folder does not exist: ${testDir}`);
         }
 
