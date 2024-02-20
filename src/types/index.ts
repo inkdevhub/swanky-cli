@@ -64,7 +64,7 @@ export interface SwankyConfig {
 interface ZombienetData {
   version: string;
   downloadUrl: DownloadUrl;
-  binaries: Record<string, { version: string; downloadUrl: DownloadUrl }>;
+  binaries: Record<string, { version: string; downloadUrl: Partial<DownloadUrl> }>;
 }
 
 export interface ZombienetConfig {

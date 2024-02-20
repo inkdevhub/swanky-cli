@@ -18,10 +18,6 @@ export const zombienet = {
     "polkadot": {
       version: "0.9.43",
       downloadUrl: {
-        darwin: {
-          "arm64": "https://github.com/paritytech/polkadot/releases/download/v${version}/polkadot",
-          "x64": "https://github.com/paritytech/polkadot/releases/download/v${version}/polkadot",
-        },
         linux: {
           "arm64": "https://github.com/paritytech/polkadot/releases/download/v${version}/polkadot",
           "x64": "https://github.com/paritytech/polkadot/releases/download/v${version}/polkadot",
@@ -31,10 +27,6 @@ export const zombienet = {
     "polkadot-parachain": {
       version: "0.9.430",
       downloadUrl: {
-        darwin: {
-          "arm64": "https://github.com/paritytech/cumulus/releases/download/v${version}/polkadot-parachain",
-          "x64": "https://github.com/paritytech/cumulus/releases/download/v${version}/polkadot-parachain",
-        },
         linux: {
           "arm64": "https://github.com/paritytech/cumulus/releases/download/v${version}/polkadot-parachain",
           "x64": "https://github.com/paritytech/cumulus/releases/download/v${version}/polkadot-parachain",
