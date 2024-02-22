@@ -6,7 +6,7 @@ import { execaCommand, execaCommandSync } from "execa";
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer from "inquirer";
 import TOML from "@iarna/toml";
-import { choice, email, name, pickTemplate } from "../../lib/prompts.js";
+import { choice, email, name, pickNodeVersion, pickTemplate } from "../../lib/prompts.js";
 import {
   checkCliDependencies,
   copyCommonTemplateFiles,
@@ -15,12 +15,12 @@ import {
   installDeps,
   ChainAccount,
   processTemplates,
-  swankyNode,
-  getTemplates,
+  getTemplates, swankyNodeVersions,
 } from "../../lib/index.js";
 import {
+  ALICE_URI, BOB_URI,
   DEFAULT_ASTAR_NETWORK_URL,
-  DEFAULT_NETWORK_URL,
+  DEFAULT_NETWORK_URL, DEFAULT_NODE_INFO,
   DEFAULT_SHIBUYA_NETWORK_URL,
   DEFAULT_SHIDEN_NETWORK_URL,
 } from "../../lib/consts.js";
@@ -93,11 +93,13 @@ export class Init extends SwankyCommand<typeof Init> {
   }
   projectPath = "";
 
+
   configBuilder: Partial<SwankyConfig> = {
     node: {
       localPath: "",
-      polkadotPalletVersions: swankyNode.polkadotPalletVersions,
-      supportedInk: swankyNode.supportedInk,
+      polkadotPalletVersions: "",
+      supportedInk: "",
+      version: "",
     },
     accounts: [],
     networks: {
@@ -161,12 +163,28 @@ export class Init extends SwankyCommand<typeof Init> {
         choice("useSwankyNode", "Do you want to download Swanky node?"),
       ]);
       if (useSwankyNode) {
+        const versions = Array.from(swankyNodeVersions.keys());
+        let nodeVersion = DEFAULT_NODE_INFO.version;
+        await inquirer.prompt([
+          pickNodeVersion(versions),
+        ]).then((answers) => {
+           nodeVersion = answers.version;
+        });
+
+        const nodeInfo = swankyNodeVersions.get(nodeVersion)!;
+
         this.taskQueue.push({
           task: downloadNode,
-          args: [this.projectPath, swankyNode, this.spinner],
+          args: [this.projectPath, nodeInfo, this.spinner],
           runningMessage: "Downloading Swanky node",
-          callback: (result) =>
-            this.configBuilder.node ? (this.configBuilder.node.localPath = result) : null,
+          callback: (result) => {
+            this.configBuilder.node = {
+              supportedInk: nodeInfo.supportedInk,
+              polkadotPalletVersions: nodeInfo.polkadotPalletVersions,
+              version: nodeInfo.version,
+              localPath: result,
+            };
+          }
         });
       }
     }
@@ -174,15 +192,15 @@ export class Init extends SwankyCommand<typeof Init> {
     this.configBuilder.accounts = [
       {
         alias: "alice",
-        mnemonic: "//Alice",
+        mnemonic: ALICE_URI,
         isDev: true,
-        address: new ChainAccount("//Alice").pair.address,
+        address: new ChainAccount(ALICE_URI).pair.address,
       },
       {
         alias: "bob",
-        mnemonic: "//Bob",
+        mnemonic: BOB_URI,
         isDev: true,
-        address: new ChainAccount("//Bob").pair.address,
+        address: new ChainAccount(BOB_URI).pair.address,
       },
     ];
 
@@ -435,7 +453,7 @@ async function detectModuleNames(copyList: CopyCandidates): Promise<CopyCandidat
         entry.dirent.isDirectory() &&
         (await pathExists(path.resolve(entry.path, "Cargo.toml")))
       ) {
-        const fileData = await readFile(path.resolve(entry.path, "Cargo.toml"), "utf-8");
+        const fileData = await readFile(path.resolve(entry.path, "Cargo.toml"), "utf8");
         const toml: any = TOML.parse(fileData);
         if (toml.package?.name) {
           extendedEntry.moduleName = toml.package.name;
@@ -546,7 +564,7 @@ async function detectTests(pathToExistingProject: string): Promise<string | unde
 async function readRootCargoToml(pathToProject: string) {
   const rootTomlPath = path.resolve(pathToProject, "Cargo.toml");
   if (!(await pathExists(rootTomlPath))) return null;
-  const fileData = await readFile(rootTomlPath, "utf-8");
+  const fileData = await readFile(rootTomlPath, "utf8");
   const toml: any = TOML.parse(fileData);
 
   if (!toml.workspace) toml.workspace = {};

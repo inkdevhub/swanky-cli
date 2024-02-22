@@ -10,7 +10,9 @@ import { nodeInfo } from "./nodeInfo.js";
 import decompress from "decompress";
 import { Spinner } from "./spinner.js";
 import { SupportedPlatforms, SupportedArch } from "../types/index.js";
-import { ConfigError, NetworkError } from "./errors.js";
+import { ConfigError, NetworkError, ProcessError } from "./errors.js";
+import semver from "semver";
+import { commandStdoutOrNull } from "./command-utils.js";
 
 export async function checkCliDependencies(spinner: Spinner) {
   const dependencyList = [
@@ -134,5 +136,40 @@ export async function installDeps(projectPath: string) {
     console.log("\n\t >>Yarn not detected, using NPM");
   } finally {
     await execaCommand(installCommand, { cwd: projectPath });
+  }
+}
+
+export function extractCargoContractVersion() {
+  const regex = /cargo-contract-contract (\d+\.\d+\.\d+(?:-[\w.]+)?)(?:-unknown-[\w-]+)/;
+  const cargoContractVersionOutput = commandStdoutOrNull("cargo contract -V");
+  if (!cargoContractVersionOutput) {
+    return null
+  }
+
+  const match = cargoContractVersionOutput.match(regex);
+  if (!match) {
+    throw new ProcessError(
+      `Unable to determine cargo-contract version. Please verify its installation.`
+    );
+  }
+
+  return match[1];
+}
+
+export function ensureCargoContractVersionCompatibility(
+  cargoContractVersion: string,
+  minimalVersion: string,
+  invalidVersionsList?: string[]
+) {
+  if (invalidVersionsList?.includes(cargoContractVersion)) {
+    throw new ProcessError(
+      `The cargo-contract version ${cargoContractVersion} is not supported. Please update or change the version.`
+    );
+  }
+
+  if (!semver.satisfies(cargoContractVersion.replace(/-.*$/, ""), `>=${minimalVersion}`)) {
+    throw new ProcessError(
+      `cargo-contract version >= ${minimalVersion} required, but found version ${cargoContractVersion}. Please update to a compatible version.`
+    );
   }
 }

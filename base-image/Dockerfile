@@ -19,12 +19,12 @@ RUN curl -L https://github.com/swankyhub/swanky-cli/releases/download/v3.1.0-bet
 # Install Rustup and Rust, additional components, packages, and verify the installations
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
   /bin/bash -c "source $HOME/.cargo/env && \
-  rustup toolchain install nightly-2023-03-05 && \
-  rustup default nightly-2023-03-05 && \
-  rustup component add rust-src --toolchain nightly-2023-03-05 && \
-  rustup target add wasm32-unknown-unknown --toolchain nightly-2023-03-05 && \
-  cargo +stable install cargo-dylint dylint-link && \
-  cargo +stable install cargo-contract --force --version 4.0.0-alpha && \
+  rustup install 1.72 && \
+  rustup default 1.72 && \
+  rustup component add rust-src && \
+  rustup target add wasm32-unknown-unknown && \
+  cargo install cargo-dylint dylint-link && \
+  cargo install cargo-contract --version 4.0.0-rc.1 && \
   rustc --version"
 
 # Install Yarn 1.x
