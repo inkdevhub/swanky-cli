@@ -1,4 +1,4 @@
-import { execaCommand } from "execa";
+import { execaCommand, execaCommandSync } from "execa";
 import { copy, emptyDir, ensureDir, readJSONSync } from "fs-extra/esm";
 import path from "node:path";
 import {
@@ -11,16 +11,16 @@ import {
   DEFAULT_ACCOUNT,
   DEFAULT_CONFIG_NAME,
   DEFAULT_CONFIG_FOLDER_NAME,
+  DEFAULT_NODE_INFO,
 } from "./consts.js";
 import { SwankyConfig, SwankySystemConfig } from "../types/index.js";
 import { ConfigError, FileError } from "./errors.js";
 import { userInfo } from "os";
-import { swankyNode } from "./nodeInfo.js";
 import { existsSync } from "fs";
 
-export async function commandStdoutOrNull(command: string): Promise<string | null> {
+export function commandStdoutOrNull(command: string): string | null {
   try {
-    const result = await execaCommand(command);
+    const result = execaCommandSync(command);
     return result.stdout;
   } catch {
     return null;
@@ -154,8 +154,9 @@ export function buildSwankyConfig() {
   return {
     node: {
       localPath: "",
-      polkadotPalletVersions: swankyNode.polkadotPalletVersions,
-      supportedInk: swankyNode.supportedInk,
+      polkadotPalletVersions: DEFAULT_NODE_INFO.polkadotPalletVersions,
+      supportedInk: DEFAULT_NODE_INFO.supportedInk,
+      version: DEFAULT_NODE_INFO.version,
     },
     defaultAccount: DEFAULT_ACCOUNT,
     accounts: [

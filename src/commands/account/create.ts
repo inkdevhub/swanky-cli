@@ -6,7 +6,9 @@ import inquirer from "inquirer";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { FileError } from "../../lib/errors.js";
 import { ConfigBuilder } from "../../lib/config-builder.js";
-export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
+import { SwankyAccountCommand } from "./swankyAccountCommands.js";
+
+export class CreateAccount extends SwankyAccountCommand<typeof CreateAccount> {
   static description = "Create a new dev account in config";
 
   static flags = {
@@ -111,5 +113,7 @@ export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
         accountData.alias
       )} stored to config`
     );
+
+    await this.performFaucetTransfer(accountData, true);
   }
 }

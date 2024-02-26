@@ -2,6 +2,7 @@ import { mnemonicGenerate } from "@polkadot/util-crypto";
 import { Keyring } from "@polkadot/keyring";
 import { KeyringPair } from "@polkadot/keyring/types";
 import { ChainProperty, KeypairType } from "../types/index.js";
+import { KEYPAIR_TYPE } from "./consts.js";
 
 interface IChainAccount {
   pair: KeyringPair;
@@ -17,7 +18,7 @@ export class ChainAccount implements IChainAccount {
     return mnemonicGenerate();
   }
 
-  constructor(mnemonic: string, type: KeypairType = "sr25519") {
+  constructor(mnemonic: string, type: KeypairType = KEYPAIR_TYPE) {
     this._keyringType = type;
     this._keyring = new Keyring({ type: type });
     this._mnemonic = mnemonic;

@@ -6,7 +6,7 @@ import { execaCommand, execaCommandSync } from "execa";
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer from "inquirer";
 import TOML from "@iarna/toml";
-import { choice, email, name, pickTemplate } from "../../lib/prompts.js";
+import { choice, email, name, pickNodeVersion, pickTemplate } from "../../lib/prompts.js";
 import {
   buildSwankyConfig,
   checkCliDependencies,
@@ -15,8 +15,9 @@ import {
   downloadNode,
   getTemplates,
   installDeps,
+  prepareTestFiles,
   processTemplates,
-  swankyNode,
+  swankyNodeVersions
 } from "../../lib/index.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { InputError, UnknownError } from "../../lib/errors.js";
@@ -25,6 +26,7 @@ import { merge } from "lodash-es";
 import inquirerFuzzyPath from "inquirer-fuzzy-path";
 import chalk from "chalk";
 import { ConfigBuilder } from "../../lib/config-builder.js";
+import { DEFAULT_NODE_INFO } from "../../lib/consts.js";
 
 type TaskFunction = (...args: any[]) => any;
 
@@ -142,18 +144,29 @@ export class Init extends SwankyCommand<typeof Init> {
         choice("useSwankyNode", "Do you want to download Swanky node?"),
       ]);
       if (useSwankyNode) {
+        const versions = Array.from(swankyNodeVersions.keys());
+        let nodeVersion = DEFAULT_NODE_INFO.version;
+        await inquirer.prompt([
+          pickNodeVersion(versions),
+        ]).then((answers) => {
+           nodeVersion = answers.version;
+        });
+
+        const nodeInfo = swankyNodeVersions.get(nodeVersion)!;
+
         this.taskQueue.push({
           task: downloadNode,
-          args: [this.projectPath, swankyNode, this.spinner],
+          args: [this.projectPath, nodeInfo, this.spinner],
           runningMessage: "Downloading Swanky node",
-          callback: (localPath) => this.configBuilder.updateNodeSettings({ localPath }),
+          callback: (localPath) => this.configBuilder.updateNodeSettings({ supportedInk: nodeInfo.supportedInk,
+            polkadotPalletVersions: nodeInfo.polkadotPalletVersions,
+            version: nodeInfo.version, localPath }),
         });
       }
     }
 
     Object.keys(this.swankyConfig.contracts).forEach(async (contractName) => {
       await ensureDir(path.resolve(this.projectPath, "artifacts", contractName));
-      await ensureDir(path.resolve(this.projectPath, "tests", contractName));
     });
 
     this.taskQueue.push({
@@ -232,6 +245,14 @@ export class Init extends SwankyCommand<typeof Init> {
       ],
       runningMessage: "Copying contract template files",
     });
+
+    if (contractTemplate === "psp22") {
+      this.taskQueue.push({
+        task: prepareTestFiles,
+        args: ["e2e", path.resolve(templates.templatesPath), this.projectPath],
+        runningMessage: "Copying test helpers",
+      });
+    }
 
     this.taskQueue.push({
       task: processTemplates,
@@ -393,7 +414,7 @@ async function detectModuleNames(copyList: CopyCandidates): Promise<CopyCandidat
         entry.dirent.isDirectory() &&
         (await pathExists(path.resolve(entry.path, "Cargo.toml")))
       ) {
-        const fileData = await readFile(path.resolve(entry.path, "Cargo.toml"), "utf-8");
+        const fileData = await readFile(path.resolve(entry.path, "Cargo.toml"), "utf8");
         const toml: any = TOML.parse(fileData);
         if (toml.package?.name) {
           extendedEntry.moduleName = toml.package.name;
@@ -504,7 +525,7 @@ async function detectTests(pathToExistingProject: string): Promise<string | unde
 async function readRootCargoToml(pathToProject: string) {
   const rootTomlPath = path.resolve(pathToProject, "Cargo.toml");
   if (!(await pathExists(rootTomlPath))) return null;
-  const fileData = await readFile(rootTomlPath, "utf-8");
+  const fileData = await readFile(rootTomlPath, "utf8");
   const toml: any = TOML.parse(fileData);
 
   if (!toml.workspace) toml.workspace = {};

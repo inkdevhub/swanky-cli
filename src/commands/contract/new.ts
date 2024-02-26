@@ -1,11 +1,13 @@
 import { Args, Flags } from "@oclif/core";
 import path from "node:path";
-import { ensureDir, pathExists } from "fs-extra/esm";
+import { ensureDir, pathExists, pathExistsSync } from "fs-extra/esm";
 import {
   checkCliDependencies,
   copyContractTemplateFiles,
   processTemplates,
-  getTemplates, getSwankyConfig,
+  getTemplates,
+  prepareTestFiles,
+  getSwankyConfig,
 } from "../../lib/index.js";
 import { email, name, pickTemplate } from "../../lib/prompts.js";
 import { paramCase, pascalCase, snakeCase } from "change-case";
@@ -79,6 +81,18 @@ export class NewContract extends SwankyCommand<typeof NewContract> {
       "Copying contract template files"
     );
 
+    if (contractTemplate === "psp22") {
+      const e2eTestHelpersPath = path.resolve(projectPath, "tests", "test_helpers");
+      if (!pathExistsSync(e2eTestHelpersPath)) {
+        await this.spinner.runCommand(
+          () => prepareTestFiles("e2e", path.resolve(templates.templatesPath), projectPath),
+          "Copying e2e test helpers"
+        );
+      } else {
+        console.log("e2e test helpers already exist. No files were copied.");
+      }
+    }
+
     await this.spinner.runCommand(
       () =>
         processTemplates(projectPath, {
@@ -94,7 +108,6 @@ export class NewContract extends SwankyCommand<typeof NewContract> {
     );
 
     await ensureDir(path.resolve(projectPath, "artifacts", args.contractName));
-    await ensureDir(path.resolve(projectPath, "tests", args.contractName));
 
     await this.spinner.runCommand(async () => {
       const newLocalConfig = new ConfigBuilder(getSwankyConfig("local"))

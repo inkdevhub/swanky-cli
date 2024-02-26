@@ -1,11 +1,9 @@
 import { Command, Flags, Interfaces } from "@oclif/core";
-import {
-  buildSwankyConfig,
+import chalk from "chalk";
+import { buildSwankyConfig,
   configName,
-  getSystemConfigDirectoryPath,
   getSwankyConfig,
-  Spinner,
-} from "./index.js";
+  getSystemConfigDirectoryPath, Spinner } from "./index.js";
 import { AccountData, SwankyConfig, SwankySystemConfig } from "../types/index.js";
 import { writeJSON } from "fs-extra/esm";
 import { existsSync, mkdirSync } from "fs";
@@ -138,6 +136,18 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
     );
 
     newConfig.accounts = Array.from(accountMap.values());
+  }
+
+  protected findAccountByAlias(alias: string): AccountData {
+    const accountData = this.swankyConfig.accounts.find(
+      (account: AccountData) => account.alias === alias
+    );
+
+    if (!accountData) {
+      throw new ConfigError(`Provided account alias ${chalk.yellowBright(alias)} not found in swanky.config.json`);
+    }
+
+    return accountData;
   }
 
   protected async catch(err: Error & { exitCode?: number }): Promise<any> {

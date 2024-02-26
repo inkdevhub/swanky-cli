@@ -30,6 +30,8 @@ export interface ContractData {
 export interface BuildData {
   timestamp: number;
   artifactsPath: string;
+  buildMode: BuildMode;
+  isVerified: boolean;
 }
 
 export interface DeploymentData {
@@ -43,6 +45,7 @@ export interface SwankyConfig extends SwankySystemConfig{
     polkadotPalletVersions: string;
     localPath: string;
     supportedInk: string;
+    version: string;
   };
   contracts: Record<string, ContractData> | Record<string, never>;
 }
@@ -53,5 +56,13 @@ export interface SwankySystemConfig {
   networks: Record<string, {url: string}>
 }
 
+export enum BuildMode {
+  Debug = "Debug",
+  Release = "Release",
+  Verifiable = "Verifiable",
+}
+
 export type SupportedPlatforms = "darwin" | "linux";
 export type SupportedArch = "arm64" | "x64";
+
+export type TestType = "e2e" | "mocha";

@@ -1,20 +1,12 @@
 import { Args, Flags } from "@oclif/core";
 import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
-import {
-  resolveNetworkUrl,
-  ChainApi,
-  ChainAccount,
-  decrypt,
-  AbiType,
-  ensureAccountIsSet,
-  configName, getSwankyConfig,
-} from "../../lib/index.js";
-import { AccountData, Encrypted, SwankyConfig } from "../../types/index.js";
+import { AbiType, ChainAccount, ChainApi, decrypt, resolveNetworkUrl, ensureAccountIsSet, configName, getSwankyConfig } from "../../lib/index.js";
+import { BuildMode, Encrypted, SwankyConfig } from "../../types/index.js";
 import inquirer from "inquirer";
 import chalk from "chalk";
 import { Contract } from "../../lib/contract.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-import { ApiError, ConfigError, FileError } from "../../lib/errors.js";
+import { ApiError, ConfigError, FileError, InputError, ProcessError } from "../../lib/errors.js";
 import { ConfigBuilder } from "../../lib/config-builder.js";
 
 export class DeployContract extends SwankyCommand<typeof DeployContract> {
@@ -78,23 +70,49 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
       );
     }
 
+    if (contract.buildMode === undefined) {
+      throw new ProcessError(
+        `Build mode is undefined for contract ${args.contractName}. Please ensure the contract is correctly compiled.`
+      );
+    } else if (contract.buildMode !== BuildMode.Verifiable) {
+      await inquirer
+        .prompt([
+          {
+            type: "confirm",
+            message: `You are deploying a not verified contract in ${
+              contract.buildMode === BuildMode.Release ? "release" : "debug"
+            } mode. Are you sure you want to continue?`,
+            name: "confirm",
+          },
+        ])
+        .then((answers) => {
+          if (!answers.confirm) {
+            this.log(
+              `${chalk.redBright("✖")} Aborted deployment of ${chalk.yellowBright(
+                args.contractName
+              )}`
+            );
+            process.exit(0);
+          }
+        });
+    }
+
     ensureAccountIsSet(flags.account, this.swankyConfig);
 
     const accountAlias = flags.account ?? this.swankyConfig.defaultAccount;
 
-    const accountData = this.swankyConfig.accounts.find(
-      (account: AccountData) => account.alias === accountAlias
-    );
-    if (!accountData) {
-      throw new ConfigError(`Provided account alias ${chalk.yellowBright(accountAlias)} not found in "${configName()}"`);
+    if (accountAlias === null) {
+      throw new InputError(`An account is required to deploy ${args.contractName}`);
     }
+
+    const accountData = this.findAccountByAlias(accountAlias);
 
     if (accountData.isDev && flags.network !== "local") {
       throw new ConfigError(
         `Account ${accountAlias} is a DEV account and can only be used with local network`
       );
     }
-
+    
     const mnemonic = accountData.isDev
       ? (accountData.mnemonic as string)
       : decrypt(
@@ -150,7 +168,7 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
         timestamp: Date.now(),
         address: contractAddress,
         networkUrl,
-        deployerAlias: accountAlias!,
+        deployerAlias: accountAlias,
       };
       const newLocalConfig = new ConfigBuilder(localConfig)
         .addContractDeployment(args.contractName, deploymentData)
