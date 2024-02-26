@@ -463,7 +463,7 @@ async function detectModuleNames(copyList: CopyCandidates): Promise<CopyCandidat
         entry.dirent.isDirectory() &&
         (await pathExists(path.resolve(entry.path, "Cargo.toml")))
       ) {
-        const fileData = await readFile(path.resolve(entry.path, "Cargo.toml"), "utf-8");
+        const fileData = await readFile(path.resolve(entry.path, "Cargo.toml"), "utf8");
         const toml: any = TOML.parse(fileData);
         if (toml.package?.name) {
           extendedEntry.moduleName = toml.package.name;
@@ -574,7 +574,7 @@ async function detectTests(pathToExistingProject: string): Promise<string | unde
 async function readRootCargoToml(pathToProject: string) {
   const rootTomlPath = path.resolve(pathToProject, "Cargo.toml");
   if (!(await pathExists(rootTomlPath))) return null;
-  const fileData = await readFile(rootTomlPath, "utf-8");
+  const fileData = await readFile(rootTomlPath, "utf8");
   const toml: any = TOML.parse(fileData);
 
   if (!toml.workspace) toml.workspace = {};

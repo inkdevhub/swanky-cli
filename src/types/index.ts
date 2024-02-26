@@ -30,6 +30,7 @@ export interface ContractData {
 export interface BuildData {
   timestamp: number;
   artifactsPath: string;
+  buildMode: BuildMode;
   isVerified: boolean;
 }
 
@@ -49,6 +50,12 @@ export interface SwankyConfig {
   accounts: AccountData[];
   contracts: Record<string, ContractData> | Record<string, never>;
   networks: Record<string, {url: string}>
+}
+
+export enum BuildMode {
+  Debug = "Debug",
+  Release = "Release",
+  Verifiable = "Verifiable",
 }
 
 export type SupportedPlatforms = "darwin" | "linux";

@@ -5,6 +5,7 @@ import { pathExists } from "fs-extra/esm";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { ensureCargoContractVersionCompatibility, extractCargoContractVersion, Spinner, storeArtifacts } from "../../lib/index.js";
 import { ConfigError, InputError, ProcessError } from "../../lib/errors.js";
+import { BuildMode } from "../../index.js";
 
 export class CompileContract extends SwankyCommand<typeof CompileContract> {
   static description = "Compile the smart contract(s) in your contracts directory";
@@ -63,6 +64,7 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
         throw new InputError(`Contract folder not found at expected path`);
       }
 
+      let buildMode = BuildMode.Debug;
       const compilationResult = await spinner.runCommand(
         async () => {
           return new Promise<string>((resolve, reject) => {
@@ -73,9 +75,11 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
               `contracts/${contractName}/Cargo.toml`,
             ];
             if (flags.release && !flags.verifiable) {
+              buildMode = BuildMode.Release;
               compileArgs.push("--release");
             }
             if (flags.verifiable) {
+              buildMode = BuildMode.Verifiable;
               const cargoContractVersion = extractCargoContractVersion();
               if (cargoContractVersion === null)
                 throw new InputError(
@@ -129,6 +133,7 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
       this.swankyConfig.contracts[contractName].build = {
         timestamp: Date.now(),
         artifactsPath,
+        buildMode,
         isVerified: false,
       };
 
