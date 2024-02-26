@@ -8,7 +8,7 @@ import inquirer from "inquirer";
 import chalk from "chalk";
 import { Contract } from "../../lib/contract.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-import { ApiError, ConfigError, FileError } from "../../lib/errors.js";
+import { ApiError, ConfigError, FileError, ProcessError } from "../../lib/errors.js";
 
 export class DeployContract extends SwankyCommand<typeof DeployContract> {
   static description = "Deploy contract to a running node";
@@ -70,6 +70,33 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
       );
     }
 
+    if (contract.buildMode === undefined) {
+      throw new ProcessError(
+        `Build mode is undefined for contract ${args.contractName}. Please ensure the contract is correctly compiled.`
+      );
+    } else if (contract.buildMode !== BuildMode.Verifiable) {
+      await inquirer
+        .prompt([
+          {
+            type: "confirm",
+            message: `You are deploying a not verified contract in ${
+              contract.buildMode === BuildMode.Release ? "release" : "debug"
+            } mode. Are you sure you want to continue?`,
+            name: "confirm",
+          },
+        ])
+        .then((answers) => {
+          if (!answers.confirm) {
+            this.log(
+              `${chalk.redBright("✖")} Aborted deployment of ${chalk.yellowBright(
+                args.contractName
+              )}`
+            );
+            process.exit(0);
+          }
+        });
+    }
+
     const accountData = this.findAccountByAlias(flags.account);
     const mnemonic = accountData.isDev
       ? (accountData.mnemonic as string)
@@ -90,22 +117,6 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
       await cryptoWaitReady();
       return new ChainAccount(mnemonic);
     }, "Initialising")) as ChainAccount;
-
-    const buildMode = await contract.getBuildMode();
-    if(buildMode !== BuildMode.Verifiable) {
-      await inquirer.prompt([
-        {
-          type: "confirm",
-          message: `You are deploying a not verified contract in ${buildMode === BuildMode.Release ? "release" : "debug"} mode. Are you sure you want to continue?`,
-          name: "confirm",
-        },
-      ]).then((answers) => {
-        if(!answers.confirm) {
-          this.log(`${chalk.redBright('✖')} Aborted deployment of ${chalk.yellowBright(args.contractName)}`);
-          process.exit(0);
-        }
-      })
-    }
 
     const { abi, wasm } = (await this.spinner.runCommand(async () => {
       const abi = await contract.getABI();

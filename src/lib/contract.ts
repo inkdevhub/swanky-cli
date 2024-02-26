@@ -3,7 +3,6 @@ import { BuildMode, ContractData, DeploymentData } from "../types/index.js";
 import { pathExists, readJSON } from "fs-extra/esm";
 import path from "node:path";
 import { FileError } from "./errors.js";
-import fs from "fs";
 
 export class Contract {
   static artifactTypes = [".json", ".contract"];
@@ -12,82 +11,64 @@ export class Contract {
   deployments: DeploymentData[];
   contractPath: string;
   artifactsPath: string;
+  buildMode?: BuildMode;
+
   constructor(contractRecord: ContractData) {
     this.name = contractRecord.name;
     this.moduleName = contractRecord.moduleName;
     this.deployments = contractRecord.deployments;
     this.contractPath = path.resolve("contracts", contractRecord.name);
     this.artifactsPath = path.resolve(consts.ARTIFACTS_PATH, contractRecord.name);
+    this.buildMode = contractRecord.build?.buildMode;
   }
 
   async pathExists() {
     return pathExists(this.contractPath);
   }
 
-  async artifactsExist() {
-    const result: { result: boolean; missingPaths: string[]; missingTypes: string[] } = {
-      result: true,
-      missingPaths: [],
-      missingTypes: [],
-    };
+
+  async artifactsExist(): Promise<{ result: boolean; missingPaths: string[] }> {
+    const missingPaths: string[] = [];
+    let result = true;
+
     for (const artifactType of Contract.artifactTypes) {
       const artifactPath = path.resolve(this.artifactsPath, `${this.moduleName}${artifactType}`);
-
       if (!(await pathExists(artifactPath))) {
-        result.result = false;
-        result.missingPaths.push(artifactPath);
-        result.missingTypes.push(artifactType);
+        result = false;
+        missingPaths.push(artifactPath);
       }
     }
-    return result;
+
+    return { result, missingPaths };
   }
 
   async getABI(): Promise<AbiType> {
-    const check = await this.artifactsExist();
-    if (!check.result && check.missingTypes.includes(".json")) {
-      throw new FileError(`Cannot read ABI, path not found: ${check.missingPaths.toString()}`);
-    }
-    return readJSON(path.resolve(this.artifactsPath, `${this.moduleName}.json`));
-  }
-
-  async getBuildMode(): Promise<BuildMode> {
-    const check = await this.artifactsExist();
-    if (!check.result && check.missingTypes.includes(".contract")) {
-      throw new FileError(
-        `Cannot read .contract bundle, path not found: ${check.missingPaths.join(', ')}`
-      );
-    }
-
-    const contractFilePath = path.resolve(this.artifactsPath, `${this.moduleName}.json`);
-    const contractFileContents = await fs.promises.readFile(contractFilePath, 'utf8');
-    const contractJson = JSON.parse(contractFileContents);
-
-    const isVerifiable = contractJson.image 
-      && typeof contractJson.image === 'string' 
-      && contractJson.image.startsWith("paritytech/contracts-verifiable");
-    
-    return isVerifiable ? BuildMode.Verifiable : contractJson.source.build_info.build_mode;
+    const jsonArtifactPath = `${this.moduleName}.json`;
+    await this.ensureArtifactExists(jsonArtifactPath);
+    return readJSON(path.resolve(this.artifactsPath, jsonArtifactPath));
   }
 
   async getBundle() {
-    const check = await this.artifactsExist();
-    if (!check.result && check.missingTypes.includes(".contract")) {
-      throw new FileError(
-        `Cannot read .contract bundle, path not found: ${check.missingPaths.toString()}`
-      );
-    }
-    return readJSON(path.resolve(this.artifactsPath, `${this.moduleName}.contract`), 'utf8');
+    const contractArtifactPath = `${this.moduleName}.contract`;
+    await this.ensureArtifactExists(contractArtifactPath);
+    return readJSON(path.resolve(this.artifactsPath, contractArtifactPath), 'utf8');
   }
 
   async getWasm(): Promise<Buffer> {
     const bundle = await this.getBundle();
     if (bundle.source?.wasm) return bundle.source.wasm;
-
     throw new FileError(`Cannot find wasm field in the .contract bundle!`);
   }
 
   async printInfo(): Promise<void> {
     const abi = await this.getABI();
     printContractInfo(abi);
+  }
+
+  private async ensureArtifactExists(artifactFileName: string): Promise<void> {
+    const artifactPath = path.resolve(this.artifactsPath, artifactFileName);
+    if (!(await pathExists(artifactPath))) {
+      throw new FileError(`Artifact file not found at path: ${artifactPath}`);
+    }
   }
 }
