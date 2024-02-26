@@ -3,8 +3,9 @@ import chalk from "chalk";
 import { ChainAccount, encrypt } from "../../lib/index.js";
 import { AccountData } from "../../types/index.js";
 import inquirer from "inquirer";
-import { SwankyCommand } from "../../lib/swankyCommand.js";
-export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
+import { SwankyAccountCommand } from "./swankyAccountCommands.js";
+
+export class CreateAccount extends SwankyAccountCommand<typeof CreateAccount> {
   static description = "Create a new dev account in config";
 
   static flags = {
@@ -35,7 +36,7 @@ export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
       );
     }
 
-    let tmpMnemonic = "";
+    let tmpMnemonic: string;
     if (flags.generate) {
       tmpMnemonic = ChainAccount.generate();
       console.log(
@@ -84,5 +85,7 @@ export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
         accountData.alias
       )} stored to config`
     );
+
+    await this.performFaucetTransfer(accountData, true);
   }
 }

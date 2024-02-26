@@ -1,13 +1,13 @@
-import { execaCommand } from "execa";
+import { execaCommand, execaCommandSync } from "execa";
 import { copy, emptyDir, ensureDir, readJSON } from "fs-extra/esm";
 import path from "node:path";
 import { DEFAULT_NETWORK_URL, ARTIFACTS_PATH, TYPED_CONTRACTS_PATH } from "./consts.js";
 import { SwankyConfig } from "../types/index.js";
 import { ConfigError, FileError, InputError } from "./errors.js";
 
-export async function commandStdoutOrNull(command: string): Promise<string | null> {
+export function commandStdoutOrNull(command: string): string | null {
   try {
-    const result = await execaCommand(command);
+    const result = execaCommandSync(command);
     return result.stdout;
   } catch {
     return null;
