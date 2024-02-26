@@ -39,11 +39,10 @@ export class DefaultAccount extends SwankyCommand<typeof DefaultAccount> {
     const accountAlias = args.accountAlias ?? (await this.promptForAccountAlias(config));
     this.ensureAccountExists(config, accountAlias);
 
-    const configBuilder = new ConfigBuilder(config);
-    configBuilder.setDefaultAccount(accountAlias);
+    const newConfig = new ConfigBuilder(config).setDefaultAccount(accountAlias).build();
 
     try {
-      await this.storeConfig(configBuilder.build(), configType);
+      await this.storeConfig(newConfig, configType);
     } catch (cause) {
       throw new FileError(`Error storing default account in ${configType} config`, {
         cause,

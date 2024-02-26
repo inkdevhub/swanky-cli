@@ -30,13 +30,14 @@ export class InstallNode extends SwankyCommand<typeof InstallNode> {
     const nodePath = path.resolve(projectPath, taskResult);
 
     await this.spinner.runCommand(async () => {
-      const configBuilder = new ConfigBuilder(getSwankyConfig("local"));
-      configBuilder.updateNodeSettings({
-        localPath: nodePath,
-        polkadotPalletVersions: swankyNode.polkadotPalletVersions,
-        supportedInk: swankyNode.supportedInk,
-      });
-      await this.storeConfig(configBuilder.build(), "local");
+      const newLocalConfig = new ConfigBuilder(getSwankyConfig("local"))
+        .updateNodeSettings({
+          localPath: nodePath,
+          polkadotPalletVersions: swankyNode.polkadotPalletVersions,
+          supportedInk: swankyNode.supportedInk,
+        })
+        .build();
+      await this.storeConfig(newLocalConfig, "local");
     }, "Updating swanky config");
 
     this.log("Swanky Node Installed successfully");

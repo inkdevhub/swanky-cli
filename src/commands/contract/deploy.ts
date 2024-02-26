@@ -152,9 +152,10 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
         networkUrl,
         deployerAlias: accountAlias!,
       };
-      const configBuilder = new ConfigBuilder(localConfig);
-      configBuilder.addContractDeployment(args.contractName, deploymentData);
-      await this.storeConfig(configBuilder.build(), 'local');
+      const newLocalConfig = new ConfigBuilder(localConfig)
+        .addContractDeployment(args.contractName, deploymentData)
+        .build();
+      await this.storeConfig(newLocalConfig, "local");
     }, "Writing config");
 
     this.log(`Contract deployed!`);

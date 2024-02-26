@@ -97,9 +97,10 @@ export class NewContract extends SwankyCommand<typeof NewContract> {
     await ensureDir(path.resolve(projectPath, "tests", args.contractName));
 
     await this.spinner.runCommand(async () => {
-      const configBuilder = new ConfigBuilder(getSwankyConfig("local"));
-      configBuilder.addContract(args.contractName);
-      await this.storeConfig(configBuilder.build(), "local");
+      const newLocalConfig = new ConfigBuilder(getSwankyConfig("local"))
+        .addContract(args.contractName)
+        .build();
+      await this.storeConfig(newLocalConfig, "local");
     }, "Writing config");
 
     this.log("😎 New contract successfully generated! 😎");
