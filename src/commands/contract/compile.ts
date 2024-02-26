@@ -1,9 +1,9 @@
 import { Args, Flags } from "@oclif/core";
 import path from "node:path";
-import { ensureCargoContractVersionCompatibility, extractCargoContractVersion, generateTypes, Spinner, storeArtifacts } from "../../lib/index.js";
 import { spawn } from "node:child_process";
 import { pathExists } from "fs-extra/esm";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
+import { ensureCargoContractVersionCompatibility, extractCargoContractVersion, Spinner, storeArtifacts } from "../../lib/index.js";
 import { ConfigError, InputError, ProcessError } from "../../lib/errors.js";
 
 export class CompileContract extends SwankyCommand<typeof CompileContract> {
@@ -125,12 +125,6 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
       await spinner.runCommand(async () => {
         return storeArtifacts(artifactsPath, contractInfo.name, contractInfo.moduleName);
       }, "Moving artifacts");
-
-      await spinner.runCommand(
-        async () => await generateTypes(contractInfo.name),
-        `Generating ${contractName} contract ts types`,
-        `${contractName} contract's TS types Generated successfully`,
-      );
 
       this.swankyConfig.contracts[contractName].build = {
         timestamp: Date.now(),

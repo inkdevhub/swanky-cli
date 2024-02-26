@@ -6,12 +6,12 @@ import { globby } from "globby";
 import handlebars from "handlebars";
 import { DownloadEndedStats, DownloaderHelper } from "node-downloader-helper";
 import process from "node:process";
+import semver from "semver";
 import { nodeInfo } from "./nodeInfo.js";
 import decompress from "decompress";
 import { Spinner } from "./spinner.js";
-import { SupportedPlatforms, SupportedArch } from "../types/index.js";
+import { SupportedPlatforms, SupportedArch, TestType } from "../types/index.js";
 import { ConfigError, NetworkError, ProcessError } from "./errors.js";
-import semver from "semver";
 import { commandStdoutOrNull } from "./command-utils.js";
 
 export async function checkCliDependencies(spinner: Spinner) {
@@ -55,10 +55,41 @@ export async function copyContractTemplateFiles(
     path.resolve(contractTemplatePath, "contract"),
     path.resolve(projectPath, "contracts", contractName)
   );
-  await copy(
-    path.resolve(contractTemplatePath, "test"),
-    path.resolve(projectPath, "tests", contractName)
-  );
+}
+
+export async function prepareTestFiles(
+  testType: TestType,
+  templatePath: string,
+  projectPath: string,
+  templateName?: string,
+  contractName?: string
+) {
+  switch (testType) {
+    case "e2e": {
+      await copy(
+        path.resolve(templatePath, "test_helpers"),
+        path.resolve(projectPath, "tests", "test_helpers")
+      );
+      break;
+    }
+    case "mocha": {
+      if (!templateName) {
+        throw new ProcessError("'templateName' argument is required for mocha tests");
+      }
+      if (!contractName) {
+        throw new ProcessError("'contractName' argument is required for mocha tests");
+      }
+      await copy(
+        path.resolve(templatePath, "contracts", templateName, "test"),
+        path.resolve(projectPath, "tests", contractName)
+      );
+      break;
+    }
+    default: {
+      // This case will make the switch exhaustive
+      throw new ProcessError("Unhandled test type");
+    }
+  }
 }
 
 export async function processTemplates(projectPath: string, templateData: Record<string, string>) {

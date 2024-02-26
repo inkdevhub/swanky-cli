@@ -41,6 +41,19 @@ export class Contract {
     return result;
   }
 
+  async typedContractExists(contractName: string) {
+    const result: { result: boolean; missingPaths: string[] } = {
+      result: true,
+      missingPaths: [],
+    };
+    const artifactPath = path.resolve("typedContracts", `${contractName}`);
+    if(!(await pathExists(artifactPath))) {
+      result.result = false;
+      result.missingPaths.push(artifactPath);
+    }
+    return result;
+  }
+
   async getABI(): Promise<AbiType> {
     const check = await this.artifactsExist();
     if (!check.result && check.missingTypes.includes(".json")) {
