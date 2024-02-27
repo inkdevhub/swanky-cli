@@ -1,0 +1,7 @@
+[[parachains]]
+id = 100
+
+    [parachains.collator]
+    name = "collator01"
+    command = "./zombienet/bin/polkadot-parachain"
+    args = ["-lparachain=debug"]

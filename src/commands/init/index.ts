@@ -197,7 +197,7 @@ export class Init extends SwankyCommand<typeof Init> {
         callback(result as string);
       }
     }
-    this.log("🎉 😎 Swanky project successfully initialised! 😎 🎉");
+    this.log("🎉 😎 Swanky project successfully initialized! 😎 🎉");
   }
 
   async generate(projectName: string) {

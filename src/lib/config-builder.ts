@@ -1,4 +1,4 @@
-import { AccountData, BuildData, DeploymentData, SwankyConfig, SwankySystemConfig } from "../index.js";
+import { AccountData, BuildData, DeploymentData, SwankyConfig, SwankySystemConfig, ZombienetData } from "../index.js";
 import { snakeCase } from "change-case";
 
 export class ConfigBuilder<T extends SwankySystemConfig | SwankyConfig> {
@@ -60,6 +60,13 @@ export class ConfigBuilder<T extends SwankySystemConfig | SwankyConfig> {
   addContractBuild(name: string, data: BuildData): ConfigBuilder<T> {
     if ("contracts" in this.config) {
       this.config.contracts[name].build = data;
+    }
+    return this;
+  }
+
+  addZombienet(data: ZombienetData): ConfigBuilder<T> {
+    if ("zombienet" in this.config) {
+      this.config.zombienet = data;
     }
     return this;
   }
