@@ -16,9 +16,9 @@ export class Install extends SwankyCommand<typeof Install> {
     }),
     deps: Flags.string({
       required: false,
-      description:
-        "Install the specified dev dependency name and version in the format <dependency@version>",
-      options: Object.keys(SUPPORTED_DEPS),
+      description: `Install the specified dev dependency name and version in the format <dependency@version>. The following options are supported: ${Object.keys(
+        SUPPORTED_DEPS
+      ).join(", ")}`,
       multiple: true,
       default: [],
       char: "d",
@@ -30,6 +30,14 @@ export class Install extends SwankyCommand<typeof Install> {
 
     if (flags.deps.length === 0 && !flags.all) {
       throw new InputError("No dependency to install was specified");
+    }
+
+    if (flags.deps.some((dep) => !Object.keys(SUPPORTED_DEPS).includes(dep.split("@")[0]))) {
+      throw new InputError(
+        `Unsupported dependency specified. Please use one of the following supported dependencies: ${Object.keys(
+          SUPPORTED_DEPS
+        ).join(", ")}`
+      );
     }
 
     const newDeps: Record<string, string> = {};
