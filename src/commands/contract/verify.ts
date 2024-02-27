@@ -1,10 +1,12 @@
 import { Args, Flags } from "@oclif/core";
 import path from "node:path";
-import { ensureCargoContractVersionCompatibility, extractCargoContractVersion, Spinner } from "../../lib/index.js";
+import { ensureCargoContractVersionCompatibility, extractCargoContractVersion, getSwankyConfig, Spinner } from "../../lib/index.js";
 import { pathExists } from "fs-extra/esm";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { ConfigError, InputError, ProcessError } from "../../lib/errors.js";
 import { spawn } from "node:child_process";
+import { ConfigBuilder } from "../../lib/config-builder.js";
+import { BuildData, SwankyConfig } from "../../index.js";
 
 export class VerifyContract extends SwankyCommand<typeof VerifyContract> {
   static description = "Verify the smart contract(s) in your contracts directory";
@@ -28,6 +30,8 @@ export class VerifyContract extends SwankyCommand<typeof VerifyContract> {
 
   async run(): Promise<void> {
     const { args, flags } = await this.parse(VerifyContract);
+
+    const localConfig = getSwankyConfig("local") as SwankyConfig;
 
     const cargoContractVersion = extractCargoContractVersion();
     if (cargoContractVersion === null)
@@ -112,11 +116,20 @@ export class VerifyContract extends SwankyCommand<typeof VerifyContract> {
         `Verifying ${contractName} contract`,
         `${contractName} Contract verified successfully`
       );
-      contractInfo.build.isVerified = true;
 
-      this.swankyConfig.contracts[contractName] = contractInfo;
+      await this.spinner.runCommand(async () => {
+        const buildData = {
+          ...contractInfo.build,
+          isVerified: true
+        } as BuildData;
+      
+        const newLocalConfig = new ConfigBuilder(localConfig)
+          .addContractBuild(args.contractName, buildData)
+          .build();
+      
+        await this.storeConfig(newLocalConfig, "local");
+      }, "Writing config");
 
-      await this.storeConfig();
     }
   }
 }
