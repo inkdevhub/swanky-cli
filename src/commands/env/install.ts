@@ -5,6 +5,7 @@ import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { InputError } from "../../lib/errors.js";
 import { installCliDevDeps } from "../../lib/tasks.js";
 import { SUPPORTED_DEPS } from "../../lib/consts.js";
+import { DependencyName } from "../../index.js";
 
 export class Install extends SwankyCommand<typeof Install> {
   static flags = {
@@ -40,8 +41,9 @@ export class Install extends SwankyCommand<typeof Install> {
     const newEnv = { ...this.swankyConfig.env, ...newDeps };
     const deps = Object.entries(newEnv);
     for (const [dep, version] of deps) {
+      const typedDep = dep as DependencyName;
       await this.spinner.runCommand(
-        () => installCliDevDeps(this.spinner, dep, version),
+        () => installCliDevDeps(this.spinner, typedDep, version),
         `Installing ${dep}`
       );
     }

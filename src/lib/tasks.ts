@@ -9,7 +9,7 @@ import process from "node:process";
 import { nodeInfo } from "./nodeInfo.js";
 import decompress from "decompress";
 import { Spinner } from "./spinner.js";
-import { SupportedPlatforms, SupportedArch } from "../types/index.js";
+import { SupportedPlatforms, SupportedArch, DependencyName } from "../types/index.js";
 import { ConfigError, NetworkError } from "./errors.js";
 
 export async function checkCliDependencies(spinner: Spinner) {
@@ -28,11 +28,7 @@ export async function checkCliDependencies(spinner: Spinner) {
   }
 }
 
-export async function installCliDevDeps(
-  spinner: Spinner,
-  name: string,
-  version: string
-) {
+export async function installCliDevDeps(spinner: Spinner, name: DependencyName, version: string) {
   switch (name) {
     case "rust": {
       spinner.text(`  Installing rust`);
@@ -48,11 +44,19 @@ export async function installCliDevDeps(
       await execaCommand(`rustup target add wasm32-unknown-unknown --toolchain ${version}`);
       break;
     }
-    default: {
+    case "cargo-dylint":
+    case "cargo-contract": {
       spinner.text(`  Installing ${name}`);
-      await execaCommand(`cargo +stable install ${name} ${version === 'latest' ? '' : ` --force --version ${version}`}`);
+      await execaCommand(
+        `cargo +stable install ${name} ${
+          version === "latest" ? "" : ` --force --version ${version}`
+        }`
+      );
       break;
     }
+    default:
+      spinner.fail(`Unsupported dependency. Skipping installation.`);
+      return;
   }
 }
 

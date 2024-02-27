@@ -16,4 +16,4 @@ export const SUPPORTED_DEPS = {
   "rust-nightly": DEFAULT_RUST_NIGHTLY_DEP_VERSION,
   "cargo-dylint": DEFAULT_CARGO_DYLINT_DEP_VERSION,
   "cargo-contract": DEFAULT_CARGO_CONTRACT_DEP_VERSION,
-};
+} as const;
