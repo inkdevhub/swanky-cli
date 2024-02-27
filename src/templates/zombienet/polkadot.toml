@@ -1,3 +1,6 @@
+[settings]
+timeout = 1000
+
 [relaychain]
 default_command = "./zombienet/bin/polkadot"
 chain = "rococo-local"

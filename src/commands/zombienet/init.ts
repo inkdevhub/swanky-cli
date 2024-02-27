@@ -80,7 +80,7 @@ As a result users of MacOS need to clone the Polkadot repo (https://github.com/p
 
     const configPath = path.resolve(projectPath, "zombienet", "config");
 
-    if (flags.binaries.length < 2) {
+    if (flags.binaries.length === 1 && flags.binaries[0] === "polkadot") {
       await spinner.runCommand(
         () =>
           copyZombienetTemplateFile(zombienetTemplatePath, configPath),
