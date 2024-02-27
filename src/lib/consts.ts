@@ -5,3 +5,15 @@ export const DEFAULT_SHIBUYA_NETWORK_URL = "wss://shibuya.public.blastapi.io";
 
 export const ARTIFACTS_PATH = "artifacts";
 export const TYPED_CONTRACTS_PATH = "typedContracts";
+
+export const DEFAULT_RUST_DEP_VERSION = "1.76.0";
+export const DEFAULT_RUST_NIGHTLY_DEP_VERSION = "nightly-2024-02-26";
+export const DEFAULT_CARGO_DYLINT_DEP_VERSION = "2.6.1";
+export const DEFAULT_CARGO_CONTRACT_DEP_VERSION = "4.0.0-rc.2";
+
+export const SUPPORTED_DEPS = {
+  rust: DEFAULT_RUST_DEP_VERSION,
+  "rust-nightly": DEFAULT_RUST_NIGHTLY_DEP_VERSION,
+  "cargo-dylint": DEFAULT_CARGO_DYLINT_DEP_VERSION,
+  "cargo-contract": DEFAULT_CARGO_CONTRACT_DEP_VERSION,
+} as const;

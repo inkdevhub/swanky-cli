@@ -20,7 +20,11 @@ import {
 } from "../../lib/index.js";
 import {
   DEFAULT_ASTAR_NETWORK_URL,
+  DEFAULT_CARGO_CONTRACT_DEP_VERSION,
+  DEFAULT_CARGO_DYLINT_DEP_VERSION,
   DEFAULT_NETWORK_URL,
+  DEFAULT_RUST_NIGHTLY_DEP_VERSION,
+  DEFAULT_RUST_DEP_VERSION,
   DEFAULT_SHIBUYA_NETWORK_URL,
   DEFAULT_SHIDEN_NETWORK_URL,
 } from "../../lib/consts.js";
@@ -107,6 +111,12 @@ export class Init extends SwankyCommand<typeof Init> {
       shibuya: { url: DEFAULT_SHIBUYA_NETWORK_URL },
     },
     contracts: {},
+    env: {
+      rust: DEFAULT_RUST_DEP_VERSION,
+      "rust-nightly": DEFAULT_RUST_NIGHTLY_DEP_VERSION,
+      "cargo-dylint": DEFAULT_CARGO_DYLINT_DEP_VERSION,
+      "cargo-contract": DEFAULT_CARGO_CONTRACT_DEP_VERSION,
+    },
   };
 
   taskQueue: Task[] = [];

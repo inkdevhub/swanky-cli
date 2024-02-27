@@ -9,7 +9,7 @@ import process from "node:process";
 import { nodeInfo } from "./nodeInfo.js";
 import decompress from "decompress";
 import { Spinner } from "./spinner.js";
-import { SupportedPlatforms, SupportedArch } from "../types/index.js";
+import { SupportedPlatforms, SupportedArch, DependencyName } from "../types/index.js";
 import { ConfigError, NetworkError } from "./errors.js";
 
 export async function checkCliDependencies(spinner: Spinner) {
@@ -25,6 +25,38 @@ export async function checkCliDependencies(spinner: Spinner) {
   for (const dep of dependencyList) {
     spinner.text(`  Checking ${dep.dependencyName}`);
     await execaCommand(dep.versionCommand);
+  }
+}
+
+export async function installCliDevDeps(spinner: Spinner, name: DependencyName, version: string) {
+  switch (name) {
+    case "rust": {
+      spinner.text(`  Installing rust`);
+      await execaCommand(`rustup toolchain install ${version}`);
+      await execaCommand(`rustup default ${version}`);
+      break;
+    }
+    case "rust-nightly": {
+      spinner.text(`  Installing nightly`);
+      await execaCommand(`rustup toolchain install ${version}`);
+      await execaCommand(`rustup default ${version}`);
+      await execaCommand(`rustup component add rust-src --toolchain ${version}`);
+      await execaCommand(`rustup target add wasm32-unknown-unknown --toolchain ${version}`);
+      break;
+    }
+    case "cargo-dylint":
+    case "cargo-contract": {
+      spinner.text(`  Installing ${name}`);
+      await execaCommand(
+        `cargo +stable install ${name} ${
+          version === "latest" ? "" : ` --force --version ${version}`
+        }`
+      );
+      break;
+    }
+    default:
+      spinner.fail(`Unsupported dependency. Skipping installation.`);
+      return;
   }
 }
 

@@ -199,7 +199,6 @@ USAGE
 * [`swanky account create`](#swanky-account-create)
 * [`swanky account list`](#swanky-account-list)
 * [`swanky account ls`](#swanky-account-ls)
-* [`swanky check`](#swanky-check)
 * [`swanky contract compile [CONTRACTNAME]`](#swanky-contract-compile-contractname)
 * [`swanky contract deploy CONTRACTNAME`](#swanky-contract-deploy-contractname)
 * [`swanky contract explain CONTRACTNAME`](#swanky-contract-explain-contractname)
@@ -208,6 +207,8 @@ USAGE
 * [`swanky contract test [CONTRACTNAME]`](#swanky-contract-test-contractname)
 * [`swanky contract tx CONTRACTNAME MESSAGENAME`](#swanky-contract-tx-contractname-messagename)
 * [`swanky contract typegen CONTRACTNAME`](#swanky-contract-typegen-contractname)
+* [`swanky env check`](#swanky-env-check)
+* [`swanky env install`](#swanky-env-install)
 * [`swanky help [COMMANDS]`](#swanky-help-commands)
 * [`swanky init PROJECTNAME`](#swanky-init-projectname)
 * [`swanky node install`](#swanky-node-install)
@@ -275,21 +276,6 @@ DESCRIPTION
 
 ALIASES
   $ swanky account ls
-```
-
-## `swanky check`
-
-Check installed package versions and compatibility
-
-```
-USAGE
-  $ swanky check [-v]
-
-FLAGS
-  -v, --verbose  Display more info in the result logs
-
-DESCRIPTION
-  Check installed package versions and compatibility
 ```
 
 _See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v3.1.0-beta.0/dist/commands/check/index.ts)_
@@ -454,6 +440,38 @@ FLAGS
 
 DESCRIPTION
   Generate types from compiled contract metadata
+```
+
+## `swanky env check`
+
+Check installed package versions and compatibility
+
+```
+USAGE
+  $ swanky env check [-v]
+
+FLAGS
+  -v, --verbose  Display more info in the result logs
+
+DESCRIPTION
+  Check installed package versions and compatibility
+```
+
+## `swanky env install`
+
+Install dev dependencies
+
+```
+USAGE
+  $ swanky env install [-a] [-d <dependencies>]
+
+FLAGS
+  -a, --all                     Set all to true to install all dev dependencies specified in the swanky config
+  -d, --deps=<dependencies>...  [default: ] Specific dev dependencies to install in the format <dependency@version>
+  -v, --verbose                 Display more info in the result logs
+
+DESCRIPTION
+  Install dev dependencies
 ```
 
 ## `swanky help [COMMANDS]`

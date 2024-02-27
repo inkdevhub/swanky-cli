@@ -1,4 +1,5 @@
 import { SubmittableExtrinsic } from "@polkadot/api/types";
+import { SUPPORTED_DEPS } from "../lib/consts.js";
 
 export type KeypairType = "ed25519" | "sr25519" | "ecdsa" | "ethereum";
 
@@ -44,6 +45,7 @@ export interface SwankyConfig {
     localPath: string;
     supportedInk: string;
   };
+  env: Record<string, string>;
   accounts: AccountData[];
   contracts: Record<string, ContractData> | Record<string, never>;
   networks: Record<string, {url: string}>
@@ -51,3 +53,5 @@ export interface SwankyConfig {
 
 export type SupportedPlatforms = "darwin" | "linux";
 export type SupportedArch = "arm64" | "x64";
+
+export type DependencyName = keyof typeof SUPPORTED_DEPS;

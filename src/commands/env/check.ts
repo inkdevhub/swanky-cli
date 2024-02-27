@@ -24,7 +24,7 @@ interface Ctx {
   looseDefinitionDetected: boolean;
 }
 
-export default class Check extends SwankyCommand<typeof Check> {
+export class Check extends SwankyCommand<typeof Check> {
   static description = "Check installed package versions and compatibility";
 
   public async run(): Promise<void> {
