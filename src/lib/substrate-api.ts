@@ -1,5 +1,5 @@
 import { ApiPromise } from "@polkadot/api/promise";
-import { WsProvider } from "@polkadot/api";
+import { Keyring, WsProvider } from "@polkadot/api";
 import { SignerOptions } from "@polkadot/api/types";
 import { Codec, ITuple } from "@polkadot/types-codec/types";
 import { ISubmittableResult } from "@polkadot/types/types";
@@ -7,11 +7,13 @@ import { TypeRegistry } from "@polkadot/types";
 import { DispatchError, BlockHash } from "@polkadot/types/interfaces";
 import { ChainAccount } from "./account.js";
 import BN from "bn.js";
-import { ChainProperty, ExtrinsicPayload } from "../types/index.js";
+import { ChainProperty, ExtrinsicPayload, AccountData } from "../types/index.js";
 
 import { KeyringPair } from "@polkadot/keyring/types";
 import { Abi, CodePromise } from "@polkadot/api-contract";
 import { ApiError, UnknownError } from "./errors.js";
+import { ALICE_URI, KEYPAIR_TYPE, LOCAL_FAUCET_AMOUNT } from "./consts.js";
+import { BN_TEN } from "@polkadot/util";
 
 export type AbiType = Abi;
 // const AUTO_CONNECT_MS = 10_000; // [ms]
@@ -99,6 +101,10 @@ export class ChainApi {
 
   public get typeRegistry(): TypeRegistry {
     return this._registry;
+  }
+
+  public async disconnect(): Promise<void> {
+    await this._provider.disconnect();
   }
 
   public async start(): Promise<void> {
@@ -210,7 +216,6 @@ export class ChainApi {
       if (handler) handler(result);
     });
   }
-
   public async deploy(
     abi: Abi,
     wasm: Buffer,
@@ -245,6 +250,29 @@ export class ChainApi {
           this._provider.disconnect();
         }
       });
+    });
+  }
+
+  public async faucet(accountData: AccountData): Promise<void> {
+    const keyring = new Keyring({ type: KEYPAIR_TYPE });
+    const alicePair = keyring.addFromUri(ALICE_URI);
+
+    const chainDecimals = this._api.registry.chainDecimals[0];
+    const amount = new BN(LOCAL_FAUCET_AMOUNT).mul(BN_TEN.pow(new BN(chainDecimals)));
+
+    const tx = this._api.tx.balances.transfer(accountData.address, amount);
+
+    return new Promise((resolve, reject) => {
+      this.signAndSend(alicePair, tx, {}, ({ status, events }) => {
+        if (status.isInBlock || status.isFinalized) {
+          const transferEvent = events.find(({ event }) => event?.method === "Transfer");
+          if (!transferEvent) {
+            reject();
+            return;
+          }
+          resolve();
+        }
+      }).catch((error) => reject(error));
     });
   }
 }

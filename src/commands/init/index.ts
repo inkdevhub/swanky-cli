@@ -1,36 +1,32 @@
 import { Args, Flags } from "@oclif/core";
 import path from "node:path";
-import { ensureDir, writeJSON, pathExists, copy, outputFile, readJSON, remove } from "fs-extra/esm";
-import { stat, readdir, readFile } from "fs/promises";
+import { copy, ensureDir, outputFile, pathExists, readJSON, remove, writeJSON } from "fs-extra/esm";
+import { readdir, readFile, stat } from "fs/promises";
 import { execaCommand, execaCommandSync } from "execa";
 import { paramCase, pascalCase, snakeCase } from "change-case";
 import inquirer from "inquirer";
 import TOML from "@iarna/toml";
-import { choice, email, name, pickTemplate } from "../../lib/prompts.js";
+import { choice, email, name, pickNodeVersion, pickTemplate } from "../../lib/prompts.js";
 import {
+  buildSwankyConfig,
   checkCliDependencies,
   copyCommonTemplateFiles,
   copyContractTemplateFiles,
   downloadNode,
-  installDeps,
-  ChainAccount,
-  processTemplates,
-  swankyNode,
   getTemplates,
+  installDeps,
+  prepareTestFiles,
+  processTemplates,
+  swankyNodeVersions
 } from "../../lib/index.js";
-import {
-  DEFAULT_ASTAR_NETWORK_URL,
-  DEFAULT_NETWORK_URL,
-  DEFAULT_SHIBUYA_NETWORK_URL,
-  DEFAULT_SHIDEN_NETWORK_URL,
-} from "../../lib/consts.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { InputError, UnknownError } from "../../lib/errors.js";
-import { GlobEntry, globby } from "globby";
+import { globby, GlobEntry } from "globby";
 import { merge } from "lodash-es";
 import inquirerFuzzyPath from "inquirer-fuzzy-path";
-import { SwankyConfig } from "../../types/index.js";
 import chalk from "chalk";
+import { ConfigBuilder } from "../../lib/config-builder.js";
+import { DEFAULT_NODE_INFO } from "../../lib/consts.js";
 
 type TaskFunction = (...args: any[]) => any;
 
@@ -91,25 +87,12 @@ export class Init extends SwankyCommand<typeof Init> {
     super(argv, config);
     (this.constructor as typeof SwankyCommand).ENSURE_SWANKY_CONFIG = false;
   }
+
   projectPath = "";
 
-  configBuilder: Partial<SwankyConfig> = {
-    node: {
-      localPath: "",
-      polkadotPalletVersions: swankyNode.polkadotPalletVersions,
-      supportedInk: swankyNode.supportedInk,
-    },
-    accounts: [],
-    networks: {
-      local: { url: DEFAULT_NETWORK_URL },
-      astar: { url: DEFAULT_ASTAR_NETWORK_URL },
-      shiden: { url: DEFAULT_SHIDEN_NETWORK_URL },
-      shibuya: { url: DEFAULT_SHIBUYA_NETWORK_URL },
-    },
-    contracts: {},
-  };
-
   taskQueue: Task[] = [];
+
+  configBuilder = new ConfigBuilder(buildSwankyConfig());
 
   async run(): Promise<void> {
     const { args, flags } = await this.parse(Init);
@@ -161,43 +144,37 @@ export class Init extends SwankyCommand<typeof Init> {
         choice("useSwankyNode", "Do you want to download Swanky node?"),
       ]);
       if (useSwankyNode) {
+        const versions = Array.from(swankyNodeVersions.keys());
+        let nodeVersion = DEFAULT_NODE_INFO.version;
+        await inquirer.prompt([
+          pickNodeVersion(versions),
+        ]).then((answers) => {
+           nodeVersion = answers.version;
+        });
+
+        const nodeInfo = swankyNodeVersions.get(nodeVersion)!;
+
         this.taskQueue.push({
           task: downloadNode,
-          args: [this.projectPath, swankyNode, this.spinner],
+          args: [this.projectPath, nodeInfo, this.spinner],
           runningMessage: "Downloading Swanky node",
-          callback: (result) =>
-            this.configBuilder.node ? (this.configBuilder.node.localPath = result) : null,
+          callback: (localPath) => this.configBuilder.updateNodeSettings({ supportedInk: nodeInfo.supportedInk,
+            polkadotPalletVersions: nodeInfo.polkadotPalletVersions,
+            version: nodeInfo.version, localPath }),
         });
       }
     }
 
-    this.configBuilder.accounts = [
-      {
-        alias: "alice",
-        mnemonic: "//Alice",
-        isDev: true,
-        address: new ChainAccount("//Alice").pair.address,
-      },
-      {
-        alias: "bob",
-        mnemonic: "//Bob",
-        isDev: true,
-        address: new ChainAccount("//Bob").pair.address,
-      },
-    ];
-
-    Object.keys(this.configBuilder.contracts!).forEach(async (contractName) => {
+    Object.keys(this.swankyConfig.contracts).forEach(async (contractName) => {
       await ensureDir(path.resolve(this.projectPath, "artifacts", contractName));
-      await ensureDir(path.resolve(this.projectPath, "tests", contractName));
     });
 
     this.taskQueue.push({
-      task: () =>
-        writeJSON(path.resolve(this.projectPath, "swanky.config.json"), this.configBuilder, {
-          spaces: 2,
-        }),
+      task: async () =>
+        await this.storeConfig(this.configBuilder.build(), "local", this.projectPath),
       args: [],
       runningMessage: "Writing config",
+      shouldExitOnError: true,
     });
 
     for (const {
@@ -214,7 +191,7 @@ export class Init extends SwankyCommand<typeof Init> {
         runningMessage,
         successMessage,
         failMessage,
-        shouldExitOnError
+        shouldExitOnError,
       );
       if (result && callback) {
         callback(result as string);
@@ -269,6 +246,14 @@ export class Init extends SwankyCommand<typeof Init> {
       runningMessage: "Copying contract template files",
     });
 
+    if (contractTemplate === "psp22") {
+      this.taskQueue.push({
+        task: prepareTestFiles,
+        args: ["e2e", path.resolve(templates.templatesPath), this.projectPath],
+        runningMessage: "Copying test helpers",
+      });
+    }
+
     this.taskQueue.push({
       task: processTemplates,
       args: [
@@ -286,13 +271,13 @@ export class Init extends SwankyCommand<typeof Init> {
       runningMessage: "Processing templates",
     });
 
-    this.configBuilder.contracts = {
+    this.configBuilder.updateContracts( {
       [contractName as string]: {
         name: contractName,
         moduleName: snakeCase(contractName),
         deployments: [],
       },
-    };
+    });
   }
 
   async convert(pathToExistingProject: string, projectName: string) {
@@ -306,7 +291,7 @@ export class Init extends SwankyCommand<typeof Init> {
     } catch (cause) {
       throw new InputError(
         `Error reading target directory [${chalk.yellowBright(pathToExistingProject)}]`,
-        { cause }
+        { cause },
       );
     }
 
@@ -326,7 +311,7 @@ export class Init extends SwankyCommand<typeof Init> {
 
     const candidatesList: CopyCandidates = await getCopyCandidatesList(
       pathToExistingProject,
-      copyGlobsList
+      copyGlobsList,
     );
 
     const testDir = await detectTests(pathToExistingProject);
@@ -362,14 +347,8 @@ export class Init extends SwankyCommand<typeof Init> {
       },
     });
 
-    if (!this.configBuilder.contracts) this.configBuilder.contracts = {};
-
     for (const contract of confirmedCopyList.contracts) {
-      this.configBuilder.contracts[contract.name] = {
-        name: contract.name,
-        moduleName: contract.moduleName!,
-        deployments: [],
-      };
+      this.configBuilder.addContract(contract.name, contract.moduleName);
     }
 
     let rootToml = await readRootCargoToml(pathToExistingProject);
@@ -435,7 +414,7 @@ async function detectModuleNames(copyList: CopyCandidates): Promise<CopyCandidat
         entry.dirent.isDirectory() &&
         (await pathExists(path.resolve(entry.path, "Cargo.toml")))
       ) {
-        const fileData = await readFile(path.resolve(entry.path, "Cargo.toml"), "utf-8");
+        const fileData = await readFile(path.resolve(entry.path, "Cargo.toml"), "utf8");
         const toml: any = TOML.parse(fileData);
         if (toml.package?.name) {
           extendedEntry.moduleName = toml.package.name;
@@ -494,10 +473,10 @@ async function confirmCopyList(candidatesList: CopyCandidates) {
     (
       item: PathEntry & {
         group: "contracts" | "crates" | "tests";
-      }
+      },
     ) => {
       resultingList[item.group]?.push(item);
-    }
+    },
   );
   return resultingList;
 }
@@ -524,7 +503,7 @@ async function detectTests(pathToExistingProject: string): Promise<string | unde
       type: "confirm",
       name: "shouldUseDetectedTestDir",
       message: `Detected test directory [${path.basename(
-        testDir!
+        testDir!,
       )}]. Do you want to copy it to your new project?`,
       default: true,
     },
@@ -546,7 +525,7 @@ async function detectTests(pathToExistingProject: string): Promise<string | unde
 async function readRootCargoToml(pathToProject: string) {
   const rootTomlPath = path.resolve(pathToProject, "Cargo.toml");
   if (!(await pathExists(rootTomlPath))) return null;
-  const fileData = await readFile(rootTomlPath, "utf-8");
+  const fileData = await readFile(rootTomlPath, "utf8");
   const toml: any = TOML.parse(fileData);
 
   if (!toml.workspace) toml.workspace = {};
@@ -557,7 +536,7 @@ async function readRootCargoToml(pathToProject: string) {
 async function getManualPaths(
   pathToProject: string,
   directoryType: "contracts" | "crates" | "tests",
-  paths: string[] = []
+  paths: string[] = [],
 ): Promise<string[]> {
   const { selectedDirectory } = await inquirer.prompt([
     {
@@ -595,7 +574,7 @@ async function getCopyCandidatesList(
   pathsToCopy: {
     contractsDirectories: string[];
     cratesDirectories: string[];
-  }
+  },
 ) {
   const detectedPaths = {
     contracts: await getDirsAndFiles(projectPath, pathsToCopy.contractsDirectories),
@@ -616,7 +595,7 @@ async function getGlobPaths(projectPath: string, globList: string[], isDirOnly: 
       onlyDirectories: isDirOnly,
       deep: 1,
       objectMode: true,
-    }
+    },
   );
 }
 

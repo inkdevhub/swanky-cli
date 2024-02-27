@@ -1,20 +1,36 @@
 import { Flags } from "@oclif/core";
 import chalk from "chalk";
-import { ChainAccount, encrypt } from "../../lib/index.js";
+import { ChainAccount, encrypt, getSwankyConfig, isLocalConfigCheck } from "../../lib/index.js";
 import { AccountData } from "../../types/index.js";
 import inquirer from "inquirer";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
+import { FileError } from "../../lib/errors.js";
+import { ConfigBuilder } from "../../lib/config-builder.js";
+import { SwankyAccountCommand } from "./swankyAccountCommands.js";
+
+export class CreateAccount extends SwankyAccountCommand<typeof CreateAccount> {
   static description = "Create a new dev account in config";
 
   static flags = {
-    generate: Flags.boolean({
+    global: Flags.boolean({
       char: "g",
+      description: "Create account globally stored in Swanky system config.",
+      
+    }),
+    new: Flags.boolean({
+      char: "n",
+      description: "Generate a brand new account.",
     }),
     dev: Flags.boolean({
       char: "d",
+      description: "Make this account a dev account for local network usage.",
     }),
   };
+
+  constructor(argv: string[], baseConfig: any) {
+    super(argv, baseConfig);
+    (this.constructor as typeof SwankyCommand).ENSURE_SWANKY_CONFIG = false;
+  }
 
   async run(): Promise<void> {
     const { flags } = await this.parse(CreateAccount);
@@ -36,7 +52,7 @@ export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
     }
 
     let tmpMnemonic = "";
-    if (flags.generate) {
+    if (flags.new) {
       tmpMnemonic = ChainAccount.generate();
       console.log(
         `${
@@ -75,14 +91,29 @@ export class CreateAccount extends SwankyCommand<typeof CreateAccount> {
       accountData.mnemonic = tmpMnemonic;
     }
 
-    this.swankyConfig.accounts.push(accountData);
+    const configType = flags.global ? "global" : isLocalConfigCheck() ? "local" : "global";
+    const config = configType === "global" ? getSwankyConfig("global") : getSwankyConfig("local");
 
-    await this.storeConfig();
+    const configBuilder = new ConfigBuilder(config).addAccount(accountData);
+
+    if (config.defaultAccount === null) {
+      configBuilder.setDefaultAccount(accountData.alias);
+    }
+
+    try {
+      await this.storeConfig(configBuilder.build(), configType);
+    } catch (cause) {
+      throw new FileError(`Error storing created account in ${configType} config`, {
+        cause,
+      });
+    }
 
     this.log(
       `${chalk.greenBright("✔")} Account with alias ${chalk.yellowBright(
         accountData.alias
       )} stored to config`
     );
+
+    await this.performFaucetTransfer(accountData, true);
   }
 }

@@ -12,11 +12,7 @@ export class Tx extends ContractCall<typeof Tx> {
       char: "d",
       description: "Do a dry run, without signing the transaction",
     }),
-    account: Flags.string({
-      required: true,
-      char: "a",
-      description: "Account to sign the transaction with",
-    }),
+    ...ContractCall.callFlags,
   };
 
   static args = { ...ContractCall.callArgs };

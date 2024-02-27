@@ -1,10 +1,12 @@
 import { Args, Flags } from "@oclif/core";
 import path from "node:path";
-import { storeArtifacts, Spinner, generateTypes } from "../../lib/index.js";
 import { spawn } from "node:child_process";
 import { pathExists } from "fs-extra/esm";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
+import { ensureCargoContractVersionCompatibility, extractCargoContractVersion, Spinner, storeArtifacts, configName, getSwankyConfig } from "../../lib/index.js";
 import { ConfigError, InputError, ProcessError } from "../../lib/errors.js";
+import { BuildMode, SwankyConfig } from "../../index.js";
+import { ConfigBuilder } from "../../lib/config-builder.js";
 
 export class CompileContract extends SwankyCommand<typeof CompileContract> {
   static description = "Compile the smart contract(s) in your contracts directory";
@@ -15,6 +17,11 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
       char: "r",
       description:
         "A production contract should always be build in `release` mode for building optimized wasm",
+    }),
+    verifiable: Flags.boolean({
+      default: false,
+      description:
+        "A production contract should be build in `verifiable` mode to deploy on a public network. Ensure Docker Engine is up and running.",
     }),
     all: Flags.boolean({
       default: false,
@@ -35,6 +42,8 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(CompileContract);
 
+    const localConfig = getSwankyConfig("local") as SwankyConfig;
+
     if (args.contractName === undefined && !flags.all) {
       throw new InputError("No contracts were selected to compile", { winston: { stack: true } });
     }
@@ -49,7 +58,7 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
       const contractInfo = this.swankyConfig.contracts[contractName];
       if (!contractInfo) {
         throw new ConfigError(
-          `Cannot find contract info for ${contractName} contract in swanky.config.json`
+          `Cannot find contract info for ${contractName} contract in "${configName()}"`
         );
       }
       const contractPath = path.resolve("contracts", contractInfo.name);
@@ -58,6 +67,7 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
         throw new InputError(`Contract folder not found at expected path`);
       }
 
+      let buildMode = BuildMode.Debug;
       const compilationResult = await spinner.runCommand(
         async () => {
           return new Promise<string>((resolve, reject) => {
@@ -65,10 +75,24 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
               "contract",
               "build",
               "--manifest-path",
-              `${contractPath}/Cargo.toml`,
+              `contracts/${contractName}/Cargo.toml`,
             ];
-            if (flags.release) {
+            if (flags.release && !flags.verifiable) {
+              buildMode = BuildMode.Release;
               compileArgs.push("--release");
+            }
+            if (flags.verifiable) {
+              buildMode = BuildMode.Verifiable;
+              const cargoContractVersion = extractCargoContractVersion();
+              if (cargoContractVersion === null)
+                throw new InputError(
+                  `Cargo contract tool is required for verifiable mode. Please ensure it is installed.`
+                );
+
+              ensureCargoContractVersionCompatibility(cargoContractVersion, "4.0.0", [
+                "4.0.0-alpha",
+              ]);
+              compileArgs.push("--verifiable");
             }
             const compile = spawn("cargo", compileArgs);
             this.logger.info(`Running compile command: [${JSON.stringify(compile.spawnargs)}]`);
@@ -100,7 +124,7 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
           });
         },
         `Compiling ${contractName} contract`,
-        `${contractName} Contract compiled successfully`
+        `${contractName} Contract compiled successfully`,
       );
 
       const artifactsPath = compilationResult as string;
@@ -109,11 +133,18 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
         return storeArtifacts(artifactsPath, contractInfo.name, contractInfo.moduleName);
       }, "Moving artifacts");
 
-      await spinner.runCommand(
-        async () => await generateTypes(contractInfo.name),
-        `Generating ${contractName} contract ts types`,
-        `${contractName} contract's TS types Generated successfully`
-      );
+      await this.spinner.runCommand(async () => {
+        const buildData = {
+          timestamp: Date.now(),
+          artifactsPath,
+          buildMode,
+          isVerified: false,
+        };
+        const newLocalConfig = new ConfigBuilder(localConfig)
+          .addContractBuild(args.contractName, buildData)
+          .build();
+        await this.storeConfig(newLocalConfig, "local");
+      }, "Writing config");
     }
   }
 }

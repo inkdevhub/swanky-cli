@@ -2,8 +2,6 @@ import { SwankyCommand } from "../../lib/swankyCommand.js";
 import path from "node:path";
 import { pathExistsSync } from "fs-extra/esm";
 import { execaCommand } from "execa";
-import inquirer from "inquirer";
-import { readdirSync } from "fs";
 import { Flags } from "@oclif/core";
 
 

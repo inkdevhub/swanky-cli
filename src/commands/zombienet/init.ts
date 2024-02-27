@@ -5,12 +5,15 @@ import {
   buildZombienetConfigFromBinaries,
   copyZombienetTemplateFile,
   downloadZombienetBinaries,
+  getSwankyConfig,
   getTemplates,
   osCheck,
   Spinner,
 } from "../../lib/index.js";
 import { pathExistsSync } from "fs-extra/esm";
 import { zombienet, zombienetBinariesList } from "../../lib/zombienetInfo.js";
+import { ConfigBuilder } from "../../lib/config-builder.js";
+import { SwankyConfig, ZombienetData } from "../../index.js";
 
 export const zombienetConfig = "zombienet.config.toml";
 
@@ -31,6 +34,8 @@ export class InitZombienet extends SwankyCommand<typeof InitZombienet> {
   async run(): Promise<void> {
     const { flags } = await this.parse(InitZombienet);
 
+    const localConfig = getSwankyConfig("local") as SwankyConfig;
+
     const platform = osCheck().platform;
     if (platform === "darwin") {
       this.warn(`Note for MacOs users: Polkadot binary is not currently supported for MacOs.
@@ -44,7 +49,7 @@ As a result users of MacOS need to clone the Polkadot repo (https://github.com/p
 
     const spinner = new Spinner(flags.verbose);
 
-    this.swankyConfig.zombienet = {
+    const zombienetData: ZombienetData = {
       version: zombienet.version,
       downloadUrl: zombienet.downloadUrl,
       binaries: {},
@@ -61,10 +66,15 @@ As a result users of MacOS need to clone the Polkadot repo (https://github.com/p
       if (!Object.keys(zombienet.binaries).includes(binaryName)) {
         this.error(`Binary ${binaryName} not found in Zombienet config`);
       }
-      this.swankyConfig.zombienet.binaries[binaryName] = zombienet.binaries[binaryName as keyof typeof zombienet.binaries];
+      zombienetData.binaries[binaryName] = zombienet.binaries[binaryName as keyof typeof zombienet.binaries];
     }
 
-    await this.storeConfig();
+    await this.spinner.runCommand(async () => {
+      const newLocalConfig = new ConfigBuilder(localConfig)
+        .addZombienet(zombienetData)
+        .build();
+      await this.storeConfig(newLocalConfig, "local");
+    }, "Writing config");
 
     const zombienetTemplatePath = getTemplates().zombienetTemplatesPath;
 
@@ -85,7 +95,7 @@ As a result users of MacOS need to clone the Polkadot repo (https://github.com/p
 
     // Install binaries based on zombie config
     await this.spinner.runCommand(
-      () => downloadZombienetBinaries(flags.binaries, projectPath, this.swankyConfig, this.spinner),
+      () => downloadZombienetBinaries(flags.binaries, projectPath, localConfig, this.spinner),
       "Downloading Zombienet binaries",
     );
 

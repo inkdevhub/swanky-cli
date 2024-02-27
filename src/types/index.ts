@@ -24,12 +24,14 @@ export interface ContractData {
   name: string;
   moduleName: string;
   build?: BuildData;
-  deployments: DeploymentData[] | [];
+  deployments: DeploymentData[];
 }
 
 export interface BuildData {
   timestamp: number;
   artifactsPath: string;
+  buildMode: BuildMode;
+  isVerified: boolean;
 }
 
 export interface DeploymentData {
@@ -49,19 +51,24 @@ export interface DownloadUrl {
     "x64": string
   }
 }
-export interface SwankyConfig {
+export interface SwankyConfig extends SwankySystemConfig{
   node: {
     polkadotPalletVersions: string;
     localPath: string;
     supportedInk: string;
+    version: string;
   };
-  accounts: AccountData[];
   contracts: Record<string, ContractData> | Record<string, never>;
-  networks: Record<string, {url: string}>
   zombienet?: ZombienetData;
 }
 
-interface ZombienetData {
+export interface SwankySystemConfig {
+  defaultAccount: string | null;
+  accounts: AccountData[];
+  networks: Record<string, {url: string}>
+}
+
+export interface ZombienetData {
   version: string;
   downloadUrl: DownloadUrl;
   binaries: Record<string, { version: string; downloadUrl: Partial<DownloadUrl> }>;
@@ -101,5 +108,13 @@ export interface Collator {
   args: string[],
 }
 
+export enum BuildMode {
+  Debug = "Debug",
+  Release = "Release",
+  Verifiable = "Verifiable",
+}
+
 export type SupportedPlatforms = "darwin" | "linux";
 export type SupportedArch = "arm64" | "x64";
+
+export type TestType = "e2e" | "mocha";
