@@ -4,6 +4,7 @@ import { writeJSON } from "fs-extra/esm";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { InputError } from "../../lib/errors.js";
 import { installCliDevDeps } from "../../lib/tasks.js";
+import { SUPPORTED_DEPS } from "../../lib/consts.js";
 
 export class Install extends SwankyCommand<typeof Install> {
   static flags = {
@@ -16,6 +17,7 @@ export class Install extends SwankyCommand<typeof Install> {
       required: false,
       description:
         "Install the specified dev dependency name and version in the format <dependency@version>",
+      options: Object.keys(SUPPORTED_DEPS),
       multiple: true,
       default: [],
       char: "d",
