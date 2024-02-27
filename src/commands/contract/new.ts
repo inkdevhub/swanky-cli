@@ -1,12 +1,13 @@
 import { Args, Flags } from "@oclif/core";
 import path from "node:path";
-import { ensureDir, pathExists, pathExistsSync, writeJSON } from "fs-extra/esm";
+import { ensureDir, pathExists, pathExistsSync } from "fs-extra/esm";
 import {
   checkCliDependencies,
   copyContractTemplateFiles,
   processTemplates,
   getTemplates,
   prepareTestFiles,
+  getSwankyConfig,
 } from "../../lib/index.js";
 import { email, name, pickTemplate } from "../../lib/prompts.js";
 import { paramCase, pascalCase, snakeCase } from "change-case";
@@ -14,6 +15,7 @@ import { execaCommandSync } from "execa";
 import inquirer from "inquirer";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { InputError } from "../../lib/errors.js";
+import { ConfigBuilder } from "../../lib/config-builder.js";
 
 export class NewContract extends SwankyCommand<typeof NewContract> {
   static description = "Generate a new smart contract template inside a project";
@@ -108,13 +110,10 @@ export class NewContract extends SwankyCommand<typeof NewContract> {
     await ensureDir(path.resolve(projectPath, "artifacts", args.contractName));
 
     await this.spinner.runCommand(async () => {
-      this.swankyConfig.contracts[args.contractName] = {
-        name: args.contractName,
-        moduleName: snakeCase(args.contractName),
-        deployments: [],
-      };
-
-      await writeJSON(path.resolve("swanky.config.json"), this.swankyConfig, { spaces: 2 });
+      const newLocalConfig = new ConfigBuilder(getSwankyConfig("local"))
+        .addContract(args.contractName)
+        .build();
+      await this.storeConfig(newLocalConfig, "local");
     }, "Writing config");
 
     this.log("😎 New contract successfully generated! 😎");

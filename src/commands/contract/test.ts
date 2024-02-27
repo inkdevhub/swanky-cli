@@ -9,7 +9,7 @@ import { Contract } from "../../lib/contract.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { ConfigError, FileError, InputError, ProcessError, TestError } from "../../lib/errors.js";
 import { spawn } from "node:child_process";
-import { Spinner } from "../../lib/index.js";
+import { configName, Spinner } from "../../lib/index.js";
 
 declare global {
   var contractTypesPath: string; // eslint-disable-line no-var
@@ -55,7 +55,7 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
       const contractRecord = this.swankyConfig.contracts[contractName];
       if (!contractRecord) {
         throw new ConfigError(
-          `Cannot find a contract named ${args.contractName} in swanky.config.json`
+          `Cannot find a contract named ${args.contractName} in "${configName()}"`
         );
       }
 

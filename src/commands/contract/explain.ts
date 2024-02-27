@@ -2,6 +2,7 @@ import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { Args } from "@oclif/core";
 import { Contract } from "../../lib/contract.js";
 import { ConfigError, FileError } from "../../lib/errors.js";
+import { configName } from "../../lib/index.js";
 
 export class ExplainContract extends SwankyCommand<typeof ExplainContract> {
   static description = "Explain contract messages based on the contracts' metadata";
@@ -20,7 +21,7 @@ export class ExplainContract extends SwankyCommand<typeof ExplainContract> {
     const contractRecord = this.swankyConfig.contracts[args.contractName];
     if (!contractRecord) {
       throw new ConfigError(
-        `Cannot find a contract named ${args.contractName} in swanky.config.json`
+        `Cannot find a contract named ${args.contractName} in "${configName()}"`
       );
     }
 

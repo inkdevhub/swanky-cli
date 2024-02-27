@@ -24,7 +24,7 @@ export interface ContractData {
   name: string;
   moduleName: string;
   build?: BuildData;
-  deployments: DeploymentData[] | [];
+  deployments: DeploymentData[];
 }
 
 export interface BuildData {
@@ -40,15 +40,19 @@ export interface DeploymentData {
   deployerAlias: string;
   address: string;
 }
-export interface SwankyConfig {
+export interface SwankyConfig extends SwankySystemConfig{
   node: {
     polkadotPalletVersions: string;
     localPath: string;
     supportedInk: string;
     version: string;
   };
-  accounts: AccountData[];
   contracts: Record<string, ContractData> | Record<string, never>;
+}
+
+export interface SwankySystemConfig {
+  defaultAccount: string | null;
+  accounts: AccountData[];
   networks: Record<string, {url: string}>
 }
 

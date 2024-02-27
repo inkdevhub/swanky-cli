@@ -1,9 +1,9 @@
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { Flags } from "@oclif/core";
-import { downloadNode, swankyNodeVersions } from "../../lib/index.js";
+import { downloadNode, getSwankyConfig, swankyNodeVersions } from "../../lib/index.js";
 import path from "node:path";
-import { writeJSON } from "fs-extra/esm";
 import inquirer from "inquirer";
+import { ConfigBuilder } from "../../lib/config-builder.js";
 import { DEFAULT_NODE_INFO } from "../../lib/consts.js";
 import { choice, pickNodeVersion } from "../../lib/prompts.js";
 import { InputError } from "../../lib/errors.js";
@@ -55,23 +55,19 @@ export class InstallNode extends SwankyCommand<typeof InstallNode> {
       () => downloadNode(projectPath, nodeInfo, this.spinner),
       "Downloading Swanky node"
     )) as string;
-    const nodePath = path.relative(projectPath, taskResult);
+    const nodePath = path.resolve(projectPath, taskResult);
 
-
-    this.swankyConfig.node = {
-      localPath: nodePath,
-      polkadotPalletVersions: nodeInfo.polkadotPalletVersions,
-      supportedInk: nodeInfo.supportedInk,
-      version: nodeInfo.version,
-    };
-
-    await this.spinner.runCommand(
-      () =>
-        writeJSON(path.resolve(projectPath, "swanky.config.json"), this.swankyConfig, {
-          spaces: 2,
-        }),
-      "Updating swanky config"
-    );
+    await this.spinner.runCommand(async () => {
+      const newLocalConfig = new ConfigBuilder(getSwankyConfig("local"))
+        .updateNodeSettings({
+          localPath: nodePath,
+          polkadotPalletVersions: nodeInfo.polkadotPalletVersions,
+          supportedInk: nodeInfo.supportedInk,
+          version: nodeInfo.version,
+        })
+        .build();
+      await this.storeConfig(newLocalConfig, "local");
+    }, "Updating swanky config");
 
     this.log("Swanky Node Installed successfully");
   }

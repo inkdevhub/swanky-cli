@@ -8,7 +8,7 @@ import inquirer from "inquirer";
 import TOML from "@iarna/toml";
 import { choice, email, name, pickNodeVersion, pickTemplate } from "../../lib/prompts.js";
 import {
-  ChainAccount,
+  buildSwankyConfig,
   checkCliDependencies,
   copyCommonTemplateFiles,
   copyContractTemplateFiles,
@@ -19,20 +19,14 @@ import {
   processTemplates,
   swankyNodeVersions
 } from "../../lib/index.js";
-import {
-  ALICE_URI, BOB_URI,
-  DEFAULT_ASTAR_NETWORK_URL,
-  DEFAULT_NETWORK_URL, DEFAULT_NODE_INFO,
-  DEFAULT_SHIBUYA_NETWORK_URL,
-  DEFAULT_SHIDEN_NETWORK_URL,
-} from "../../lib/consts.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { InputError, UnknownError } from "../../lib/errors.js";
 import { globby, GlobEntry } from "globby";
 import { merge } from "lodash-es";
 import inquirerFuzzyPath from "inquirer-fuzzy-path";
-import { SwankyConfig } from "../../types/index.js";
 import chalk from "chalk";
+import { ConfigBuilder } from "../../lib/config-builder.js";
+import { DEFAULT_NODE_INFO } from "../../lib/consts.js";
 
 type TaskFunction = (...args: any[]) => any;
 
@@ -96,25 +90,9 @@ export class Init extends SwankyCommand<typeof Init> {
 
   projectPath = "";
 
-
-  configBuilder: Partial<SwankyConfig> = {
-    node: {
-      localPath: "",
-      polkadotPalletVersions: "",
-      supportedInk: "",
-      version: "",
-    },
-    accounts: [],
-    networks: {
-      local: { url: DEFAULT_NETWORK_URL },
-      astar: { url: DEFAULT_ASTAR_NETWORK_URL },
-      shiden: { url: DEFAULT_SHIDEN_NETWORK_URL },
-      shibuya: { url: DEFAULT_SHIBUYA_NETWORK_URL },
-    },
-    contracts: {},
-  };
-
   taskQueue: Task[] = [];
+
+  configBuilder = new ConfigBuilder(buildSwankyConfig());
 
   async run(): Promise<void> {
     const { args, flags } = await this.parse(Init);
@@ -180,44 +158,23 @@ export class Init extends SwankyCommand<typeof Init> {
           task: downloadNode,
           args: [this.projectPath, nodeInfo, this.spinner],
           runningMessage: "Downloading Swanky node",
-          callback: (result) => {
-            this.configBuilder.node = {
-              supportedInk: nodeInfo.supportedInk,
-              polkadotPalletVersions: nodeInfo.polkadotPalletVersions,
-              version: nodeInfo.version,
-              localPath: result,
-            };
-          }
+          callback: (localPath) => this.configBuilder.updateNodeSettings({ supportedInk: nodeInfo.supportedInk,
+            polkadotPalletVersions: nodeInfo.polkadotPalletVersions,
+            version: nodeInfo.version, localPath }),
         });
       }
     }
 
-    this.configBuilder.accounts = [
-      {
-        alias: "alice",
-        mnemonic: ALICE_URI,
-        isDev: true,
-        address: new ChainAccount(ALICE_URI).pair.address,
-      },
-      {
-        alias: "bob",
-        mnemonic: BOB_URI,
-        isDev: true,
-        address: new ChainAccount(BOB_URI).pair.address,
-      },
-    ];
-
-    Object.keys(this.configBuilder.contracts!).forEach(async (contractName) => {
+    Object.keys(this.swankyConfig.contracts).forEach(async (contractName) => {
       await ensureDir(path.resolve(this.projectPath, "artifacts", contractName));
     });
 
     this.taskQueue.push({
-      task: () =>
-        writeJSON(path.resolve(this.projectPath, "swanky.config.json"), this.configBuilder, {
-          spaces: 2,
-        }),
+      task: async () =>
+        await this.storeConfig(this.configBuilder.build(), "local", this.projectPath),
       args: [],
       runningMessage: "Writing config",
+      shouldExitOnError: true,
     });
 
     for (const {
@@ -314,13 +271,13 @@ export class Init extends SwankyCommand<typeof Init> {
       runningMessage: "Processing templates",
     });
 
-    this.configBuilder.contracts = {
+    this.configBuilder.updateContracts( {
       [contractName as string]: {
         name: contractName,
         moduleName: snakeCase(contractName),
         deployments: [],
       },
-    };
+    });
   }
 
   async convert(pathToExistingProject: string, projectName: string) {
@@ -390,14 +347,8 @@ export class Init extends SwankyCommand<typeof Init> {
       },
     });
 
-    if (!this.configBuilder.contracts) this.configBuilder.contracts = {};
-
     for (const contract of confirmedCopyList.contracts) {
-      this.configBuilder.contracts[contract.name] = {
-        name: contract.name,
-        moduleName: contract.moduleName!,
-        deployments: [],
-      };
+      this.configBuilder.addContract(contract.name, contract.moduleName);
     }
 
     let rootToml = await readRootCargoToml(pathToExistingProject);

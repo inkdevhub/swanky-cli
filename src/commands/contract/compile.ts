@@ -3,9 +3,10 @@ import path from "node:path";
 import { spawn } from "node:child_process";
 import { pathExists } from "fs-extra/esm";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-import { ensureCargoContractVersionCompatibility, extractCargoContractVersion, Spinner, storeArtifacts } from "../../lib/index.js";
+import { ensureCargoContractVersionCompatibility, extractCargoContractVersion, Spinner, storeArtifacts, configName, getSwankyConfig } from "../../lib/index.js";
 import { ConfigError, InputError, ProcessError } from "../../lib/errors.js";
-import { BuildMode } from "../../index.js";
+import { BuildMode, SwankyConfig } from "../../index.js";
+import { ConfigBuilder } from "../../lib/config-builder.js";
 
 export class CompileContract extends SwankyCommand<typeof CompileContract> {
   static description = "Compile the smart contract(s) in your contracts directory";
@@ -41,6 +42,8 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(CompileContract);
 
+    const localConfig = getSwankyConfig("local") as SwankyConfig;
+
     if (args.contractName === undefined && !flags.all) {
       throw new InputError("No contracts were selected to compile", { winston: { stack: true } });
     }
@@ -55,7 +58,7 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
       const contractInfo = this.swankyConfig.contracts[contractName];
       if (!contractInfo) {
         throw new ConfigError(
-          `Cannot find contract info for ${contractName} contract in swanky.config.json`,
+          `Cannot find contract info for ${contractName} contract in "${configName()}"`
         );
       }
       const contractPath = path.resolve("contracts", contractInfo.name);
@@ -130,14 +133,18 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
         return storeArtifacts(artifactsPath, contractInfo.name, contractInfo.moduleName);
       }, "Moving artifacts");
 
-      this.swankyConfig.contracts[contractName].build = {
-        timestamp: Date.now(),
-        artifactsPath,
-        buildMode,
-        isVerified: false,
-      };
-
-      await this.storeConfig();
+      await this.spinner.runCommand(async () => {
+        const buildData = {
+          timestamp: Date.now(),
+          artifactsPath,
+          buildMode,
+          isVerified: false,
+        };
+        const newLocalConfig = new ConfigBuilder(localConfig)
+          .addContractBuild(args.contractName, buildData)
+          .build();
+        await this.storeConfig(newLocalConfig, "local");
+      }, "Writing config");
     }
   }
 }

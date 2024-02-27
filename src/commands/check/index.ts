@@ -1,7 +1,7 @@
 import { Listr } from "listr2";
 import { commandStdoutOrNull, extractCargoContractVersion } from "../../lib/index.js";
 import { SwankyConfig } from "../../types/index.js";
-import { pathExistsSync, readJSON, writeJson } from "fs-extra/esm";
+import { pathExistsSync, writeJson } from "fs-extra/esm";
 import { readFileSync } from "fs";
 import path from "node:path";
 import TOML from "@iarna/toml";
@@ -31,7 +31,7 @@ interface Ctx {
     contracts: Record<string, Record<string, string>>;
     swankyNode: string | null;
   };
-  swankyConfig?: SwankyConfig;
+  swankyConfig: SwankyConfig;
   mismatchedVersions: Record<string, string>;
   looseDefinitionDetected: boolean;
 }
@@ -46,11 +46,16 @@ export default class Check extends SwankyCommand<typeof Check> {
     }),
   };
 
+  constructor(argv: string[], baseConfig: any) {
+    super(argv, baseConfig);
+    (this.constructor as typeof SwankyCommand).ENSURE_SWANKY_CONFIG = false;
+  }
+
   public async run(): Promise<void> {
     const { flags } = await this.parse(Check);
     const swankyNodeVersion = this.swankyConfig.node.version;
     const isSwankyNodeInstalled = !!swankyNodeVersion;
-    const anyContracts = Object.keys(this.swankyConfig?.contracts).length > 0;
+    const anyContracts = Object.keys(this.swankyConfig.contracts ?? {}).length > 0;
     const tasks = new Listr<Ctx>([
       {
         title: "Check OS",
@@ -136,11 +141,9 @@ export default class Check extends SwankyCommand<typeof Check> {
       {
         title: "Read ink dependencies",
         enabled: anyContracts,
+        skip: (ctx) => Object.keys(ctx.swankyConfig.contracts).length == 0,
         task: async (ctx) => {
-          const swankyConfig = await readJSON("swanky.config.json");
-          ctx.swankyConfig = swankyConfig;
-
-          for (const contract in swankyConfig.contracts) {
+          for (const contract in ctx.swankyConfig.contracts) {
             const tomlPath = path.resolve(`contracts/${contract}/Cargo.toml`);
             const doesCargoTomlExist = pathExistsSync(tomlPath);
             if (!doesCargoTomlExist) {
@@ -168,7 +171,7 @@ export default class Check extends SwankyCommand<typeof Check> {
         skip: (ctx) => Object.keys(ctx.versions.contracts).length === 0,
         enabled: anyContracts && isSwankyNodeInstalled,
         task: async (ctx) => {
-          const supportedInk = ctx.swankyConfig!.node.supportedInk;
+          const supportedInk = ctx.swankyConfig.node.supportedInk;
           const mismatched: Record<string, string> = {};
           Object.entries(ctx.versions.contracts).forEach(([contract, inkDependencies]) => {
             Object.entries(inkDependencies).forEach(([depName, version]) => {
@@ -256,6 +259,7 @@ export default class Check extends SwankyCommand<typeof Check> {
         contracts: {},
         swankyNode: swankyNodeVersion || null,
       },
+      swankyConfig: this.swankyConfig,
       looseDefinitionDetected: false,
       mismatchedVersions: {}
     });

@@ -1,9 +1,22 @@
 import { execaCommand, execaCommandSync } from "execa";
-import { copy, emptyDir, ensureDir, readJSON } from "fs-extra/esm";
+import { copy, emptyDir, ensureDir, readJSONSync } from "fs-extra/esm";
 import path from "node:path";
-import { DEFAULT_NETWORK_URL, ARTIFACTS_PATH, TYPED_CONTRACTS_PATH } from "./consts.js";
-import { SwankyConfig } from "../types/index.js";
-import { ConfigError, FileError, InputError } from "./errors.js";
+import {
+  DEFAULT_NETWORK_URL,
+  ARTIFACTS_PATH,
+  TYPED_CONTRACTS_PATH,
+  DEFAULT_SHIBUYA_NETWORK_URL,
+  DEFAULT_SHIDEN_NETWORK_URL,
+  DEFAULT_ASTAR_NETWORK_URL,
+  DEFAULT_ACCOUNT,
+  DEFAULT_CONFIG_NAME,
+  DEFAULT_CONFIG_FOLDER_NAME,
+  DEFAULT_NODE_INFO,
+} from "./consts.js";
+import { SwankyConfig, SwankySystemConfig } from "../types/index.js";
+import { ConfigError, FileError } from "./errors.js";
+import { userInfo } from "os";
+import { existsSync } from "fs";
 
 export function commandStdoutOrNull(command: string): string | null {
   try {
@@ -14,13 +27,24 @@ export function commandStdoutOrNull(command: string): string | null {
   }
 }
 
-export async function getSwankyConfig(): Promise<SwankyConfig> {
-  try {
-    const config = await readJSON("swanky.config.json");
-    return config;
-  } catch (cause) {
-    throw new InputError("Error reading swanky.config.json in the current directory!", { cause });
+export function getSwankyConfig(configType: "local" | "global"): SwankyConfig | SwankySystemConfig {
+  let configPath: string;
+
+  if (configType === "global") {
+    configPath = getSystemConfigDirectoryPath() + `/${DEFAULT_CONFIG_NAME}`;
+  } else {
+    configPath = isEnvConfigCheck() ? process.env.SWANKY_CONFIG! : DEFAULT_CONFIG_NAME;
   }
+
+  const config = readJSONSync(configPath);
+  return config;
+}
+
+
+export function getSystemConfigDirectoryPath(): string {
+  const homeDir = userInfo().homedir;
+  const configPath = homeDir + `/${DEFAULT_CONFIG_FOLDER_NAME}`;
+  return configPath;
 }
 
 export function resolveNetworkUrl(config: SwankyConfig, networkName: string): string {
@@ -119,4 +143,67 @@ export async function generateTypes(contractName: string) {
   await execaCommand(
     `npx typechain-polkadot --in ${relativeInputPath} --out ${relativeOutputPath}`
   );
+}
+export function ensureAccountIsSet(account: string | undefined, config: SwankyConfig) {
+  if(!account && config.defaultAccount === null) {
+    throw new ConfigError("No default account set. Please set one or provide an account alias with --account");
+  }
+}
+
+export function buildSwankyConfig() {
+  return {
+    node: {
+      localPath: "",
+      polkadotPalletVersions: DEFAULT_NODE_INFO.polkadotPalletVersions,
+      supportedInk: DEFAULT_NODE_INFO.supportedInk,
+      version: DEFAULT_NODE_INFO.version,
+    },
+    defaultAccount: DEFAULT_ACCOUNT,
+    accounts: [
+      {
+        "alias": "alice",
+        "mnemonic": "//Alice",
+        "isDev": true,
+        "address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+      },
+      {
+        "alias": "bob",
+        "mnemonic": "//Bob",
+        "isDev": true,
+        "address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+      },
+    ],
+    networks: {
+      local: { url: DEFAULT_NETWORK_URL },
+      astar: { url: DEFAULT_ASTAR_NETWORK_URL },
+      shiden: { url: DEFAULT_SHIDEN_NETWORK_URL },
+      shibuya: { url: DEFAULT_SHIBUYA_NETWORK_URL },
+    },
+    contracts: {},
+  };
+}
+
+export function isEnvConfigCheck(): boolean {
+  if (process.env.SWANKY_CONFIG === undefined) {
+    return false;
+  } else if (existsSync(process.env.SWANKY_CONFIG)) {
+    return true;
+  } else {
+    throw new ConfigError(`Provided config path ${process.env.SWANKY_CONFIG} does not exist`);
+  }
+}
+
+export function isLocalConfigCheck(): boolean {
+  const defaultLocalConfigPath = process.cwd() + `/${DEFAULT_CONFIG_NAME}`;
+  return process.env.SWANKY_CONFIG === undefined
+    ? existsSync(defaultLocalConfigPath)
+    : existsSync(process.env.SWANKY_CONFIG);
+}
+
+export function configName(): string {
+  if (!isLocalConfigCheck()) {
+    return DEFAULT_CONFIG_NAME + " [system config]";
+  }
+
+  return process.env.SWANKY_CONFIG?.split("/").pop() ?? DEFAULT_CONFIG_NAME;
 }
