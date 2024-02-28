@@ -16,12 +16,8 @@ vscode:
 
 tasks:
   - init: |
-      # Check if Rust is installed, install if not
-      if ! command -v rustc &> /dev/null
-      then
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-          source $HOME/.cargo/env
-      fi
+      # Install Rust
+      rustup default stable
       
       # Add wasm target
       rustup target add wasm32-unknown-unknown
