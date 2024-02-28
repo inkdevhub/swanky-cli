@@ -24,7 +24,6 @@ tasks:
       cargo install --force --locked cargo-contract
       cargo install cargo-dylint dylint-link
 
-      # Your existing tasks like yarn install
       yarn install
     command: |
       echo "Swanky Dev Environment ready!"
