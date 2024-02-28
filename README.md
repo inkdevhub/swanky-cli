@@ -79,7 +79,7 @@ A newly generated project will have a `swanky.config.json` file that will get po
   "node": {
     "localPath": "/Users/sasapul/Work/astar/swanky-cli/temp_proj/bin/swanky-node",
     "polkadotPalletVersions": "polkadot-v0.9.39",
-    "supportedInk": "v4.2.0"
+    "supportedInk": "v4.3.0"
   },
   "accounts": [
     {

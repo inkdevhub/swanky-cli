@@ -1,10 +1,10 @@
 import { Args } from "@oclif/core";
-import { generateTypes } from "../../lib/index.js";
+import { configName, generateTypes } from "../../lib/index.js";
 import { Contract } from "../../lib/contract.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { ConfigError, FileError } from "../../lib/errors.js";
 
-export class TypegenCommand extends SwankyCommand<typeof TypegenCommand> {
+export class GenerateTypes extends SwankyCommand<typeof GenerateTypes> {
   static description = "Generate types from compiled contract metadata";
 
   static args = {
@@ -16,12 +16,12 @@ export class TypegenCommand extends SwankyCommand<typeof TypegenCommand> {
   };
 
   async run(): Promise<void> {
-    const { args } = await this.parse(TypegenCommand);
+    const { args } = await this.parse(GenerateTypes);
 
     const contractRecord = this.swankyConfig.contracts[args.contractName];
     if (!contractRecord) {
       throw new ConfigError(
-        `Cannot find a contract named ${args.contractName} in swanky.config.json`
+        `Cannot find a contract named ${args.contractName} in "${configName()}"`,
       );
     }
 
@@ -29,7 +29,7 @@ export class TypegenCommand extends SwankyCommand<typeof TypegenCommand> {
 
     if (!(await contract.pathExists())) {
       throw new FileError(
-        `Path to contract ${args.contractName} does not exist: ${contract.contractPath}`
+        `Path to contract ${args.contractName} does not exist: ${contract.contractPath}`,
       );
     }
 
@@ -37,7 +37,7 @@ export class TypegenCommand extends SwankyCommand<typeof TypegenCommand> {
 
     if (!artifactsCheck.result) {
       throw new FileError(
-        `No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`
+        `No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`,
       );
     }
 

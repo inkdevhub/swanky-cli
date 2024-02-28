@@ -1,11 +1,10 @@
 import { Flags } from "@oclif/core";
-import path from "node:path";
-import { writeJSON } from "fs-extra/esm";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { InputError } from "../../lib/errors.js";
 import { installCliDevDeps } from "../../lib/tasks.js";
 import { SUPPORTED_DEPS } from "../../lib/consts.js";
-import { DependencyName } from "../../index.js";
+import { DependencyName, getSwankyConfig } from "../../index.js";
+import { ConfigBuilder } from "../../lib/config-builder.js";
 
 export class Install extends SwankyCommand<typeof Install> {
   static flags = {
@@ -56,12 +55,12 @@ export class Install extends SwankyCommand<typeof Install> {
       );
     }
 
-    if (Object.keys(newDeps).length) {
+    if (Object.keys(newDeps).length > 0) {
       await this.spinner.runCommand(async () => {
-        this.swankyConfig.env = newEnv;
-        await writeJSON(path.resolve("swanky.config.json"), this.swankyConfig, {
-          spaces: 2,
-        });
+        const newLocalConfig = new ConfigBuilder(getSwankyConfig("global"))
+          .updateEnv(newDeps)
+          .build();
+        await this.storeConfig(newLocalConfig, "global");
       }, "Updating swanky config");
     }
 
