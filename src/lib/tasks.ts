@@ -17,7 +17,6 @@ import { zombienetConfig } from "../commands/zombienet/init.js";
 import { readFileSync } from "fs";
 import TOML from "@iarna/toml";
 import { writeFileSync } from "node:fs";
-import { commandStdoutOrNull } from "./command-utils.js";
 
 export async function checkCliDependencies(spinner: Spinner) {
   const dependencyList = [
@@ -39,12 +38,6 @@ export async function installCliDevDeps(spinner: Spinner, name: DependencyName, 
   switch (name) {
     case "rust": {
       spinner.text(`  Installing rust`);
-      await execaCommand(`rustup toolchain install ${version}`);
-      await execaCommand(`rustup default ${version}`);
-      break;
-    }
-    case "rust-nightly": {
-      spinner.text(`  Installing nightly`);
       await execaCommand(`rustup toolchain install ${version}`);
       await execaCommand(`rustup default ${version}`);
       await execaCommand(`rustup component add rust-src --toolchain ${version}`);
@@ -356,23 +349,6 @@ export async function installDeps(projectPath: string) {
   } finally {
     await execaCommand(installCommand, { cwd: projectPath });
   }
-}
-
-export function extractCargoContractVersion() {
-  const regex = /cargo-contract-contract (\d+\.\d+\.\d+(?:-[\w.]+)?)(?:-unknown-[\w-]+)/;
-  const cargoContractVersionOutput = commandStdoutOrNull("cargo contract -V");
-  if (!cargoContractVersionOutput) {
-    return null
-  }
-
-  const match = cargoContractVersionOutput.match(regex);
-  if (!match) {
-    throw new ProcessError(
-      `Unable to determine cargo-contract version. Please verify its installation.`
-    );
-  }
-
-  return match[1];
 }
 
 export function ensureCargoContractVersionCompatibility(

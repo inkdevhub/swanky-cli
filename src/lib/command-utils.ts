@@ -15,10 +15,9 @@ import {
   DEFAULT_RUST_DEP_VERSION,
   DEFAULT_CARGO_CONTRACT_DEP_VERSION,
   DEFAULT_CARGO_DYLINT_DEP_VERSION,
-  DEFAULT_RUST_NIGHTLY_DEP_VERSION,
 } from "./consts.js";
 import { SwankyConfig, SwankySystemConfig } from "../types/index.js";
-import { ConfigError, FileError } from "./errors.js";
+import { ConfigError, FileError, ProcessError } from "./errors.js";
 import { userInfo } from "os";
 import { existsSync } from "fs";
 
@@ -154,7 +153,7 @@ export function ensureAccountIsSet(account: string | undefined, config: SwankyCo
   }
 }
 
-export function buildSwankyConfig() {
+export function buildSwankyConfig() { 
   return {
     node: {
       localPath: "",
@@ -185,10 +184,9 @@ export function buildSwankyConfig() {
     },
     contracts: {},
     env: {
-      rust: DEFAULT_RUST_DEP_VERSION,
-      "rust-nightly": DEFAULT_RUST_NIGHTLY_DEP_VERSION,
-      "cargo-dylint": DEFAULT_CARGO_DYLINT_DEP_VERSION,
-      "cargo-contract": DEFAULT_CARGO_CONTRACT_DEP_VERSION,
+      rust: extractRustVersion() ?? DEFAULT_RUST_DEP_VERSION,
+      "cargo-dylint": extractCargoDylintVersion() ?? DEFAULT_CARGO_DYLINT_DEP_VERSION,
+      "cargo-contract": extractCargoContractVersion() ?? DEFAULT_CARGO_CONTRACT_DEP_VERSION,
     },
   };
 }
@@ -216,4 +214,40 @@ export function configName(): string {
   }
 
   return process.env.SWANKY_CONFIG?.split("/").pop() ?? DEFAULT_CONFIG_NAME;
+}
+
+export function extractVersion(command: string, regex: RegExp) {
+  const output = commandStdoutOrNull(command);
+  if (!output) {
+    return null;
+  }
+
+  const match = output.match(regex);
+  if (!match) {
+    throw new ProcessError(
+      `Unable to determine version from command '${command}'. Please verify its installation.`
+    );
+  }
+
+  return match[1];
+}
+
+export function extractRustVersion() {
+  return extractVersion("rustc --version", /rustc (.*) \((.*)/);
+}
+
+export function extractCargoVersion() {
+  return extractVersion("cargo -V", /cargo (.*) \((.*)/);
+}
+
+export function extractCargoNightlyVersion() {
+  return extractVersion("cargo +nightly -V", /cargo (.*)-nightly \((.*)/);
+}
+
+export function extractCargoDylintVersion() {
+  return extractVersion("cargo dylint -V", /cargo-dylint (.*)/);
+}
+
+export function extractCargoContractVersion() {
+  return extractVersion("cargo contract -V", /cargo-contract-contract (\d+\.\d+\.\d+(?:-[\w.]+)?)(?:-unknown-[\w-]+)/);
 }

@@ -17,12 +17,17 @@ export class Install extends SwankyCommand<typeof Install> {
       required: false,
       description: `Install the specified dev dependency name and version in the format <dependency@version>. The following options are supported: ${Object.keys(
         SUPPORTED_DEPS
-      ).join(", ")}`,
+      ).join(", ")}. For installing rust nightly version run: env install --deps rust@nightly`,
       multiple: true,
       default: [],
       char: "d",
     }),
   };
+
+  constructor(argv: string[], baseConfig: any) {
+    super(argv, baseConfig);
+    (this.constructor as typeof SwankyCommand).ENSURE_SWANKY_CONFIG = false;
+  }
 
   async run(): Promise<void> {
     const { flags } = await this.parse(Install);
@@ -45,7 +50,8 @@ export class Install extends SwankyCommand<typeof Install> {
       newDeps[key] = value || "latest";
     }
 
-    const newEnv = { ...this.swankyConfig.env, ...newDeps };
+    const globalConfig = getSwankyConfig("global");
+    const newEnv = { ...globalConfig.env, ...newDeps };
     const deps = Object.entries(newEnv);
     for (const [dep, version] of deps) {
       const typedDep = dep as DependencyName;
@@ -64,6 +70,6 @@ export class Install extends SwankyCommand<typeof Install> {
       }, "Updating swanky config");
     }
 
-    this.log("Dev Dependencies Installed successfully");
+    this.log("Swanky Dev Dependencies Installed successfully");
   }
 }
