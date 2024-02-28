@@ -25,6 +25,7 @@ tasks:
       cargo install cargo-dylint dylint-link
 
       yarn install
+      yarn build
     command: |
       echo "Swanky Dev Environment ready!"
       echo "Use Swanky directly by running \"./bin/run.js COMMAND\""
