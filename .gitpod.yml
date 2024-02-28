@@ -4,8 +4,6 @@
 
 # Learn more from ready-to-use templates: https://www.gitpod.io/docs/introduction/getting-started/quickstart
 
-image: ghcr.io/inkdevhub/swanky-cli/swanky-base:swanky3.1.0-beta.0_v2.1.1
-
 ports:
   - name: Swanky Node
     port: 9944
@@ -16,9 +14,6 @@ vscode:
 
 tasks:
   - init: |
-      # Install Rust
-      rustup default stable
-      
       # Add wasm target
       rustup target add wasm32-unknown-unknown
 
@@ -31,3 +26,10 @@ tasks:
 
       # Your existing tasks like yarn install
       yarn install
+    command: |
+      echo "Swanky Dev Environment ready!"
+      echo "Use Swanky directly by running \"./bin/run.js COMMAND\""
+      echo "For example:"
+      echo "./bin/run.js init temp_project"
+      echo "cd temp_project"
+      echo "../bin/run.js contract compile flipper"
