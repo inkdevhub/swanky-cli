@@ -17,7 +17,6 @@ vscode:
 tasks:
   - init: |
       yarn install
-      yarn run build
       rustup component add rust-src
       cargo install --force --locked cargo-contract
       cargo install cargo-dylint dylint-link
