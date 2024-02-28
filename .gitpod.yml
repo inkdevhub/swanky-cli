@@ -4,10 +4,20 @@
 
 # Learn more from ready-to-use templates: https://www.gitpod.io/docs/introduction/getting-started/quickstart
 
-tasks:
-  - init: yarn install && yarn run build && cargo install cargo-contract --version 4.0.0-rc.1 && cargo install cargo-dylint dylint-link
-    command: yarn run dev
+image: ghcr.io/inkdevhub/swanky-cli/swanky-base:swanky3.1.0-beta.0_v2.1.1
 
 ports:
   - name: Swanky Node
     port: 9944
+
+vscode:
+  extensions:
+    - rust-lang.rust-analyzer
+
+tasks:
+  - init: |
+      yarn install
+      yarn run build
+      rustup component add rust-src
+      cargo install --force --locked cargo-contract
+      cargo install cargo-dylint dylint-link
