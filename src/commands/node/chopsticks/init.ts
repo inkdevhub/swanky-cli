@@ -14,8 +14,6 @@ export class InitChopsticks extends SwankyCommand<typeof InitChopsticks> {
   static description = "Initialize Zombienet";
 
   async run(): Promise<void> {
-    const {} = await this.parse(InitChopsticks);
-
     const localConfig = getSwankyConfig("local") as SwankyConfig;
     const projectPath = path.resolve();
 
