@@ -9,6 +9,7 @@ export function getTemplates() {
   const templatesPath = path.resolve(__dirname, "..", "templates");
   const contractTemplatesPath = path.resolve(templatesPath, "contracts");
   const zombienetTemplatesPath = path.resolve(templatesPath, "zombienet");
+  const chopsticksTemplatesPath = path.resolve(templatesPath, "chopsticks");
   const fileList = readdirSync(contractTemplatesPath, {
     withFileTypes: true,
   });
@@ -21,5 +22,6 @@ export function getTemplates() {
     contractTemplatesPath,
     contractTemplatesList,
     zombienetTemplatesPath,
+    chopsticksTemplatesPath,
   };
 }
