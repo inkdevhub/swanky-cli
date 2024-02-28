@@ -1,9 +1,8 @@
 import { Flags } from "@oclif/core";
 import { execaCommand } from "execa";
 import { SwankyCommand } from "../../../lib/swankyCommand.js";
-import semver from "semver";
 import { swankyNodeCheck } from "../../../lib/index.js";
-import { pathExists, pathExistsSync } from "fs-extra/esm";
+import { pathExistsSync } from "fs-extra/esm";
 import { ConfigError, FileError } from "../../../lib/errors.js";
 export class StartChopsticks extends SwankyCommand<typeof StartChopsticks> {
   static description = "Start chopsticks";

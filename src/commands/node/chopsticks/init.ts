@@ -1,9 +1,8 @@
 import path from "node:path";
 import { SwankyCommand } from "../../../lib/swankyCommand.js";
 import {
-  buildZombienetConfigFromBinaries, copyChopsticksTemplateFile,
-  copyZombienetTemplateFile,
-  downloadZombienetBinaries, getSwankyConfig,
+  copyChopsticksTemplateFile,
+  getSwankyConfig,
   getTemplates,
 } from "../../../lib/index.js";
 import { ConfigBuilder } from "../../../lib/config-builder.js";
