@@ -16,7 +16,22 @@ vscode:
 
 tasks:
   - init: |
-      yarn install
+      # Check if Rust is installed, install if not
+      if ! command -v rustc &> /dev/null
+      then
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          source $HOME/.cargo/env
+      fi
+      
+      # Add wasm target
+      rustup target add wasm32-unknown-unknown
+
+      # Add necessary components
       rustup component add rust-src
+
+      # Install or update cargo packages
       cargo install --force --locked cargo-contract
       cargo install cargo-dylint dylint-link
+
+      # Your existing tasks like yarn install
+      yarn install
