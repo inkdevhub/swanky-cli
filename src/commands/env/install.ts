@@ -3,7 +3,7 @@ import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { InputError } from "../../lib/errors.js";
 import { installCliDevDeps } from "../../lib/tasks.js";
 import { SUPPORTED_DEPS } from "../../lib/consts.js";
-import { DependencyName, getSwankyConfig } from "../../index.js";
+import { DependencyName, SwankyConfig, getSwankyConfig } from "../../index.js";
 import { ConfigBuilder } from "../../lib/config-builder.js";
 
 export class Install extends SwankyCommand<typeof Install> {
@@ -50,9 +50,10 @@ export class Install extends SwankyCommand<typeof Install> {
       newDeps[key] = value || "latest";
     }
 
-    const globalConfig = getSwankyConfig("global");
-    const newEnv = { ...globalConfig.env, ...newDeps };
+    const localConfig = getSwankyConfig("local") as SwankyConfig;
+    const newEnv = { ...localConfig.env, ...newDeps };
     const deps = Object.entries(newEnv);
+    
     for (const [dep, version] of deps) {
       const typedDep = dep as DependencyName;
       await this.spinner.runCommand(
@@ -63,10 +64,10 @@ export class Install extends SwankyCommand<typeof Install> {
 
     if (Object.keys(newDeps).length > 0) {
       await this.spinner.runCommand(async () => {
-        const newLocalConfig = new ConfigBuilder(getSwankyConfig("global"))
+        const newLocalConfig = new ConfigBuilder(getSwankyConfig("local"))
           .updateEnv(newDeps)
           .build();
-        await this.storeConfig(newLocalConfig, "global");
+        await this.storeConfig(newLocalConfig, "local");
       }, "Updating swanky config");
     }
 

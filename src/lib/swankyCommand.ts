@@ -108,7 +108,6 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
           defaultAccount: newConfig.defaultAccount,
           accounts: newConfig.accounts,
           networks: newConfig.networks,
-          env: newConfig.env,
         };
       }
       if (existsSync(configPath)) {

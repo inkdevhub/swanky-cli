@@ -61,13 +61,13 @@ export interface SwankyConfig extends SwankySystemConfig{
   };
   contracts: Record<string, ContractData> | Record<string, never>;
   zombienet?: ZombienetData;
+  env: Record<string, string>;
 }
 
 export interface SwankySystemConfig {
   defaultAccount: string | null;
   accounts: AccountData[];
   networks: Record<string, {url: string}>;
-  env: Record<string, string>;
 }
 
 export interface ZombienetData {

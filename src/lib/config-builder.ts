@@ -33,7 +33,9 @@ export class ConfigBuilder<T extends SwankySystemConfig | SwankyConfig> {
   }
 
   updateEnv(env: Record<string, string>): ConfigBuilder<T> {
-    this.config.env = {...this.config.env, ...env};
+    if ("env" in this.config) {
+      this.config.env = {...this.config.env, ...env};
+    }
     return this;
   }
 
