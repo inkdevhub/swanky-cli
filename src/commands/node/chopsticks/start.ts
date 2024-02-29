@@ -35,6 +35,6 @@ export class StartChopsticks extends SwankyCommand<typeof StartChopsticks> {
       }
     );
 
-    this.log("Chopsticks started");
+    this.log("Chopsticks started successfully.");
   }
 }
