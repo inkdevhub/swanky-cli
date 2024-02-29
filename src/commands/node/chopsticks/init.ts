@@ -23,7 +23,7 @@ export class InitChopsticks extends SwankyCommand<typeof InitChopsticks> {
     await this.spinner.runCommand(
       () =>
         copyChopsticksTemplateFile(chopsticksTemplatePath, configPath),
-      "Copying template files",
+      "Copying Chopsticks template files...",
     );
 
     await this.spinner.runCommand(async () => {
@@ -31,7 +31,7 @@ export class InitChopsticks extends SwankyCommand<typeof InitChopsticks> {
         .addChopsticks(path.resolve(projectPath, "node", "config", chopsticksConfig))
         .build();
       await this.storeConfig(newLocalConfig, "local");
-    }, "Writing config");
+    }, "Updating Swanky configuration with Chopsticks settings...");
 
     this.log("Chopsticks config initialized successfully");
   }
