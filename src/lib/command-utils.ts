@@ -255,9 +255,3 @@ export function extractCargoContractVersion() {
     /cargo-contract-contract (\d+\.\d+\.\d+(?:-[\w.]+)?)(?:-unknown-[\w-]+)/
   );
 }
-
-export function swankyNodeCheck(config: SwankyConfig) {
-  if (config.node.localPath === "") {
-    throw new FileError("Swanky node is not installed. Please run `swanky node:install` first.");
-  }
-}

@@ -2,7 +2,7 @@ import { Flags } from "@oclif/core";
 import { execaCommand } from "execa";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import semver from "semver";
-import { swankyNodeCheck } from "../../lib/index.js";
+import { ensureSwankyNodeInstalled } from "../../lib/index.js";
 export class StartNode extends SwankyCommand<typeof StartNode> {
   static description = "Start a local node";
 
@@ -30,7 +30,7 @@ export class StartNode extends SwankyCommand<typeof StartNode> {
   async run(): Promise<void> {
     const { flags } = await this.parse(StartNode);
 
-    swankyNodeCheck(this.swankyConfig);
+    ensureSwankyNodeInstalled(this.swankyConfig);
 
     // Run persistent mode by default. non-persistent mode in case flag is provided.
     // Non-Persistent mode (`--dev`) allows all CORS origin, without `--dev`, users need to specify origins by `--rpc-cors`.
