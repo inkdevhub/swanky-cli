@@ -18,6 +18,7 @@ import { readFileSync } from "fs";
 import TOML from "@iarna/toml";
 import { writeFileSync } from "node:fs";
 import { commandStdoutOrNull } from "./command-utils.js";
+import { readJSON, writeJSON } from "fs-extra";
 
 export async function checkCliDependencies(spinner: Spinner) {
   const dependencyList = [
@@ -190,6 +191,21 @@ export async function copyZombienetTemplateFile(templatePath: string, configPath
   await copy(
     path.resolve(templatePath, zombienetConfig),
     path.resolve(configPath, zombienetConfig),
+  );
+}
+
+export async function copyFrontendTemplateFiles(
+  templatesPath: string,
+  projectPath: string,
+) {
+  const packageJsonPath = path.resolve(projectPath, "package.json");
+  const packageJson = await readJSON(packageJsonPath);
+  packageJson.workspace = [ "frontend" ];
+  await writeJSON(packageJsonPath, packageJson, { spaces: 2 });
+  await copy(path.resolve(templatesPath, "pnpm-workspace.yaml"), path.resolve(projectPath, "pnpm-workspace.yaml"));
+  await copy(
+    path.resolve(templatesPath, "frontend"),
+    path.resolve(projectPath, "frontend"),
   );
 }
 

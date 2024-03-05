@@ -11,13 +11,13 @@ import {
   buildSwankyConfig,
   checkCliDependencies,
   copyCommonTemplateFiles,
-  copyContractTemplateFiles,
+  copyContractTemplateFiles, copyFrontendTemplateFiles,
   downloadNode,
   getTemplates,
   installDeps,
   prepareTestFiles,
   processTemplates,
-  swankyNodeVersions
+  swankyNodeVersions,
 } from "../../lib/index.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { InputError, UnknownError } from "../../lib/errors.js";
@@ -252,6 +252,20 @@ export class Init extends SwankyCommand<typeof Init> {
         args: ["e2e", path.resolve(templates.templatesPath), this.projectPath],
         runningMessage: "Copying test helpers",
       });
+    }
+
+    if(contractTemplate === "flipper") {
+      const { addFrontendTemplate } = await inquirer.prompt([
+        choice("addFrontendTemplate", "Do you want to add frontend to your project?"),
+      ]);
+      if (addFrontendTemplate) {
+        const templatesPath = getTemplates().templatesPath;
+        this.taskQueue.push({
+          task: copyFrontendTemplateFiles,
+          args: [ templatesPath, this.projectPath ],
+          runningMessage: "Copying frontend template files",
+        });
+      }
     }
 
     this.taskQueue.push({
