@@ -202,7 +202,7 @@ export async function copyFrontendTemplateFiles(
   const packageJson = await readJSON(packageJsonPath);
   packageJson.workspace = [ "frontend" ];
   await writeJSON(packageJsonPath, packageJson, { spaces: 2 });
-  await copy(path.resolve(templatesPath, "pnpm-workspace.yaml"), path.resolve(projectPath, "pnpm-workspace.yaml"));
+  await copy(path.resolve(templatesPath, "pnpm-workspace.yaml.hbs"), path.resolve(projectPath, "pnpm-workspace.yaml.hbs"));
   await copy(
     path.resolve(templatesPath, "frontend"),
     path.resolve(projectPath, "frontend"),
