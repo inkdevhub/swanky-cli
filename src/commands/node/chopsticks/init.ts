@@ -11,7 +11,7 @@ import { SwankyConfig } from "../../../types/index.js";
 export const chopsticksConfig = "dev.yml";
 
 export class InitChopsticks extends SwankyCommand<typeof InitChopsticks> {
-  static description = "Initialize Zombienet";
+  static description = "Initialize chopsticks config";
 
   async run(): Promise<void> {
     const localConfig = getSwankyConfig("local") as SwankyConfig;
