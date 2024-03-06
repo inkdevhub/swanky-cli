@@ -42,7 +42,6 @@ export const FlipperContractInteractions: FC = () => {
   const { register, reset, handleSubmit } = form
 
 
-  // Fetch Greeting
   const fetchFlipperValue = async () => {
     if (!contract || !typedContract || !api) return
 
@@ -57,7 +56,7 @@ export const FlipperContractInteractions: FC = () => {
       const typedResult = await typedContract.query.get()
     } catch (e) {
       console.error(e)
-      toast.error('Error while fetching greeting. Try again…')
+      toast.error('Error while fetching flipper value. Try again…')
       setFlipperValue(undefined)
     } finally {
       setFetchIsLoading(false)
@@ -67,7 +66,6 @@ export const FlipperContractInteractions: FC = () => {
     fetchFlipperValue()
   }, [typedContract])
 
-  // Update Greeting
   const flipValue: SubmitHandler<z.infer<typeof formSchema>> = async ( ) => {
     if (!activeAccount || !contract || !activeSigner || !api) {
       toast.error('Wallet not connected. Try again…')
@@ -91,7 +89,6 @@ export const FlipperContractInteractions: FC = () => {
       <h2 className="text-center font-mono text-gray-400">Flipper Smart Contract</h2>
 
       <Form {...form}>
-        {/* Fetched Greeting */}
         <Card>
           <CardContent className="pt-6">
             <FormItem>
@@ -106,7 +103,6 @@ export const FlipperContractInteractions: FC = () => {
           </CardContent>
         </Card>
 
-        {/* Update Greeting */}
         <Card>
           <CardContent className="pt-6">
             <form
