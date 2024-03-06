@@ -8,6 +8,7 @@ import inquirer from "inquirer";
 import TOML from "@iarna/toml";
 import { choice, email, name, pickNodeVersion, pickTemplate } from "../../lib/prompts.js";
 import {
+  addFrontendWorkspace,
   buildSwankyConfig,
   checkCliDependencies,
   copyCommonTemplateFiles,
@@ -254,10 +255,11 @@ export class Init extends SwankyCommand<typeof Init> {
       });
     }
 
+    let addFrontendTemplate = false;
     if(contractTemplate === "flipper") {
-      const { addFrontendTemplate } = await inquirer.prompt([
+      addFrontendTemplate = (await inquirer.prompt([
         choice("addFrontendTemplate", "Do you want to add frontend to your project?"),
-      ]);
+      ])).addFrontendTemplate;
       if (addFrontendTemplate) {
         const templatesPath = getTemplates().templatesPath;
         this.taskQueue.push({
@@ -284,6 +286,14 @@ export class Init extends SwankyCommand<typeof Init> {
       ],
       runningMessage: "Processing templates",
     });
+
+    if (addFrontendTemplate) {
+      this.taskQueue.push({
+        task: addFrontendWorkspace,
+        args: [this.projectPath],
+        runningMessage: "Adding frontend workspace to configuration",
+      });
+    }
 
     this.configBuilder.updateContracts( {
       [contractName as string]: {
