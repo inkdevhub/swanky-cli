@@ -1,6 +1,6 @@
 import { Args, Flags } from "@oclif/core";
 import path from "node:path";
-import { copy, ensureDir, outputFile, pathExists, readJSON, remove, writeJSON } from "fs-extra/esm";
+import { copy, ensureDir, outputFile, pathExists, pathExistsSync, readJSON, remove, writeJSON } from "fs-extra/esm";
 import { readdir, readFile, stat } from "fs/promises";
 import { execaCommand, execaCommandSync } from "execa";
 import { paramCase, pascalCase, snakeCase } from "change-case";
@@ -199,6 +199,14 @@ export class Init extends SwankyCommand<typeof Init> {
       }
     }
     this.log("🎉 😎 Swanky project successfully initialized! 😎 🎉");
+    this.log("\n🚀 Next steps: ");
+    this.log("🛠️ Build a contract: swanky contract build <contract_name>");
+    this.log("🌐 Start a node: swanky node start");
+    this.log("📦 Deploy a contract: swanky contract deploy <contract_name> --args <args>");
+    this.log("📜 Generate types: swanky generate types <contract_name>");
+    if (pathExistsSync(path.resolve(this.projectPath, "frontend"))) {
+      this.log("🖥️ Start a frontend dev server: swanky frontend start");
+    }
   }
 
   async generate(projectName: string) {

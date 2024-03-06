@@ -7,7 +7,7 @@ import {
   processTemplates,
   getTemplates,
   prepareTestFiles,
-  getSwankyConfig,
+  getSwankyConfig, copyFrontendTemplateFiles, addFrontendWorkspace, installDeps,
 } from "../../lib/index.js";
 import { email, name, pickTemplate } from "../../lib/prompts.js";
 import { paramCase, pascalCase, snakeCase } from "change-case";
@@ -93,6 +93,28 @@ export class NewContract extends SwankyCommand<typeof NewContract> {
       }
     }
 
+    let addFrontendTemplate = false;
+    if (contractTemplate === "flipper") {
+      addFrontendTemplate = (await inquirer.prompt([
+        {
+          type: "confirm",
+          name: "addFrontendTemplate",
+          message: "Would you like to add a frontend template?",
+          default: true,
+        },
+      ])).addFrontendTemplate;
+      if (addFrontendTemplate) {
+        await this.spinner.runCommand(
+          () =>
+            copyFrontendTemplateFiles(
+              templates.templatesPath,
+              projectPath
+            ),
+          "Copying frontend template files"
+        );
+      }
+    }
+
     await this.spinner.runCommand(
       () =>
         processTemplates(projectPath, {
@@ -106,6 +128,17 @@ export class NewContract extends SwankyCommand<typeof NewContract> {
         }),
       "Processing contract templates"
     );
+
+    if (addFrontendTemplate) {
+      await this.spinner.runCommand(
+        () => addFrontendWorkspace(projectPath),
+        "Adding frontend workspace to config"
+      );
+      await this.spinner.runCommand(
+        () => installDeps(projectPath),
+        "Installing dependencies"
+      );
+    }
 
     await ensureDir(path.resolve(projectPath, "artifacts", args.contractName));
 
