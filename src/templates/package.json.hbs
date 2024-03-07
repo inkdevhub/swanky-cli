@@ -9,16 +9,25 @@
   "license": "MIT",
   "scripts": {
     "run-node": "swanky node start",
-    "test": "mocha --config .mocharc.json"
+    "test": "mocha --config .mocharc.json",
+    "dev": "pnpm run -F frontend dev",
+    "build": "pnpm run -F frontend build",
+    "start": "pnpm run -F frontend start",
+    "type-check": "pnpm run -F '*' type-check",
+    "sync-types": "pnpm run -F '*' sync-types && pnpm install",
+    "lint": "pnpm run -F '*' lint",
+    "lint:fix": "pnpm run -F '*' lint:fix",
+    "lint:format": "pnpm run -F '*' lint:format",
+    "changeset:version": "changeset version",
+    "changeset:publish": "changeset publish"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18 <=20",
+    "pnpm": "8"
   },
   "dependencies": {
-    "@727-ventures/typechain-types": "1.0.0-beta.1",
-    "@727-ventures/typechain-polkadot": "1.0.0-beta.2",
-    "@types/node": "^18",
-    "typescript": "^5.0.4"
+    "@727-ventures/typechain-types": "^1.1.2",
+    "@types/node": "^18"
 },
   "devDependencies": {
     "@types/chai": "^4.3.0",
@@ -28,6 +37,13 @@
     "chai-as-promised": "^7.1.1",
     "mocha": "^10.1.0",
     "mochawesome": "^7.1.3",
-    "ts-node": "^10.8.0"
+    "ts-node": "^10.8.0",
+    "@changesets/changelog-github": "^0.5.0",
+    "@changesets/cli": "^2.27.1",
+    "lint-staged": "^15.2.2",
+    "next": "^14.0.4",
+    "simple-git-hooks": "^2.9.0",
+    "typescript": "^5.3.3",
+    "typesync": "^0.12.1"
   }
 }

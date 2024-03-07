@@ -141,7 +141,7 @@ export async function generateTypes(contractName: string) {
   emptyDir(outputPath);
 
   await execaCommand(
-    `npx typechain-polkadot --in ${relativeInputPath} --out ${relativeOutputPath}`
+    `npx @727-ventures/typechain-polkadot --in ${relativeInputPath} --out ${relativeOutputPath}`
   );
 }
 export function ensureAccountIsSet(account: string | undefined, config: SwankyConfig) {

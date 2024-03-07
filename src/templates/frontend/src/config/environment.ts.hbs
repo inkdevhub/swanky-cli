@@ -1,0 +1,13 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { getURL } from './get-url'
+import swankyConfig from '../../../swanky.config.json'
+import {S as SubstrateChain} from "@scio-labs/use-inkathon/dist/SubstrateChain-lWDT_tLg";
+
+const configNetworks = swankyConfig.networks
+export const env = {
+  url: getURL(),
+  isProduction: 'false',
+
+  defaultChain: { name: 'local', network: 'local', rpcUrls: [ configNetworks.local.url ] } as SubstrateChain,
+  supportedChains: Object.keys(configNetworks),
+}

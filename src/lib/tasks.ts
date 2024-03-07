@@ -18,6 +18,8 @@ import { readFileSync } from "fs";
 import TOML from "@iarna/toml";
 import { writeFileSync } from "node:fs";
 import { commandStdoutOrNull } from "./command-utils.js";
+import { readJSON, writeJSON } from "fs-extra/esm";
+import { fileExists } from "@oclif/core/lib/util.js";
 
 export async function checkCliDependencies(spinner: Spinner) {
   const dependencyList = [
@@ -193,6 +195,26 @@ export async function copyZombienetTemplateFile(templatePath: string, configPath
   );
 }
 
+export async function copyFrontendTemplateFiles(
+  templatesPath: string,
+  projectPath: string,
+) {
+  await copy(path.resolve(templatesPath, "pnpm-workspace.yaml.hbs"), path.resolve(projectPath, "pnpm-workspace.yaml.hbs"));
+  await copy(
+    path.resolve(templatesPath, "frontend"),
+    path.resolve(projectPath, "frontend"),
+  );
+}
+
+export async function addFrontendWorkspace(
+  projectPath: string,
+) {
+  const packageJsonPath = path.resolve(projectPath, "package.json");
+  const packageJson = await readJSON(packageJsonPath);
+  packageJson.workspace = [ "frontend" ];
+  await writeJSON(packageJsonPath, packageJson, { spaces: 2 });
+}
+
 export async function downloadZombienetBinaries(binaries: string[], projectPath: string, swankyConfig: SwankyConfig, spinner: Spinner) {
   const binPath = path.resolve(projectPath, "zombienet", "bin");
   await ensureDir(binPath);
@@ -317,8 +339,13 @@ export async function installDeps(projectPath: string) {
   let installCommand = "npm install";
 
   try {
-    await execaCommand("yarn --version");
-    installCommand = "yarn install";
+    if (await fileExists(path.resolve(projectPath, "pnpm-workspace.yaml"))) {
+      await execaCommand("pnpm --version");
+      installCommand = "pnpm install";
+    } else {
+      await execaCommand("yarn --version");
+      installCommand = "yarn install";
+    }
   } catch (_error) {
     console.log("\n\t >>Yarn not detected, using NPM");
   } finally {
