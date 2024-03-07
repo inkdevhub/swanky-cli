@@ -14,6 +14,16 @@ export const DEFAULT_CONFIG_NAME = "swanky.config.json";
 export const ARTIFACTS_PATH = "artifacts";
 export const TYPED_CONTRACTS_PATH = "typedContracts";
 
+export const DEFAULT_RUST_DEP_VERSION = "1.76.0";
+export const DEFAULT_CARGO_DYLINT_DEP_VERSION = "2.6.1";
+export const DEFAULT_CARGO_CONTRACT_DEP_VERSION = "4.0.0-rc.2";
+
+export const SUPPORTED_DEPS = {
+  rust: DEFAULT_RUST_DEP_VERSION,
+  "cargo-dylint": DEFAULT_CARGO_DYLINT_DEP_VERSION,
+  "cargo-contract": DEFAULT_CARGO_CONTRACT_DEP_VERSION,
+} as const;
+
 export const LOCAL_FAUCET_AMOUNT = 100;
 export const KEYPAIR_TYPE = "sr25519";
 export const ALICE_URI = "//Alice";

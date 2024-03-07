@@ -59,7 +59,7 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
       this.swankyConfig = { ...this.swankyConfig, ...systemConfig };
     } catch (error) {
       this.warn(
-        `No Swanky system config found; creating one in "/${DEFAULT_CONFIG_FOLDER_NAME}/${DEFAULT_CONFIG_NAME}}" at home directory`
+        `No Swanky system config found; creating one in "/${DEFAULT_CONFIG_FOLDER_NAME}/${DEFAULT_CONFIG_NAME}" at home directory`
       );
       await this.storeConfig(this.swankyConfig, "global");
     }
@@ -102,7 +102,7 @@ export abstract class SwankyCommand<T extends typeof Command> extends Command {
     } else {
       // global
       configPath = getSystemConfigDirectoryPath() + `/${DEFAULT_CONFIG_NAME}`;
-      if ("node" in newConfig) {
+      if ("accounts" in newConfig) {
         // If it's a SwankyConfig, extract only the system relevant parts for the global SwankySystemConfig config
         newConfig = {
           defaultAccount: newConfig.defaultAccount,

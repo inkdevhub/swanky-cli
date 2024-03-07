@@ -32,6 +32,13 @@ export class ConfigBuilder<T extends SwankySystemConfig | SwankyConfig> {
     return this;
   }
 
+  updateEnv(env: Record<string, string>): ConfigBuilder<T> {
+    if ("env" in this.config) {
+      this.config.env = {...this.config.env, ...env};
+    }
+    return this;
+  }
+
   updateContracts(contracts: SwankyConfig["contracts"]): ConfigBuilder<T> {
     if ("contracts" in this.config) {
       this.config.contracts = { ...contracts };

@@ -10,14 +10,13 @@ import semver from "semver";
 import { nodeInfo } from "./nodeInfo.js";
 import decompress from "decompress";
 import { Spinner } from "./spinner.js";
-import { Relaychain, SupportedArch, SupportedPlatforms, SwankyConfig, TestType, ZombienetConfig } from "../types/index.js";
+import { DependencyName, Relaychain, SupportedArch, SupportedPlatforms, SwankyConfig, TestType, ZombienetConfig } from "../types/index.js";
 import { ConfigError, NetworkError, ProcessError } from "./errors.js";
 import { BinaryNames } from "./zombienetInfo.js";
 import { zombienetConfig } from "../commands/zombienet/init.js";
 import { readFileSync } from "fs";
 import TOML from "@iarna/toml";
 import { writeFileSync } from "node:fs";
-import { commandStdoutOrNull } from "./command-utils.js";
 
 export async function checkCliDependencies(spinner: Spinner) {
   const dependencyList = [
@@ -32,6 +31,32 @@ export async function checkCliDependencies(spinner: Spinner) {
   for (const dep of dependencyList) {
     spinner.text(`  Checking ${dep.dependencyName}`);
     await execaCommand(dep.versionCommand);
+  }
+}
+
+export async function installCliDevDeps(spinner: Spinner, name: DependencyName, version: string) {
+  switch (name) {
+    case "rust": {
+      spinner.text(`  Installing rust`);
+      await execaCommand(`rustup toolchain install ${version}`);
+      await execaCommand(`rustup default ${version}`);
+      await execaCommand(`rustup component add rust-src --toolchain ${version}`);
+      await execaCommand(`rustup target add wasm32-unknown-unknown --toolchain ${version}`);
+      break;
+    }
+    case "cargo-dylint":
+    case "cargo-contract": {
+      spinner.text(`  Installing ${name}`);
+      await execaCommand(
+        `cargo +stable install ${name} ${
+          version === "latest" ? "" : ` --force --version ${version}`
+        }`
+      );
+      break;
+    }
+    default:
+      spinner.fail(`Unsupported dependency. Skipping installation.`);
+      return;
   }
 }
 
@@ -324,23 +349,6 @@ export async function installDeps(projectPath: string) {
   } finally {
     await execaCommand(installCommand, { cwd: projectPath });
   }
-}
-
-export function extractCargoContractVersion() {
-  const regex = /cargo-contract-contract (\d+\.\d+\.\d+(?:-[\w.]+)?)(?:-unknown-[\w-]+)/;
-  const cargoContractVersionOutput = commandStdoutOrNull("cargo contract -V");
-  if (!cargoContractVersionOutput) {
-    return null
-  }
-
-  const match = cargoContractVersionOutput.match(regex);
-  if (!match) {
-    throw new ProcessError(
-      `Unable to determine cargo-contract version. Please verify its installation.`
-    );
-  }
-
-  return match[1];
 }
 
 export function ensureCargoContractVersionCompatibility(

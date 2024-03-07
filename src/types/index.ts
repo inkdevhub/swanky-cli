@@ -1,4 +1,5 @@
 import { SubmittableExtrinsic } from "@polkadot/api/types";
+import { SUPPORTED_DEPS } from "../lib/consts.js";
 
 export type KeypairType = "ed25519" | "sr25519" | "ecdsa" | "ethereum";
 
@@ -60,12 +61,13 @@ export interface SwankyConfig extends SwankySystemConfig{
   };
   contracts: Record<string, ContractData> | Record<string, never>;
   zombienet?: ZombienetData;
+  env: Record<string, string>;
 }
 
 export interface SwankySystemConfig {
   defaultAccount: string | null;
   accounts: AccountData[];
-  networks: Record<string, {url: string}>
+  networks: Record<string, {url: string}>;
 }
 
 export interface ZombienetData {
@@ -117,4 +119,5 @@ export enum BuildMode {
 export type SupportedPlatforms = "darwin" | "linux";
 export type SupportedArch = "arm64" | "x64";
 
+export type DependencyName = keyof typeof SUPPORTED_DEPS;
 export type TestType = "e2e" | "mocha";
