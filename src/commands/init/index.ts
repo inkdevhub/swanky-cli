@@ -129,7 +129,7 @@ export class Init extends SwankyCommand<typeof Init> {
     this.taskQueue.push({
       task: installDeps,
       args: [this.projectPath],
-      runningMessage: "Installing dependencies",
+      runningMessage: "Installing NPM dependencies...",
       shouldExitOnError: false,
     });
 
