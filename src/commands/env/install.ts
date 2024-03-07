@@ -8,11 +8,6 @@ import { ConfigBuilder } from "../../lib/config-builder.js";
 
 export class Install extends SwankyCommand<typeof Install> {
   static flags = {
-    all: Flags.boolean({
-      default: false,
-      char: "a",
-      description: "Install all dev dependencies from swanky config",
-    }),
     deps: Flags.string({
       required: false,
       description: `Install the specified dev dependency name and version in the format <dependency@version>. The following options are supported: ${Object.keys(
@@ -24,53 +19,52 @@ export class Install extends SwankyCommand<typeof Install> {
     }),
   };
 
-  constructor(argv: string[], baseConfig: any) {
-    super(argv, baseConfig);
-    (this.constructor as typeof SwankyCommand).ENSURE_SWANKY_CONFIG = false;
-  }
-
   async run(): Promise<void> {
     const { flags } = await this.parse(Install);
 
-    if (flags.deps.length === 0 && !flags.all) {
-      throw new InputError("No dependency to install was specified");
+    const localConfig = getSwankyConfig('local') as SwankyConfig;
+    const depsToInstall = flags.deps.length > 0 ? this.parseDeps(flags.deps) : localConfig.env;
+
+    if (Object.keys(depsToInstall).length === 0) {
+      this.log("No dependencies to install.");
+      return;
     }
 
-    if (flags.deps.some((dep) => !Object.keys(SUPPORTED_DEPS).includes(dep.split("@")[0]))) {
-      throw new InputError(
-        `Unsupported dependency specified. Please use one of the following supported dependencies: ${Object.keys(
-          SUPPORTED_DEPS
-        ).join(", ")}`
-      );
-    }
+    await this.installDeps(depsToInstall);
 
-    const newDeps: Record<string, string> = {};
-    for (const item of flags.deps) {
-      const [key, value] = item.split("@");
-      newDeps[key] = value || "latest";
-    }
-
-    const localConfig = getSwankyConfig("local") as SwankyConfig;
-    const newEnv = { ...localConfig.env, ...newDeps };
-    const deps = Object.entries(newEnv);
-    
-    for (const [dep, version] of deps) {
-      const typedDep = dep as DependencyName;
-      await this.spinner.runCommand(
-        () => installCliDevDeps(this.spinner, typedDep, version),
-        `Installing ${dep}`
-      );
-    }
-
-    if (Object.keys(newDeps).length > 0) {
-      await this.spinner.runCommand(async () => {
-        const newLocalConfig = new ConfigBuilder(getSwankyConfig("local"))
-          .updateEnv(newDeps)
-          .build();
-        await this.storeConfig(newLocalConfig, "local");
-      }, "Updating swanky config");
+    if (flags.deps.length > 0) {
+      await this.updateLocalConfig(depsToInstall);
     }
 
     this.log("Swanky Dev Dependencies Installed successfully");
+  }
+
+  parseDeps(deps: string[]): Record<string, string> {
+    return deps.reduce((acc, dep) => {
+      const [key, value] = dep.split('@');
+      if (!Object.keys(SUPPORTED_DEPS).includes(key)) {
+        throw new InputError(`Unsupported dependency '${key}'. Supported: ${Object.keys(SUPPORTED_DEPS).join(", ")}`);
+      }
+      acc[key] = value || 'latest';
+      return acc;
+    }, {} as Record<string, string>);
+  }
+
+  async installDeps(dependencies: Record<string, string>) {
+    for (const [dep, version] of Object.entries(dependencies)) {
+      await this.spinner.runCommand(
+        () => installCliDevDeps(this.spinner, dep as DependencyName, version),
+        `Installing ${dep}@${version}`
+      );
+    }
+  }
+
+  async updateLocalConfig(newDeps: Record<string, string>): Promise<void> {
+    await this.spinner.runCommand(async () => {
+      const newLocalConfig = new ConfigBuilder(getSwankyConfig('local'))
+        .updateEnv(newDeps)
+        .build();
+      await this.storeConfig(newLocalConfig, 'local');
+    }, "Updating Swanky config with new Dev Dependencies...");
   }
 }
