@@ -9,21 +9,20 @@ import { ConfigBuilder } from "../../lib/config-builder.js";
 export class Install extends SwankyCommand<typeof Install> {
   static flags = {
     deps: Flags.string({
-      required: false,
       description: `Install the specified dev dependency name and version in the format <dependency@version>. The following options are supported: ${Object.keys(
         SUPPORTED_DEPS
       ).join(", ")}. For installing rust nightly version run: env install --deps rust@nightly`,
       multiple: true,
-      default: [],
       char: "d",
     }),
   };
 
   async run(): Promise<void> {
     const { flags } = await this.parse(Install);
+    const depsArray = flags.deps ?? [];
 
     const localConfig = getSwankyConfig('local') as SwankyConfig;
-    const depsToInstall = flags.deps.length > 0 ? this.parseDeps(flags.deps) : localConfig.env;
+    const depsToInstall = depsArray.length > 0 ? this.parseDeps(depsArray) : localConfig.env;
 
     if (Object.keys(depsToInstall).length === 0) {
       this.log("No dependencies to install.");
@@ -32,7 +31,7 @@ export class Install extends SwankyCommand<typeof Install> {
 
     await this.installDeps(depsToInstall);
 
-    if (flags.deps.length > 0) {
+    if (depsArray.length > 0) {
       await this.updateLocalConfig(depsToInstall);
     }
 
