@@ -78,6 +78,15 @@ export class ConfigBuilder<T extends SwankySystemConfig | SwankyConfig> {
     return this;
   }
 
+  addChopsticks(path: string): ConfigBuilder<T> {
+    if("node" in this.config) {
+      this.config.node.chopsticks ={
+        configPath: path,
+      }
+    }
+    return this;
+  }
+
   build(): T {
     return this.config;
   }

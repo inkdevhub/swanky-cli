@@ -1,0 +1,4 @@
+endpoint: ws://127.0.0.1:9944
+mock-signature-host: true
+block: 1
+db: ./db.sqlite
