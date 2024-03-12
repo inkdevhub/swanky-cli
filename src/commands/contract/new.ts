@@ -10,7 +10,7 @@ import {
   getSwankyConfig,
 } from "../../lib/index.js";
 import { email, name, pickTemplate } from "../../lib/prompts.js";
-import { paramCase, pascalCase, snakeCase } from "change-case";
+import { kebabCase, pascalCase, snakeCase } from "change-case";
 import { execaCommandSync } from "execa";
 import inquirer from "inquirer";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
@@ -96,7 +96,7 @@ export class NewContract extends SwankyCommand<typeof NewContract> {
     await this.spinner.runCommand(
       () =>
         processTemplates(projectPath, {
-          project_name: paramCase(this.config.pjson.name),
+          project_name: kebabCase(this.config.pjson.name),
           author_name: answers.authorName,
           author_email: answers.email,
           swanky_version: this.config.pjson.version,
