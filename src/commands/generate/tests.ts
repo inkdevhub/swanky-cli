@@ -6,7 +6,7 @@ import { ConfigError, FileError, InputError } from "../../lib/errors.js";
 import path from "node:path";
 import { existsSync } from "node:fs";
 import inquirer from "inquirer";
-import { paramCase, pascalCase } from "change-case";
+import { kebabCase, pascalCase } from "change-case";
 import { TestType } from "../../index.js";
 
 export class GenerateTests extends SwankyCommand<typeof GenerateTests> {
@@ -15,7 +15,6 @@ export class GenerateTests extends SwankyCommand<typeof GenerateTests> {
   static args = {
     contractName: Args.string({
       name: "contractName",
-      required: false,
       description: "Name of the contract",
     }),
   };
@@ -151,7 +150,7 @@ export class GenerateTests extends SwankyCommand<typeof GenerateTests> {
     await this.spinner.runCommand(
       () =>
         processTemplates(projectPath, {
-          project_name: paramCase(this.config.pjson.name),
+          project_name: kebabCase(this.config.pjson.name),
           swanky_version: this.config.pjson.version,
           contract_name: contractName ?? "",
           contract_name_pascal: contractName ? pascalCase(contractName) : "",

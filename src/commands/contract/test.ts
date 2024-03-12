@@ -4,7 +4,6 @@ import path from "node:path";
 import { globby } from "globby";
 import Mocha from "mocha";
 import { emptyDir, pathExistsSync } from "fs-extra/esm";
-import shell from "shelljs";
 import { Contract } from "../../lib/contract.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { ConfigError, FileError, InputError, ProcessError, TestError } from "../../lib/errors.js";
@@ -25,8 +24,8 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
       description: "Run tests for all contracts",
     }),
     mocha: Flags.boolean({
-        default: false,
-        description: "Run tests with mocha",
+      default: false,
+      description: "Run tests with mocha",
     }),
   };
 
@@ -69,7 +68,9 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
 
       console.log(`Testing contract: ${contractName}`);
 
-      if (!flags.mocha) {
+      if (flags.mocha) {
+        await this.runMochaTests(contract);
+      } else {
         await spinner.runCommand(
           async () => {
             return new Promise<string>((resolve, reject) => {
@@ -79,7 +80,7 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
                 "e2e-tests",
                 "--manifest-path",
                 `contracts/${contractName}/Cargo.toml`,
-                "--release"
+                "--release",
               ];
 
               const compile = spawn("cargo", compileArgs);
@@ -114,15 +115,17 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
           `Testing ${contractName} contract`,
           `${contractName} testing finished successfully`
         );
-      } else {
+      }
+    }
+  }
 
-        const testDir = path.resolve("tests");
+  async runMochaTests(contract: Contract): Promise<void> {
+    const testDir = path.resolve("tests", contract.name);
+    if (!pathExistsSync(testDir)) {
+      throw new FileError(`Test directory does not exist: ${testDir}`);
+    }
 
-        if (!pathExistsSync(testDir)) {
-          throw new FileError(`Tests folder does not exist: ${testDir}`);
-        }
-
-        const artifactsCheck = await contract.artifactsExist();
+    const artifactsCheck = await contract.artifactsExist();
 
         if (!artifactsCheck.result) {
           throw new FileError(
@@ -130,8 +133,8 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
           );
         }
 
-        const artifactPath = path.resolve("typedContracts", `${contractName}`);
-        const typedContractCheck = await contract.typedContractExists(contractName);
+        const artifactPath = path.resolve("typedContracts", `${contract.name}`);
+        const typedContractCheck = await contract.typedContractExists(contract.name);
 
         this.log(`artifactPath: ${artifactPath}`);
 
@@ -141,46 +144,37 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
           );
         }
 
-        const reportDir = path.resolve(testDir, contract.name, "testReports");
+    const reportDir = path.resolve(testDir, "testReports");
+    await emptyDir(reportDir);
 
-        await emptyDir(reportDir);
+    const mocha = new Mocha({
+      timeout: 200000,
+      reporter: "mochawesome",
+      reporterOptions: {
+        reportDir,
+        quiet: true,
+      },
+    });
 
-        const mocha = new Mocha({
-          timeout: 200000,
-          reporter: "mochawesome",
-          reporterOptions: {
-            reportDir,
-            charts: true,
-            reportTitle: `${contractName} test report`,
-            quiet: true,
-            json: false,
-          },
+    const testFiles = await globby(`${testDir}/*.test.ts`);
+    testFiles.forEach((file) => mocha.addFile(file));
+
+    global.contractTypesPath = path.resolve(testDir, "typedContract");
+
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        mocha.run((failures) => {
+          if (failures) {
+            reject(new Error(`Tests failed. See report: ${reportDir}`));
+          } else {
+            console.log(`All tests passed. See report: ${reportDir}`);
+            resolve();
+          }
         });
-
-        const tests = await globby(`${path.resolve(testDir, contractName)}/*.test.ts`);
-
-        tests.forEach((test) => {
-          mocha.addFile(test);
-        });
-
-        global.contractTypesPath = path.resolve(testDir, contractName, "typedContract");
-
-        shell.cd(`${testDir}/${contractName}`);
-        try {
-          await new Promise<void>((resolve, reject) => {
-            mocha.run((failures) => {
-              if (failures) {
-                reject(`At least one of the tests failed. Check report for details: ${reportDir}`);
-              } else {
-                this.log(`All tests passing. Check the report for details: ${reportDir}`);
-                resolve();
-              }
-            });
-          });
-        } catch (cause) {
-          throw new TestError("Error in test", { cause });
-        }
-      }
+      });
+    } catch (error) {
+      throw new TestError("Mocha tests failed", { cause: error });
     }
   }
 }
