@@ -7,6 +7,8 @@ import { DependencyName, SwankyConfig, getSwankyConfig } from "../../index.js";
 import { ConfigBuilder } from "../../lib/config-builder.js";
 
 export class Install extends SwankyCommand<typeof Install> {
+  static description = "Install dev dependencies";
+
   static flags = {
     deps: Flags.string({
       required: false,
