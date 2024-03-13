@@ -17,6 +17,7 @@ import { zombienetConfig } from "../commands/zombienet/init.js";
 import { readFileSync } from "fs";
 import TOML from "@iarna/toml";
 import { writeFileSync } from "node:fs";
+import { chopsticksConfig } from "../commands/node/chopsticks/init.js";
 
 export async function checkCliDependencies(spinner: Spinner) {
   const dependencyList = [
@@ -215,6 +216,14 @@ export async function copyZombienetTemplateFile(templatePath: string, configPath
   await copy(
     path.resolve(templatePath, zombienetConfig),
     path.resolve(configPath, zombienetConfig),
+  );
+}
+
+export async function copyChopsticksTemplateFile(templatePath: string, configPath: string) {
+  await ensureDir(configPath);
+  await copy(
+    path.resolve(templatePath, chopsticksConfig),
+    path.resolve(configPath, chopsticksConfig),
   );
 }
 

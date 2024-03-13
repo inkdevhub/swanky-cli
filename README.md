@@ -245,6 +245,7 @@ USAGE
 * [`swanky account balance`](#swanky-account-balance)
 * [`swanky account faucet`](#swanky-account-faucet)
 * [`swanky account default`](#swanky-account-default)
+* [`swanky clear CONTRACTNAME`](#swanky-clear-contractname)
 * [`swanky contract compile [CONTRACTNAME]`](#swanky-contract-compile-contractname)
 * [`swanky contract deploy CONTRACTNAME`](#swanky-contract-deploy-contractname)
 * [`swanky contract explain CONTRACTNAME`](#swanky-contract-explain-contractname)
@@ -394,6 +395,25 @@ DESCRIPTION
 ``` 
 
 _See code: [src/commands/account/default.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/account/default.ts)_
+
+## `swanky clear [CONTRACTNAME]`
+
+Clear the artifacts
+
+```
+USAGE
+  $ swanky clear [CONTRACTNAME] [-v] [-a]
+
+ARGUMENTS
+  CONTRACTNAME  Name of the contract artifact to clear
+
+FLAGS
+  -a, --all      Select all the project artifacts for delete
+  -v, --verbose  Display more info in the result logs
+
+DESCRIPTION
+  Clear the artifacts
+```
 
 ## `swanky contract compile [CONTRACTNAME]`
 

@@ -58,6 +58,9 @@ export interface SwankyConfig extends SwankySystemConfig{
     localPath: string;
     supportedInk: string;
     version: string;
+    chopsticks?: {
+      configPath: string;
+    };
   };
   contracts: Record<string, ContractData> | Record<string, never>;
   zombienet?: ZombienetData;
