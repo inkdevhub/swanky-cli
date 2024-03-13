@@ -106,7 +106,7 @@ A newly generated project will have a `swanky.config.json` file that will get po
       "url": "wss://rpc.shiden.astar.network"
     },
     "shibuya": {
-      "url": "wss://rpc.shibuya.astar.network"
+      "url": "wss://shibuya.public.blastapi.io"
     }
   },
   "contracts": {
@@ -125,6 +125,49 @@ A newly generated project will have a `swanky.config.json` file that will get po
   }
 }
 ```
+
+Also, global config will be created in your home directory, in `~/swanky` folder.
+## Example:
+
+```json
+{
+  "accounts": [
+    {
+      "alias": "alice",
+      "mnemonic": "//Alice",
+      "isDev": true,
+      "address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+    },
+    {
+      "alias": "bob",
+      "mnemonic": "//Bob",
+      "isDev": true,
+      "address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+    },
+    {
+      "mnemonic": "broken estate advance smooth noble place wine choose scare east effort evil",
+      "isDev": true,
+      "alias": "global",
+      "address": "5FhfjMxbrJnjxuP5rP1ZorNaDJdE1n5LYpd7jTi9ByfVX1P1"
+    }
+  ],
+  "networks": {
+    "local": {
+      "url": "ws://127.0.0.1:9944"
+    },
+    "astar": {
+      "url": "wss://rpc.astar.network"
+    },
+    "shiden": {
+      "url": "wss://rpc.shiden.astar.network"
+    },
+    "shibuya": {
+      "url": "wss://shibuya.public.blastapi.io"
+    }
+  }
+}
+```
+You can use accounts and networks from the global config in any swanky project.
 
 # Network Management
 
@@ -187,7 +230,7 @@ $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
 running command...
 $ swanky (--version|-V|-v)
-@astar-network/swanky-cli/3.1.0-beta.0 darwin-x64 node-v20.2.0
+@astar-network/swanky-cli/4.0.0 darwin-x64 node-v20.2.0
 $ swanky --help [COMMAND]
 USAGE
   $ swanky COMMAND
@@ -199,6 +242,10 @@ USAGE
 * [`swanky account create`](#swanky-account-create)
 * [`swanky account list`](#swanky-account-list)
 * [`swanky account ls`](#swanky-account-ls)
+* [`swanky account balance`](#swanky-account-balance)
+* [`swanky account faucet`](#swanky-account-faucet)
+* [`swanky account default`](#swanky-account-default)
+* [`swanky clear CONTRACTNAME`](#swanky-clear-contractname)
 * [`swanky contract compile [CONTRACTNAME]`](#swanky-contract-compile-contractname)
 * [`swanky contract deploy CONTRACTNAME`](#swanky-contract-deploy-contractname)
 * [`swanky contract explain CONTRACTNAME`](#swanky-contract-explain-contractname)
@@ -206,15 +253,21 @@ USAGE
 * [`swanky contract query CONTRACTNAME MESSAGENAME`](#swanky-contract-query-contractname-messagename)
 * [`swanky contract test [CONTRACTNAME]`](#swanky-contract-test-contractname)
 * [`swanky contract tx CONTRACTNAME MESSAGENAME`](#swanky-contract-tx-contractname-messagename)
-* [`swanky contract typegen CONTRACTNAME`](#swanky-contract-typegen-contractname)
+* [`swanky contract verify CONTRACTNAME`](#swanky-contract-verify-contractname)
 * [`swanky env check`](#swanky-env-check)
 * [`swanky env install`](#swanky-env-install)
+* [`swanky generate tests`](#swanky-generate-tests)
+* [`swanky generate types`](#swanky-generate-types)
 * [`swanky help [COMMANDS]`](#swanky-help-commands)
 * [`swanky init PROJECTNAME`](#swanky-init-projectname)
 * [`swanky node install`](#swanky-node-install)
 * [`swanky node purge`](#swanky-node-purge)
 * [`swanky node start`](#swanky-node-start)
-* [`swanky clear CONTRACTNAME`](#)
+* [`swanky node version`](#swanky-node-version)
+* [`swanky node chopsticks init`](#swanky-node-chopsticks-init)
+* [`swanky node chopsticks start`](#swanky-node-chopsticks-start)
+* [`swanky zombienet init`](#swanky-zombienet-init)
+* [`swanky zombienet start`](#swanky-zombienet-start)
 * [`swanky plugins`](#swanky-plugins)
 * [`swanky plugins:install PLUGIN...`](#swanky-pluginsinstall-plugin)
 * [`swanky plugins:inspect PLUGIN...`](#swanky-pluginsinspect-plugin)
@@ -232,17 +285,18 @@ Create a new dev account in config
 
 ```
 USAGE
-  $ swanky account create [-v] [-g] [-d]
+  $ swanky account create [-v] [-g] [-n] [-d]
 
 FLAGS
-  -d, --dev
-  -g, --generate
-  -v, --verbose   Display more info in the result logs
+  -d, --dev      Make this account a dev account for local network usage.
+  -g, --global   Create account globally stored in Swanky system config.
+  -n, --new      Generate a brand new account.
+  -v, --verbose  Display more info in the result logs
 
 DESCRIPTION
   Create a new dev account in config
 ```
-
+_See code: [src/commands/account/create.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/account/create.ts)_
 ## `swanky account list`
 
 List dev accounts stored in config
@@ -260,6 +314,8 @@ DESCRIPTION
 ALIASES
   $ swanky account ls
 ```
+_See code: [src/commands/account/list.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/account/list.ts)_
+
 
 ## `swanky account ls`
 
@@ -279,7 +335,87 @@ ALIASES
   $ swanky account ls
 ```
 
-_See code: [dist/commands/check/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v3.1.0-beta.0/dist/commands/check/index.ts)_
+_See code: [src/commands/account/list.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/account/list.ts)_
+
+## `swanky account balance`
+
+Balance of an account
+
+```
+USAGE
+  $ swanky account balance [ALIAS] [-v]
+
+ARGUMENTS
+  ALIAS  Alias of account to be used
+
+FLAGS
+  -v, --verbose  Display more info in the result logs
+
+DESCRIPTION
+  Balance of an account
+```
+
+_See code: [src/commands/account/balance.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/account/balance.ts)_
+
+## `swanky account faucet`
+
+Transfer some tokens from faucet to an account
+
+```
+USAGE
+  $ swanky account faucet ALIAS [-v]
+
+ARGUMENTS
+  ALIAS  Alias of account to be used
+
+FLAGS
+  -v, --verbose  Display more info in the result logs
+
+DESCRIPTION
+  Transfer some tokens from faucet to an account
+```
+
+_See code: [src/commands/account/faucet.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/account/faucet.ts)_
+
+## `swanky account default`
+
+Set default account to use
+
+```
+USAGE
+$ swanky account default [ACCOUNTALIAS] [-v] [-g]
+
+ARGUMENTS
+  ACCOUNTALIAS  Alias of account to be used as default
+
+FLAGS
+  -g, --global   Set default account globally in Swanky system config.
+  -v, --verbose  Display more info in the result logs
+
+DESCRIPTION
+  Set default account to use
+``` 
+
+_See code: [src/commands/account/default.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/account/default.ts)_
+
+## `swanky clear [CONTRACTNAME]`
+
+Clear the artifacts
+
+```
+USAGE
+  $ swanky clear [CONTRACTNAME] [-v] [-a]
+
+ARGUMENTS
+  CONTRACTNAME  Name of the contract artifact to clear
+
+FLAGS
+  -a, --all      Select all the project artifacts for delete
+  -v, --verbose  Display more info in the result logs
+
+DESCRIPTION
+  Clear the artifacts
+```
 
 ## `swanky contract compile [CONTRACTNAME]`
 
@@ -287,7 +423,7 @@ Compile the smart contract(s) in your contracts directory
 
 ```
 USAGE
-  $ swanky contract compile [CONTRACTNAME] [-v] [-r] [-a]
+  $ swanky contract compile [CONTRACTNAME] [-v] [-r] [--verifiable] [-a]
 
 ARGUMENTS
   CONTRACTNAME  Name of the contract to compile
@@ -296,10 +432,13 @@ FLAGS
   -a, --all      Set all to true to compile all contracts
   -r, --release  A production contract should always be build in `release` mode for building optimized wasm
   -v, --verbose  Display more info in the result logs
+  --verifiable   A production contract should be build in `verifiable` mode to deploy on a public network. Ensure Docker Engine is up and running.
 
 DESCRIPTION
   Compile the smart contract(s) in your contracts directory
 ```
+
+_See code: [src/commands/contract/compile.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/contract/compile.ts)_
 
 ## `swanky contract deploy CONTRACTNAME`
 
@@ -324,6 +463,9 @@ DESCRIPTION
   Deploy contract to a running node
 ```
 
+
+_See code: [src/commands/contract/deploy.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/contract/deploy.ts)_
+
 ## `swanky contract explain CONTRACTNAME`
 
 Explain contract messages based on the contracts' metadata
@@ -341,6 +483,8 @@ FLAGS
 DESCRIPTION
   Explain contract messages based on the contracts' metadata
 ```
+
+_See code: [src/commands/contract/explain.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/contract/explain.ts)_
 
 ## `swanky contract new CONTRACTNAME`
 
@@ -361,27 +505,34 @@ DESCRIPTION
   Generate a new smart contract template inside a project
 ```
 
+_See code: [src/commands/contract/new.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/contract/new.ts)_
+
+
 ## `swanky contract query CONTRACTNAME MESSAGENAME`
 
 Call a query message on smart contract
 
 ```
 USAGE
-  $ swanky contract query CONTRACTNAME MESSAGENAME [-v] [-p <value>] [-g <value>] [-n <value>] [-a <value>]
-    [--address <value>]
+  $ swanky contract query CONTRACTNAME MESSAGENAME [-v] [-p <value>] [-g <value>] [-n <value>] [-a <value>] [--address <value>]
 
 ARGUMENTS
   CONTRACTNAME  Contract to call
   MESSAGENAME   What message to call
 
 FLAGS
-  -a, --account=<value>    Account to sign the transaction with
+  -a, --account=<value>    Account alias to sign the transaction with
   -g, --gas=<value>        Manually specify gas limit
-  -n, --network=<value>    Network name to connect to
+  -n, --network=<value>    [default: local] Name of network to connect to
   -p, --params=<value>...  [default: ] Arguments supplied to the message
   -v, --verbose            Display more info in the result logs
   --address=<value>        Target specific address, defaults to last deployed. (--addr, --add)
+
+DESCRIPTION
+  Call a query message on smart contract
 ```
+
+_See code: [src/commands/contract/query.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/contract/query.ts)_
 
 ## `swanky contract test [CONTRACTNAME]`
 
@@ -389,18 +540,21 @@ Run tests for a given contact
 
 ```
 USAGE
-  $ swanky contract test [CONTRACTNAME] [-v] [-a]
+  $ swanky contract test [CONTRACTNAME] [-v] [-a] [--mocha]
 
 ARGUMENTS
   CONTRACTNAME  Name of the contract to test
 
 FLAGS
-  -a, --all      Set all to true to compile all contracts
+  -a, --all      Run tests for all contracts
   -v, --verbose  Display more info in the result logs
+  --mocha        Run tests with mocha
 
 DESCRIPTION
   Run tests for a given contact
 ```
+
+_See code: [src/commands/contract/test.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/contract/test.ts)_
 
 ## `swanky contract tx CONTRACTNAME MESSAGENAME`
 
@@ -408,30 +562,114 @@ Call a Tx message on smart contract
 
 ```
 USAGE
-  $ swanky contract tx CONTRACTNAME MESSAGENAME -a <value> [-v] [-p <value>] [-g <value>] [-n <value>] [--address
-    <value>] [-d]
+  $ swanky contract tx CONTRACTNAME MESSAGENAME [-v] [-p <value>] [-g <value>] [-n <value>] [-a <value>] [--address <value>] [-d]
 
 ARGUMENTS
   CONTRACTNAME  Contract to call
   MESSAGENAME   What message to call
 
 FLAGS
-  -a, --account=<value>    (required) Account to sign the transaction with
+  -a, --account=<value>    Account alias to sign the transaction with
   -d, --dry                Do a dry run, without signing the transaction
   -g, --gas=<value>        Manually specify gas limit
-  -n, --network=<value>    Network name to connect to
+  -n, --network=<value>    [default: local] Name of network to connect to
   -p, --params=<value>...  [default: ] Arguments supplied to the message
   -v, --verbose            Display more info in the result logs
   --address=<value>        Target specific address, defaults to last deployed. (--addr, --add)
+
+DESCRIPTION
+  Call a Tx message on smart contract
 ```
 
-## `swanky contract typegen CONTRACTNAME`
+_See code: [src/commands/contract/tx.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/contract/tx.ts)_
+
+## `swanky contract verify CONTRACTNAME`
+
+Verify the smart contract(s) in your contracts directory
+
+```
+USAGE
+  $ swanky contract verify [CONTRACTNAME] [-v] [-a]
+
+ARGUMENTS
+  CONTRACTNAME  Name of the contract to verify
+
+FLAGS
+  -a, --all      Set all to true to verify all contracts
+  -v, --verbose  Display more info in the result logs
+
+DESCRIPTION
+  Verify the smart contract(s) in your contracts directory
+```
+
+_See code: [src/commands/contract/verify.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/contract/verify.ts)_
+
+## `swanky env check`
+
+Check installed package versions and compatibility
+
+```
+USAGE
+  $ swanky env check [-v] [-o <value>]
+
+FLAGS
+  -o, --print=<value>  File to write output to
+  -v, --verbose        Display more info in the result logs
+
+DESCRIPTION
+  Check installed package versions and compatibility
+```
+
+_See code: [src/commands/env/check.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/env/check.ts)_
+
+## `swanky env install`
+
+Install dev dependencies
+
+```
+USAGE
+  $ swanky env install [-v] [-d <value>]
+
+FLAGS
+  -d, --deps=<value>...  [default: ] Install the specified dev dependency name and version in the format <dependency@version>. The following options are supported: rust, cargo-dylint, cargo-contract. For installing rust
+                         nightly version run: env install --deps rust@nightly
+  -v, --verbose          Display more info in the result logs
+
+DESCRIPTION
+  Install dev dependencies
+```
+
+_See code: [src/commands/env/install.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/env/install.ts)_
+
+## `swanky generate tests`
+
+Generate test files for the specified contract
+
+```
+USAGE
+  $ swanky generate tests [CONTRACTNAME] [-v] [--template blank|flipper|psp22] [--mocha]
+
+ARGUMENTS
+  CONTRACTNAME  Name of the contract
+
+FLAGS
+  -v, --verbose        Display more info in the result logs
+  --mocha              Generate mocha test files
+  --template=<option>  <options: blank|flipper|psp22>
+
+DESCRIPTION
+  Generate test files for the specified contract
+```         
+
+_See code: [src/commands/generate/tests.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/generate/tests.ts)_
+
+## `swanky generate types`
 
 Generate types from compiled contract metadata
 
 ```
 USAGE
-  $ swanky contract typegen CONTRACTNAME [-v]
+  $ swanky generate types CONTRACTNAME [-v]
 
 ARGUMENTS
   CONTRACTNAME  Name of the contract
@@ -443,37 +681,7 @@ DESCRIPTION
   Generate types from compiled contract metadata
 ```
 
-## `swanky env check`
-
-Check installed package versions and compatibility
-
-```
-USAGE
-  $ swanky env check [-v]
-
-FLAGS
-  -v, --verbose  Display more info in the result logs
-
-DESCRIPTION
-  Check installed package versions and compatibility
-```
-
-## `swanky env install`
-
-Install dev dependencies
-
-```
-USAGE
-  $ swanky env install [-a] [-d <dependencies>]
-
-FLAGS
-  -a, --all                     Set all to true to install all dev dependencies specified in the swanky config
-  -d, --deps=<dependencies>...  [default: ] Specific dev dependencies to install in the format <dependency@version>
-  -v, --verbose                 Display more info in the result logs
-
-DESCRIPTION
-  Install dev dependencies
-```
+_See code: [src/commands/generate/types.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/generate/types.ts)_
 
 ## `swanky help [COMMANDS]`
 
@@ -516,7 +724,7 @@ DESCRIPTION
   Generate a new smart contract environment
 ```
 
-_See code: [dist/commands/init/index.ts](https://github.com/AstarNetwork/swanky-cli/blob/v3.1.0-beta.0/dist/commands/init/index.ts)_
+_See code: [src/commands/init/index.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/init/index.ts)_
 
 ## `swanky node install`
 
@@ -524,14 +732,18 @@ Install swanky node binary
 
 ```
 USAGE
-  $ swanky node install [-v]
+  $ swanky node install [-v] [--set-version <value>]
 
 FLAGS
-  -v, --verbose  Display more info in the result logs
+  -v, --verbose          Display more info in the result logs
+  --set-version=<value>  Specify version of swanky node to install.
+                         List of supported versions: 1.6.0, 1.5.0, 1.4.0, 1.3.0, 1.2.0, 1.1.0, 1.0.0
 
 DESCRIPTION
   Install swanky node binary
 ```
+
+_See code: [src/commands/node/install.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/node/install.ts)_
 
 ## `swanky node purge`
 
@@ -547,6 +759,8 @@ FLAGS
 DESCRIPTION
   Purge local chain state
 ```
+
+_See code: [src/commands/node/purge.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/node/purge.ts)_
 
 ## `swanky node start`
 
@@ -577,24 +791,96 @@ DESCRIPTION
   Start a local node
 ```
 
-## `swanky clear`
+_See code: [src/commands/node/start.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/node/start.ts)_
 
-Clear the artifacts
+## `swanky node version`
+
+Show swanky node version
 
 ```
 USAGE
-  $ swanky clear [CONTRACTNAME] [-v] [-a]
-
-ARGUMENTS
-  CONTRACTNAME  Name of the contract artifact to clear
+  $ swanky node version [-v]
 
 FLAGS
-  -a, --all      Select all the project artifacts for delete
   -v, --verbose  Display more info in the result logs
 
 DESCRIPTION
-  Clear the artifacts
+  Show swanky node version
 ```
+
+_See code: [src/commands/node/version.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/node/version.ts)_
+
+## `swanky node chopsticks init`
+
+Initialize chopsticks config
+
+```
+USAGE
+  $ swanky node chopsticks init [-v]
+
+FLAGS
+  -v, --verbose  Display more info in the result logs
+
+DESCRIPTION
+  Initialize chopsticks config
+```
+
+_See code: [src/commands/node/chopsticks/init.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/node/chopsticks/init.ts)_
+
+## `swanky node chopsticks start`
+
+Start chopsticks
+
+```
+USAGE
+  $ swanky node chopsticks start [-v] [--config <value>]
+
+FLAGS
+  -v, --verbose  Display more info in the result logs
+  --config=<value>  Path to the chopsticks config file
+
+DESCRIPTION
+  Start chopsticks
+```
+
+_See code: [src/commands/node/chopsticks/start.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/node/chopsticks/start.ts)_
+
+## `swanky zombienet init`
+
+Initialize Zombienet
+
+``` 
+USAGE
+  $ swanky zombienet init [-v] [-b polkadot|polkadot-parachain|astar-collator]
+
+FLAGS
+  -b, --binaries=<option>...  [default: ] Binaries to install
+                              <options: polkadot|polkadot-parachain|astar-collator>
+  -v, --verbose               Display more info in the result logs
+
+DESCRIPTION
+  Initialize Zombienet
+```
+
+_See code: [src/commands/zombienet/init.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/zombienet/init.ts)_
+
+## `swanky zombienet start`
+
+Start Zombienet
+
+```
+USAGE
+  $ swanky zombienet start [-v] [-c <value>]
+
+FLAGS
+  -c, --config-path=<value>  [default: ./zombienet/config/zombienet.config.toml] Path to zombienet config
+  -v, --verbose              Display more info in the result logs
+
+DESCRIPTION
+  Start Zombienet
+```
+
+_See code: [src/commands/zombienet/start.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/zombienet/start.ts)_
 
 ## `swanky plugins`
 
