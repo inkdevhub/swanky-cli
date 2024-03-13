@@ -7,6 +7,8 @@ import { DependencyName, SwankyConfig, getSwankyConfig } from "../../index.js";
 import { ConfigBuilder } from "../../lib/config-builder.js";
 
 export class Install extends SwankyCommand<typeof Install> {
+  static description = "Install dev dependencies";
+
   static flags = {
     deps: Flags.string({
       description: `Install the specified dev dependency name and version in the format <dependency@version>. The following options are supported: ${Object.keys(
