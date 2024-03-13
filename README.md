@@ -264,6 +264,8 @@ USAGE
 * [`swanky node purge`](#swanky-node-purge)
 * [`swanky node start`](#swanky-node-start)
 * [`swanky node version`](#swanky-node-version)
+* [`swanky node chopsticks init`](#swanky-node-chopsticks-init)
+* [`swanky node chopsticks start`](#swanky-node-chopsticks-start)
 * [`swanky zombienet init`](#swanky-zombienet-init)
 * [`swanky zombienet start`](#swanky-zombienet-start)
 * [`swanky plugins`](#swanky-plugins)
@@ -807,6 +809,41 @@ DESCRIPTION
 ```
 
 _See code: [src/commands/node/version.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/node/version.ts)_
+
+## `swanky node chopsticks init`
+
+Initialize chopsticks config
+
+```
+USAGE
+  $ swanky node chopsticks init [-v]
+
+FLAGS
+  -v, --verbose  Display more info in the result logs
+
+DESCRIPTION
+  Initialize chopsticks config
+```
+
+_See code: [src/commands/node/chopsticks/init.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/node/chopsticks/init.ts)_
+
+## `swanky node chopsticks start`
+
+Start chopsticks
+
+```
+USAGE
+  $ swanky node chopsticks start [-v] [--config <value>]
+
+FLAGS
+  -v, --verbose  Display more info in the result logs
+  --config=<value>  Path to the chopsticks config file
+
+DESCRIPTION
+  Start chopsticks
+```
+
+_See code: [src/commands/node/chopsticks/start.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/node/chopsticks/start.ts)_
 
 ## `swanky zombienet init`
 
