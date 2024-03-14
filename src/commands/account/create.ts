@@ -1,12 +1,11 @@
 import { Flags } from "@oclif/core";
 import chalk from "chalk";
-import { ChainAccount, encrypt, getSwankyConfig, isLocalConfigCheck } from "../../lib/index.js";
+import { ChainAccount, encrypt, getSwankyConfig, isLocalConfigCheck, SwankyAccountCommand } from "../../lib/index.js";
 import { AccountData } from "../../types/index.js";
 import inquirer from "inquirer";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { FileError } from "../../lib/errors.js";
 import { ConfigBuilder } from "../../lib/config-builder.js";
-import { SwankyAccountCommand } from "./swankyAccountCommands.js";
 
 export class CreateAccount extends SwankyAccountCommand<typeof CreateAccount> {
   static description = "Create a new dev account in config";
