@@ -1,5 +1,6 @@
 export * from "./account.js";
 export * from "./command-utils.js";
+export * from "./config.js";
 export * as consts from "./consts.js";
 export * from "./crypto.js";
 export * from "./nodeInfo.js";

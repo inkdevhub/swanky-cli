@@ -24,15 +24,14 @@ export class InitZombienet extends SwankyCommand<typeof InitZombienet> {
     binaries: Flags.string({
       char: "b",
       multiple: true,
-      required: false,
       options: zombienetBinariesList,
-      default: [],
       description: "Binaries to install",
     }),
   };
 
   async run(): Promise<void> {
     const { flags } = await this.parse(InitZombienet);
+    const binArray = flags.deps ?? [];
 
     const localConfig = getSwankyConfig("local") as SwankyConfig;
 
@@ -55,11 +54,11 @@ As a result users of MacOS need to clone the Polkadot repo (https://github.com/p
       binaries: {},
     };
 
-    if (!flags.binaries.includes("polkadot")) {
-      flags.binaries.push("polkadot");
+    if (!binArray.includes("polkadot")) {
+      binArray.push("polkadot");
     }
 
-    for (const binaryName of flags.binaries) {
+    for (const binaryName of binArray) {
       if (platform === "darwin" && binaryName.startsWith("polkadot")) {
         continue;
       }
@@ -80,7 +79,7 @@ As a result users of MacOS need to clone the Polkadot repo (https://github.com/p
 
     const configPath = path.resolve(projectPath, "zombienet", "config");
 
-    if (flags.binaries.length === 1 && flags.binaries[0] === "polkadot") {
+    if (binArray.length === 1 && binArray[0] === "polkadot") {
       await spinner.runCommand(
         () =>
           copyZombienetTemplateFile(zombienetTemplatePath, configPath),
@@ -88,14 +87,14 @@ As a result users of MacOS need to clone the Polkadot repo (https://github.com/p
       );
     } else {
       await spinner.runCommand(
-        () => buildZombienetConfigFromBinaries(flags.binaries, zombienetTemplatePath, configPath),
+        () => buildZombienetConfigFromBinaries(binArray, zombienetTemplatePath, configPath),
         "Copying template files",
       );
     }
 
     // Install binaries based on zombie config
     await this.spinner.runCommand(
-      () => downloadZombienetBinaries(flags.binaries, projectPath, localConfig, this.spinner),
+      () => downloadZombienetBinaries(binArray, projectPath, localConfig, this.spinner),
       "Downloading Zombienet binaries",
     );
 

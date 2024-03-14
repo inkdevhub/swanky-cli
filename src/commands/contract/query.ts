@@ -2,7 +2,7 @@ import { ContractPromise } from "@polkadot/api-contract/promise";
 import { ContractCall } from "../../lib/contractCall.js";
 
 export class Query extends ContractCall<typeof Query> {
-  static summary = "Call a query message on smart contract";
+  static description = "Call a query message on smart contract";
 
   static args = { ...ContractCall.callArgs };
 

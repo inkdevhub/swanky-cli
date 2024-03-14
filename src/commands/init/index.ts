@@ -3,7 +3,7 @@ import path from "node:path";
 import { copy, ensureDir, outputFile, pathExists, readJSON, remove, writeJSON } from "fs-extra/esm";
 import { readdir, readFile, stat } from "fs/promises";
 import { execaCommand, execaCommandSync } from "execa";
-import { paramCase, pascalCase, snakeCase } from "change-case";
+import { kebabCase, pascalCase, snakeCase } from "change-case";
 import inquirer from "inquirer";
 import TOML from "@iarna/toml";
 import { choice, email, name, pickNodeVersion, pickTemplate } from "../../lib/prompts.js";
@@ -259,7 +259,7 @@ export class Init extends SwankyCommand<typeof Init> {
       args: [
         this.projectPath,
         {
-          project_name: paramCase(projectName),
+          project_name: kebabCase(projectName),
           author_name: authorName,
           author_email: authorEmail,
           swanky_version: this.config.pjson.version,
@@ -328,7 +328,7 @@ export class Init extends SwankyCommand<typeof Init> {
       args: [
         this.projectPath,
         {
-          project_name: paramCase(projectName),
+          project_name: kebabCase(projectName),
           swanky_version: this.config.pjson.version,
         },
       ],

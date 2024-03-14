@@ -43,7 +43,6 @@ export function getSwankyConfig(configType: "local" | "global"): SwankyConfig | 
   return config;
 }
 
-
 export function getSystemConfigDirectoryPath(): string {
   const homeDir = userInfo().homedir;
   const configPath = homeDir + `/${DEFAULT_CONFIG_FOLDER_NAME}`;
@@ -148,12 +147,14 @@ export async function generateTypes(contractName: string) {
   );
 }
 export function ensureAccountIsSet(account: string | undefined, config: SwankyConfig) {
-  if(!account && config.defaultAccount === null) {
-    throw new ConfigError("No default account set. Please set one or provide an account alias with --account");
+  if (!account && config.defaultAccount === null) {
+    throw new ConfigError(
+      "No default account set. Please set one or provide an account alias with --account"
+    );
   }
 }
 
-export function buildSwankyConfig() { 
+export function buildSwankyConfig() {
   return {
     node: {
       localPath: "",
@@ -164,16 +165,16 @@ export function buildSwankyConfig() {
     defaultAccount: DEFAULT_ACCOUNT,
     accounts: [
       {
-        "alias": "alice",
-        "mnemonic": "//Alice",
-        "isDev": true,
-        "address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+        alias: "alice",
+        mnemonic: "//Alice",
+        isDev: true,
+        address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
       },
       {
-        "alias": "bob",
-        "mnemonic": "//Bob",
-        "isDev": true,
-        "address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+        alias: "bob",
+        mnemonic: "//Bob",
+        isDev: true,
+        address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
       },
     ],
     networks: {
@@ -249,5 +250,8 @@ export function extractCargoDylintVersion() {
 }
 
 export function extractCargoContractVersion() {
-  return extractVersion("cargo contract -V", /cargo-contract-contract (\d+\.\d+\.\d+(?:-[\w.]+)?)(?:-unknown-[\w-]+)/);
+  return extractVersion(
+    "cargo contract -V",
+    /cargo-contract-contract (\d+\.\d+\.\d+(?:-[\w.]+)?)(?:-unknown-[\w-]+)/
+  );
 }

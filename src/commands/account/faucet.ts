@@ -4,8 +4,6 @@ import { SwankyAccountCommand } from "../../lib/index.js";
 export class Faucet extends SwankyAccountCommand<typeof Faucet> {
   static description = "Transfer some tokens from faucet to an account";
 
-  static aliases = [`account:faucet`];
-
   static args = {
     alias: Args.string({
       name: "alias",
