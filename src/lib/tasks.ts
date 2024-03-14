@@ -1,12 +1,8 @@
 import { execaCommand } from "execa";
 import { copy, ensureDir, remove } from "fs-extra/esm";
-import { readFile, rename, rm, writeFile } from "fs/promises";
 import path from "node:path";
-import { globby } from "globby";
-import handlebars from "handlebars";
 import { DownloadEndedStats, DownloaderHelper } from "node-downloader-helper";
 import process from "node:process";
-import semver from "semver";
 import { nodeInfo } from "./nodeInfo.js";
 import decompress from "decompress";
 import { Spinner } from "./spinner.js";
@@ -17,7 +13,6 @@ import { zombienetConfig } from "../commands/zombienet/init.js";
 import { readFileSync } from "fs";
 import TOML from "@iarna/toml";
 import { writeFileSync } from "node:fs";
-import { chopsticksConfig } from "../commands/node/chopsticks/init.js";
 
 export async function checkCliDependencies(spinner: Spinner) {
   const dependencyList = [
@@ -84,33 +79,6 @@ export function osCheck() {
   return { platform, arch };
 }
 
-export async function copyCommonTemplateFiles(templatesPath: string, projectPath: string) {
-  await ensureDir(projectPath);
-  const commonFiles = await globby(`*`, { cwd: templatesPath });
-  await Promise.all(
-    commonFiles.map(async (file) => {
-      await copy(path.resolve(templatesPath, file), path.resolve(projectPath, file));
-    }),
-  );
-  await rename(path.resolve(projectPath, "gitignore"), path.resolve(projectPath, ".gitignore"));
-  await rename(
-    path.resolve(projectPath, "mocharc.json"),
-    path.resolve(projectPath, ".mocharc.json"),
-  );
-  await copy(path.resolve(templatesPath, "github"), path.resolve(projectPath, ".github"));
-}
-
-export async function copyContractTemplateFiles(
-  contractTemplatePath: string,
-  contractName: string,
-  projectPath: string,
-) {
-  await copy(
-    path.resolve(contractTemplatePath, "contract"),
-    path.resolve(projectPath, "contracts", contractName),
-  );
-}
-
 export async function prepareTestFiles(
   testType: TestType,
   templatePath: string,
@@ -143,20 +111,6 @@ export async function prepareTestFiles(
       // This case will make the switch exhaustive
       throw new ProcessError("Unhandled test type");
     }
-  }
-}
-
-export async function processTemplates(projectPath: string, templateData: Record<string, string>) {
-  const templateFiles = await globby(projectPath, {
-    expandDirectories: { extensions: ["hbs"] },
-  });
-
-  for (const tplFilePath of templateFiles) {
-    const rawTemplate = await readFile(tplFilePath, "utf8");
-    const template = handlebars.compile(rawTemplate);
-    const compiledFile = template(templateData);
-    await rm(tplFilePath);
-    await writeFile(tplFilePath.split(".hbs")[0], compiledFile);
   }
 }
 
@@ -209,22 +163,6 @@ export async function downloadNode(projectPath: string, nodeInfo: nodeInfo, spin
   }
 
   return path.resolve(binPath, dlFileDetails.filePath);
-}
-
-export async function copyZombienetTemplateFile(templatePath: string, configPath: string) {
-  await ensureDir(configPath);
-  await copy(
-    path.resolve(templatePath, zombienetConfig),
-    path.resolve(configPath, zombienetConfig),
-  );
-}
-
-export async function copyChopsticksTemplateFile(templatePath: string, configPath: string) {
-  await ensureDir(configPath);
-  await copy(
-    path.resolve(templatePath, chopsticksConfig),
-    path.resolve(configPath, chopsticksConfig),
-  );
 }
 
 export async function downloadZombienetBinaries(binaries: string[], projectPath: string, swankyConfig: SwankyConfig, spinner: Spinner) {
@@ -357,23 +295,5 @@ export async function installDeps(projectPath: string) {
     console.log("\n\t >>Yarn not detected, using NPM");
   } finally {
     await execaCommand(installCommand, { cwd: projectPath });
-  }
-}
-
-export function ensureCargoContractVersionCompatibility(
-  cargoContractVersion: string,
-  minimalVersion: string,
-  invalidVersionsList?: string[]
-) {
-  if (invalidVersionsList?.includes(cargoContractVersion)) {
-    throw new ProcessError(
-      `The cargo-contract version ${cargoContractVersion} is not supported. Please update or change the version.`
-    );
-  }
-
-  if (!semver.satisfies(cargoContractVersion.replace(/-.*$/, ""), `>=${minimalVersion}`)) {
-    throw new ProcessError(
-      `cargo-contract version >= ${minimalVersion} required, but found version ${cargoContractVersion}. Please update to a compatible version.`
-    );
   }
 }

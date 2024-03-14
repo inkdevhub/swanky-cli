@@ -1,7 +1,8 @@
-import { ConfigError, FileError, InputError } from "./errors.js";
+import { ConfigError, FileError, InputError, ProcessError } from "./errors.js";
 import { pathExists } from "fs-extra";
 import chalk from "chalk";
 import path from "node:path";
+import semver from "semver";
 import { Contract } from "./contract.js";
 import { AccountData, ContractData } from "../types/index.js";
 
@@ -56,6 +57,24 @@ export function ensureDevAccountNotInProduction(accountData: AccountData, networ
   if (accountData.isDev && network !== "local") {
     throw new ConfigError(
       `Account ${accountData.alias} is a DEV account and can only be used with local network`
+    );
+  }
+}
+
+export function ensureCargoContractVersionCompatibility(
+  cargoContractVersion: string,
+  minimalVersion: string,
+  invalidVersionsList?: string[]
+) {
+  if (invalidVersionsList?.includes(cargoContractVersion)) {
+    throw new ProcessError(
+      `The cargo-contract version ${cargoContractVersion} is not supported. Please update or change the version.`
+    );
+  }
+
+  if (!semver.satisfies(cargoContractVersion.replace(/-.*$/, ""), `>=${minimalVersion}`)) {
+    throw new ProcessError(
+      `cargo-contract version >= ${minimalVersion} required, but found version ${cargoContractVersion}. Please update to a compatible version.`
     );
   }
 }

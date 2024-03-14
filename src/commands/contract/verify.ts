@@ -1,6 +1,5 @@
 import { Args, Flags } from "@oclif/core";
 import {
-  ensureCargoContractVersionCompatibility,
   extractCargoContractVersion,
   findContractRecord,
   getSwankyConfig,
@@ -11,7 +10,7 @@ import { InputError, ProcessError } from "../../lib/errors.js";
 import { spawn } from "node:child_process";
 import { ConfigBuilder } from "../../lib/config-builder.js";
 import { BuildData, SwankyConfig } from "../../index.js";
-import { ensureContractNameOrAllFlagIsSet, ensureContractPathExists } from "../../lib/checks.js";
+import { ensureContractNameOrAllFlagIsSet, ensureContractPathExists, ensureCargoContractVersionCompatibility } from "../../lib/checks.js";
 
 export class VerifyContract extends SwankyCommand<typeof VerifyContract> {
   static description = "Verify the smart contract(s) in your contracts directory";

@@ -2,7 +2,6 @@ import { Args, Flags } from "@oclif/core";
 import { spawn } from "node:child_process";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import {
-  ensureCargoContractVersionCompatibility,
   extractCargoContractVersion,
   Spinner,
   storeArtifacts,
@@ -12,7 +11,7 @@ import {
 import { InputError, ProcessError } from "../../lib/errors.js";
 import { BuildMode, SwankyConfig } from "../../index.js";
 import { ConfigBuilder } from "../../lib/config-builder.js";
-import { ensureContractNameOrAllFlagIsSet, ensureContractPathExists } from "../../lib/checks.js";
+import { ensureContractNameOrAllFlagIsSet, ensureContractPathExists, ensureCargoContractVersionCompatibility, } from "../../lib/checks.js";
 
 export class CompileContract extends SwankyCommand<typeof CompileContract> {
   static description = "Compile the smart contract(s) in your contracts directory";
@@ -59,7 +58,7 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
 
     for (const contractName of contractNames) {
       this.logger.info(`Started compiling contract [${contractName}]`);
-      
+
       const contractRecord = findContractRecord(this.swankyConfig, contractName);
 
       await ensureContractPathExists(contractName);
