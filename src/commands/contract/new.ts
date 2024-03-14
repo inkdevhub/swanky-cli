@@ -7,7 +7,7 @@ import {
   processTemplates,
   getTemplates,
   prepareTestFiles,
-  getSwankyConfig,
+  getSwankyConfig, configName,
 } from "../../lib/index.js";
 import { email, name, pickTemplate } from "../../lib/prompts.js";
 import { kebabCase, pascalCase, snakeCase } from "change-case";
@@ -45,7 +45,7 @@ export class NewContract extends SwankyCommand<typeof NewContract> {
 
     if (this.swankyConfig.contracts[args.contractName]) {
       throw new InputError(
-        `Contract with a name '${args.contractName}' already exists in swanky.config`
+        `Contract with a name '${args.contractName}' already exists in ${configName()}`
       );
     }
 
