@@ -14,9 +14,8 @@ import inquirer from "inquirer";
 import chalk from "chalk";
 import { SwankyCommand } from "./swankyCommand.js";
 import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
-import { Contract } from "./contract.js";
-import { ConfigError, FileError, NetworkError } from "./errors.js";
-import { contractFromRecord, ensureArtifactsExist, ensureDevAccountNotInProduction } from "./ensureChecks.js";
+import { NetworkError } from "./errors.js";
+import { contractFromRecord, ensureArtifactsExist, ensureDevAccountNotInProduction } from "./checks.js";
 
 export type JoinedFlagsType<T extends typeof Command> = Interfaces.InferredFlags<
   (typeof ContractCall)["baseFlags"] & T["flags"]

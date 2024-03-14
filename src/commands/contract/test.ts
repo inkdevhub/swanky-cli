@@ -14,7 +14,7 @@ import {
   ensureArtifactsExist,
   ensureContractNameOrAllFlagIsSet,
   ensureTypedContractExists,
-} from "../../lib/ensureChecks.js";
+} from "../../lib/checks.js";
 
 declare global {
   var contractTypesPath: string; // eslint-disable-line no-var

@@ -3,7 +3,7 @@ import { FileError } from "../../lib/errors.js";
 import fs from "fs-extra";
 import path from "node:path";
 import { Args, Flags } from "@oclif/core";
-import { ensureContractNameOrAllFlagIsSet } from "../../lib/ensureChecks.js";
+import { ensureContractNameOrAllFlagIsSet } from "../../lib/checks.js";
 
 interface Folder {
   name: string,

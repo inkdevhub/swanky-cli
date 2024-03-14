@@ -12,7 +12,7 @@ import {
 import { InputError, ProcessError } from "../../lib/errors.js";
 import { BuildMode, SwankyConfig } from "../../index.js";
 import { ConfigBuilder } from "../../lib/config-builder.js";
-import { ensureContractNameOrAllFlagIsSet, ensureContractPathExists } from "../../lib/ensureChecks.js";
+import { ensureContractNameOrAllFlagIsSet, ensureContractPathExists } from "../../lib/checks.js";
 
 export class CompileContract extends SwankyCommand<typeof CompileContract> {
   static description = "Compile the smart contract(s) in your contracts directory";

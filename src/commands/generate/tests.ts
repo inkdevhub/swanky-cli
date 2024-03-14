@@ -7,7 +7,7 @@ import { existsSync } from "node:fs";
 import inquirer from "inquirer";
 import { kebabCase, pascalCase } from "change-case";
 import { TestType } from "../../index.js";
-import { contractFromRecord, ensureArtifactsExist } from "../../lib/ensureChecks.js";
+import { contractFromRecord, ensureArtifactsExist } from "../../lib/checks.js";
 
 export class GenerateTests extends SwankyCommand<typeof GenerateTests> {
   static description = "Generate test files for the specified contract";

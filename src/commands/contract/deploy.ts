@@ -16,7 +16,7 @@ import chalk from "chalk";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { ApiError, ProcessError } from "../../lib/errors.js";
 import { ConfigBuilder } from "../../lib/config-builder.js";
-import { contractFromRecord, ensureArtifactsExist, ensureDevAccountNotInProduction } from "../../lib/ensureChecks.js";
+import { contractFromRecord, ensureArtifactsExist, ensureDevAccountNotInProduction } from "../../lib/checks.js";
 
 export class DeployContract extends SwankyCommand<typeof DeployContract> {
   static description = "Deploy contract to a running node";
