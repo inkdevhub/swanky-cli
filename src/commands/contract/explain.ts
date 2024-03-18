@@ -19,7 +19,7 @@ export class ExplainContract extends SwankyCommand<typeof ExplainContract> {
 
     const contractRecord = findContractRecord(this.swankyConfig, args.contractName);
 
-    const contract = (await contractFromRecord(contractRecord));
+    const contract = await contractFromRecord(contractRecord);
 
     await ensureArtifactsExist(contract);
 

@@ -65,13 +65,12 @@ As a result users of MacOS need to clone the Polkadot repo (https://github.com/p
       if (!Object.keys(zombienet.binaries).includes(binaryName)) {
         this.error(`Binary ${binaryName} not found in Zombienet config`);
       }
-      zombienetData.binaries[binaryName] = zombienet.binaries[binaryName as keyof typeof zombienet.binaries];
+      zombienetData.binaries[binaryName] =
+        zombienet.binaries[binaryName as keyof typeof zombienet.binaries];
     }
 
     await this.spinner.runCommand(async () => {
-      const newLocalConfig = new ConfigBuilder(localConfig)
-        .addZombienet(zombienetData)
-        .build();
+      const newLocalConfig = new ConfigBuilder(localConfig).addZombienet(zombienetData).build();
       await this.storeConfig(newLocalConfig, "local");
     }, "Writing config");
 
@@ -81,24 +80,22 @@ As a result users of MacOS need to clone the Polkadot repo (https://github.com/p
 
     if (binArray.length === 1 && binArray[0] === "polkadot") {
       await spinner.runCommand(
-        () =>
-          copyZombienetTemplateFile(zombienetTemplatePath, configPath),
-        "Copying template files",
+        () => copyZombienetTemplateFile(zombienetTemplatePath, configPath),
+        "Copying template files"
       );
     } else {
       await spinner.runCommand(
         () => buildZombienetConfigFromBinaries(binArray, zombienetTemplatePath, configPath),
-        "Copying template files",
+        "Copying template files"
       );
     }
 
     // Install binaries based on zombie config
     await this.spinner.runCommand(
       () => downloadZombienetBinaries(binArray, projectPath, localConfig, this.spinner),
-      "Downloading Zombienet binaries",
+      "Downloading Zombienet binaries"
     );
 
     this.log("ZombieNet config Installed successfully");
   }
 }
-

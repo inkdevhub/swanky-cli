@@ -26,7 +26,6 @@ export class Contract {
     return pathExists(this.contractPath);
   }
 
-
   async artifactsExist(): Promise<{ result: boolean; missingPaths: string[] }> {
     const missingPaths: string[] = [];
     let result = true;
@@ -48,7 +47,7 @@ export class Contract {
       missingPaths: [],
     };
     const artifactPath = path.resolve("typedContracts", `${this.name}`);
-    if(!(await pathExists(artifactPath))) {
+    if (!(await pathExists(artifactPath))) {
       result.result = false;
       result.missingPaths.push(artifactPath);
     }
@@ -64,7 +63,7 @@ export class Contract {
   async getBundle() {
     const contractArtifactPath = `${this.moduleName}.contract`;
     await this.ensureArtifactExists(contractArtifactPath);
-    return readJSON(path.resolve(this.artifactsPath, contractArtifactPath), 'utf8');
+    return readJSON(path.resolve(this.artifactsPath, contractArtifactPath), "utf8");
   }
 
   async getWasm(): Promise<Buffer> {

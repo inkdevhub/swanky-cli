@@ -57,7 +57,7 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
     for (const contractName of contractNames) {
       const contractRecord = findContractRecord(this.swankyConfig, contractName);
 
-      const contract = (await contractFromRecord(contractRecord));
+      const contract = await contractFromRecord(contractRecord);
 
       console.log(`Testing contract: ${contractName}`);
 
@@ -138,7 +138,6 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
     testFiles.forEach((file) => mocha.addFile(file));
 
     global.contractTypesPath = path.resolve(testDir, "typedContract");
-
 
     try {
       await new Promise<void>((resolve, reject) => {
