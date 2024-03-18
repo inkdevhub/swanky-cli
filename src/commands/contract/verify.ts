@@ -10,7 +10,11 @@ import { InputError, ProcessError } from "../../lib/errors.js";
 import { spawn } from "node:child_process";
 import { ConfigBuilder } from "../../lib/config-builder.js";
 import { BuildData, SwankyConfig } from "../../index.js";
-import { ensureContractNameOrAllFlagIsSet, ensureContractPathExists, ensureCargoContractVersionCompatibility } from "../../lib/checks.js";
+import {
+  ensureContractNameOrAllFlagIsSet,
+  ensureContractPathExists,
+  ensureCargoContractVersionCompatibility,
+} from "../../lib/checks.js";
 
 export class VerifyContract extends SwankyCommand<typeof VerifyContract> {
   static description = "Verify the smart contract(s) in your contracts directory";
@@ -43,9 +47,7 @@ export class VerifyContract extends SwankyCommand<typeof VerifyContract> {
         `Cargo contract tool is required for verifiable mode. Please ensure it is installed.`
       );
 
-    ensureCargoContractVersionCompatibility(cargoContractVersion, "4.0.0", [
-      "4.0.0-alpha",
-    ]);
+    ensureCargoContractVersionCompatibility(cargoContractVersion, "4.0.0", ["4.0.0-alpha"]);
 
     ensureContractNameOrAllFlagIsSet(args, flags);
 
@@ -62,53 +64,52 @@ export class VerifyContract extends SwankyCommand<typeof VerifyContract> {
 
       await ensureContractPathExists(contractName);
 
-
-      if(!contractRecord.build) {
+      if (!contractRecord.build) {
         throw new InputError(`Contract ${contractName} is not compiled. Please compile it first`);
       }
 
       await spinner.runCommand(
         async () => {
-            return new Promise<boolean>((resolve, reject) => {
-              if(contractRecord.build!.isVerified) {
-                this.logger.info(`Contract ${contractName} is already verified`);
-                resolve(true);
-              }
-              const compileArgs = [
-                "contract",
-                "verify",
-                `artifacts/${contractName}/${contractName}.contract`,
-                "--manifest-path",
-                `contracts/${contractName}/Cargo.toml`,
-              ];
-              const compile = spawn("cargo", compileArgs);
-              this.logger.info(`Running verify command: [${JSON.stringify(compile.spawnargs)}]`);
-              let outputBuffer = "";
-              let errorBuffer = "";
+          return new Promise<boolean>((resolve, reject) => {
+            if (contractRecord.build!.isVerified) {
+              this.logger.info(`Contract ${contractName} is already verified`);
+              resolve(true);
+            }
+            const compileArgs = [
+              "contract",
+              "verify",
+              `artifacts/${contractName}/${contractName}.contract`,
+              "--manifest-path",
+              `contracts/${contractName}/Cargo.toml`,
+            ];
+            const compile = spawn("cargo", compileArgs);
+            this.logger.info(`Running verify command: [${JSON.stringify(compile.spawnargs)}]`);
+            let outputBuffer = "";
+            let errorBuffer = "";
 
-              compile.stdout.on("data", (data) => {
-                outputBuffer += data.toString();
-                spinner.ora.clear();
-              });
-
-              compile.stderr.on("data", (data) => {
-                errorBuffer += data;
-              });
-
-              compile.on("exit", (code) => {
-                if (code === 0) {
-                  const regex = /Successfully verified contract (.*) against reference contract (.*)/;
-                  const match = outputBuffer.match(regex);
-                  if (match) {
-                    this.logger.info(`Contract ${contractName} verification done.`);
-                    resolve(true);
-                  }
-                } else {
-                  reject(new ProcessError(errorBuffer));
-                }
-              });
+            compile.stdout.on("data", (data) => {
+              outputBuffer += data.toString();
+              spinner.ora.clear();
             });
-          },
+
+            compile.stderr.on("data", (data) => {
+              errorBuffer += data;
+            });
+
+            compile.on("exit", (code) => {
+              if (code === 0) {
+                const regex = /Successfully verified contract (.*) against reference contract (.*)/;
+                const match = outputBuffer.match(regex);
+                if (match) {
+                  this.logger.info(`Contract ${contractName} verification done.`);
+                  resolve(true);
+                }
+              } else {
+                reject(new ProcessError(errorBuffer));
+              }
+            });
+          });
+        },
         `Verifying ${contractName} contract`,
         `${contractName} Contract verified successfully`
       );
@@ -116,16 +117,15 @@ export class VerifyContract extends SwankyCommand<typeof VerifyContract> {
       await this.spinner.runCommand(async () => {
         const buildData = {
           ...contractRecord.build,
-          isVerified: true
+          isVerified: true,
         } as BuildData;
-      
+
         const newLocalConfig = new ConfigBuilder(localConfig)
           .addContractBuild(args.contractName, buildData)
           .build();
-      
+
         await this.storeConfig(newLocalConfig, "local");
       }, "Writing config");
-
     }
   }
 }

@@ -19,7 +19,7 @@ export class GenerateTypes extends SwankyCommand<typeof GenerateTypes> {
 
     const contractRecord = findContractRecord(this.swankyConfig, args.contractName);
 
-    const contract = (await contractFromRecord(contractRecord));
+    const contract = await contractFromRecord(contractRecord);
 
     await ensureArtifactsExist(contract);
 

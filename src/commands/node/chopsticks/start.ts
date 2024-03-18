@@ -8,10 +8,10 @@ export class StartChopsticks extends SwankyCommand<typeof StartChopsticks> {
   static description = "Start chopsticks";
 
   static flags = {
-    "config": Flags.string({
+    config: Flags.string({
       description: "Path to the chopsticks config file",
-    })
-  }
+    }),
+  };
 
   async run(): Promise<void> {
     const { flags } = await this.parse(StartChopsticks);
@@ -20,20 +20,19 @@ export class StartChopsticks extends SwankyCommand<typeof StartChopsticks> {
 
     const chopsticksConfigPath = flags.config ?? this.swankyConfig.node.chopsticks?.configPath;
 
-    if(!chopsticksConfigPath) {
-      throw new ConfigError("Chopsticks config not set in swanky config. Please set it in swanky config or provide the path to the chopsticks config file using --config flag.");
+    if (!chopsticksConfigPath) {
+      throw new ConfigError(
+        "Chopsticks config not set in swanky config. Please set it in swanky config or provide the path to the chopsticks config file using --config flag."
+      );
     }
 
     if (!(await pathExists(chopsticksConfigPath))) {
       throw new FileError(`Chopsticks config file not found at ${flags.config}`);
     }
 
-    await execaCommand(
-      `npx @acala-network/chopsticks@latest --config=${chopsticksConfigPath}`,
-      {
-        stdio: "inherit",
-      }
-    );
+    await execaCommand(`npx @acala-network/chopsticks@latest --config=${chopsticksConfigPath}`, {
+      stdio: "inherit",
+    });
 
     this.log("Chopsticks started successfully.");
   }

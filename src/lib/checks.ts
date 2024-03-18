@@ -19,7 +19,9 @@ export function ensureContractNameOrAllFlagIsSet(
 export async function ensureContractPathExists(contractName: string, projectPath = "") {
   const contractPath = path.resolve(projectPath, "contracts", contractName);
   if (!(await pathExists(contractPath))) {
-    throw new InputError(`Contract folder not found ${chalk.yellowBright(contractName)} at path: ${contractPath}`);
+    throw new InputError(
+      `Contract folder not found ${chalk.yellowBright(contractName)} at path: ${contractPath}`
+    );
   }
 }
 
@@ -28,7 +30,7 @@ export async function contractFromRecord(contractRecord: ContractData) {
 
   if (!(await contract.pathExists())) {
     throw new FileError(
-      `Path to contract ${contractRecord.name} does not exist: ${contract.contractPath}`,
+      `Path to contract ${contractRecord.name} does not exist: ${contract.contractPath}`
     );
   }
   return contract;
@@ -38,7 +40,7 @@ export async function ensureArtifactsExist(contract: Contract) {
   const artifactsCheck = await contract.artifactsExist();
   if (!artifactsCheck.result) {
     throw new FileError(
-      `No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`,
+      `No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`
     );
   }
 }

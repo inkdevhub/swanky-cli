@@ -6,7 +6,15 @@ import process from "node:process";
 import { nodeInfo } from "./nodeInfo.js";
 import decompress from "decompress";
 import { Spinner } from "./spinner.js";
-import { DependencyName, Relaychain, SupportedArch, SupportedPlatforms, SwankyConfig, TestType, ZombienetConfig } from "../types/index.js";
+import {
+  DependencyName,
+  Relaychain,
+  SupportedArch,
+  SupportedPlatforms,
+  SwankyConfig,
+  TestType,
+  ZombienetConfig,
+} from "../types/index.js";
 import { ConfigError, NetworkError, ProcessError } from "./errors.js";
 import { BinaryNames } from "./zombienetInfo.js";
 import { zombienetConfig } from "../commands/zombienet/init.js";
@@ -71,9 +79,7 @@ export function osCheck() {
 
   const supportedArchs = supportedConfigs[platform as keyof typeof supportedConfigs];
   if (!supportedArchs.includes(arch)) {
-    throw new ConfigError(
-      `Architecture '${arch}' is not supported on platform '${platform}'.`
-    );
+    throw new ConfigError(`Architecture '${arch}' is not supported on platform '${platform}'.`);
   }
 
   return { platform, arch };
@@ -121,13 +127,13 @@ export async function downloadNode(projectPath: string, nodeInfo: nodeInfo, spin
   const platformDlUrls = nodeInfo.downloadUrl[process.platform as SupportedPlatforms];
   if (!platformDlUrls)
     throw new ConfigError(
-      `Could not download swanky-node. Platform ${process.platform} not supported!`,
+      `Could not download swanky-node. Platform ${process.platform} not supported!`
     );
 
   const dlUrl = platformDlUrls[process.arch as SupportedArch];
   if (!dlUrl)
     throw new ConfigError(
-      `Could not download swanky-node. Platform ${process.platform} Arch ${process.arch} not supported!`,
+      `Could not download swanky-node. Platform ${process.platform} Arch ${process.arch} not supported!`
     );
 
   const dlFileDetails = await new Promise<DownloadEndedStats>((resolve, reject) => {
@@ -144,7 +150,7 @@ export async function downloadNode(projectPath: string, nodeInfo: nodeInfo, spin
     });
 
     dl.start().catch((error: Error) =>
-      reject(new Error(`Error downloading node: , ${error.message}`)),
+      reject(new Error(`Error downloading node: , ${error.message}`))
     );
   });
 
@@ -165,7 +171,12 @@ export async function downloadNode(projectPath: string, nodeInfo: nodeInfo, spin
   return path.resolve(binPath, dlFileDetails.filePath);
 }
 
-export async function downloadZombienetBinaries(binaries: string[], projectPath: string, swankyConfig: SwankyConfig, spinner: Spinner) {
+export async function downloadZombienetBinaries(
+  binaries: string[],
+  projectPath: string,
+  swankyConfig: SwankyConfig,
+  spinner: Spinner
+) {
   const binPath = path.resolve(projectPath, "zombienet", "bin");
   await ensureDir(binPath);
 
@@ -182,29 +193,31 @@ export async function downloadZombienetBinaries(binaries: string[], projectPath:
     const platformDlUrls = zombienetInfo.downloadUrl[process.platform as SupportedPlatforms];
     if (!platformDlUrls)
       throw new ConfigError(
-        `Could not download ${binaryName}. Platform ${process.platform} not supported!`,
+        `Could not download ${binaryName}. Platform ${process.platform} not supported!`
       );
     let dlUrl = platformDlUrls[process.arch as SupportedArch];
     if (!dlUrl)
       throw new ConfigError(
-        `Could not download ${binaryName}. Platform ${process.platform} Arch ${process.arch} not supported!`,
+        `Could not download ${binaryName}. Platform ${process.platform} Arch ${process.arch} not supported!`
       );
     dlUrl = dlUrl.replace("${version}", version);
     dlUrls.set(binaryName, dlUrl);
   }
 
-  for (const binaryName of Object.keys(zombienetInfo.binaries).filter((binaryName) => binaries.includes(binaryName))) {
+  for (const binaryName of Object.keys(zombienetInfo.binaries).filter((binaryName) =>
+    binaries.includes(binaryName)
+  )) {
     const binaryInfo = zombienetInfo.binaries[binaryName as BinaryNames];
     const version = binaryInfo.version;
     const platformDlUrls = binaryInfo.downloadUrl[process.platform as SupportedPlatforms];
     if (!platformDlUrls)
       throw new ConfigError(
-        `Could not download ${binaryName}. Platform ${process.platform} not supported!`,
+        `Could not download ${binaryName}. Platform ${process.platform} not supported!`
       );
     let dlUrl = platformDlUrls[process.arch as SupportedArch];
     if (!dlUrl)
       throw new ConfigError(
-        `Could not download ${binaryName}. Platform ${process.platform} Arch ${process.arch} not supported!`,
+        `Could not download ${binaryName}. Platform ${process.platform} Arch ${process.arch} not supported!`
       );
     dlUrl = dlUrl.replace(/\$\{version}/gi, version);
     dlUrls.set(binaryName, dlUrl);
@@ -225,7 +238,7 @@ export async function downloadZombienetBinaries(binaries: string[], projectPath:
       });
 
       dl.start().catch((error: Error) =>
-        reject(new Error(`Error downloading ${binaryName}: , ${error.message}`)),
+        reject(new Error(`Error downloading ${binaryName}: , ${error.message}`))
       );
     });
 
@@ -249,7 +262,11 @@ export async function downloadZombienetBinaries(binaries: string[], projectPath:
   }
 }
 
-export async function buildZombienetConfigFromBinaries(binaries: string[], templatePath: string, configPath: string) {
+export async function buildZombienetConfigFromBinaries(
+  binaries: string[],
+  templatePath: string,
+  configPath: string
+) {
   await ensureDir(configPath);
   const configBuilder = {
     settings: {
@@ -264,7 +281,9 @@ export async function buildZombienetConfigFromBinaries(binaries: string[], templ
   } as ZombienetConfig;
 
   for (const binaryName of binaries) {
-    const template = TOML.parse(readFileSync(path.resolve(templatePath, binaryName + ".toml"), "utf8"));
+    const template = TOML.parse(
+      readFileSync(path.resolve(templatePath, binaryName + ".toml"), "utf8")
+    );
     if (template.parachains !== undefined) {
       (template.parachains as any).forEach((parachain: any) => {
         configBuilder.parachains.push(parachain);
@@ -279,7 +298,6 @@ export async function buildZombienetConfigFromBinaries(binaries: string[], templ
     if (template.relaychain !== undefined) {
       configBuilder.relaychain = template.relaychain as unknown as Relaychain;
     }
-
   }
 
   writeFileSync(path.resolve(configPath, zombienetConfig), TOML.stringify(configBuilder as any));

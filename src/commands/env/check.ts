@@ -1,5 +1,11 @@
 import { Listr } from "listr2";
-import { extractCargoContractVersion, extractCargoDylintVersion, extractCargoNightlyVersion, extractCargoVersion, extractRustVersion } from "../../lib/index.js";
+import {
+  extractCargoContractVersion,
+  extractCargoDylintVersion,
+  extractCargoNightlyVersion,
+  extractCargoVersion,
+  extractRustVersion,
+} from "../../lib/index.js";
 import { SwankyConfig } from "../../types/index.js";
 import { pathExistsSync, writeJson } from "fs-extra/esm";
 import { readFileSync } from "fs";
@@ -17,7 +23,7 @@ interface Ctx {
   os: {
     platform: string;
     architecture: string;
-  },
+  };
   versions: {
     tools: {
       rust?: string | null;
@@ -134,7 +140,8 @@ export class Check extends SwankyCommand<typeof Check> {
       {
         title: "Check swanky node",
         task: async (ctx) => {
-          ctx.versions.swankyNode = this.swankyConfig.node.version !== "" ? this.swankyConfig.node.version : null;
+          ctx.versions.swankyNode =
+            this.swankyConfig.node.version !== "" ? this.swankyConfig.node.version : null;
         },
       },
       {
@@ -175,12 +182,16 @@ export class Check extends SwankyCommand<typeof Check> {
           Object.entries(ctx.versions.contracts).forEach(([contract, inkDependencies]) => {
             Object.entries(inkDependencies).forEach(([depName, version]) => {
               if (semver.gt(version, supportedInk)) {
-                mismatched[
-                  `${contract}-${depName}`
-                ] = `Version of ${depName} (${version}) in ${chalk.yellowBright(contract)} is higher than supported ink version (${supportedInk}) in current Swanky node version (${swankyNodeVersion}). A Swanky node update can fix this warning.`;
+                mismatched[`${contract}-${depName}`] =
+                  `Version of ${depName} (${version}) in ${chalk.yellowBright(contract)} is higher than supported ink version (${supportedInk}) in current Swanky node version (${swankyNodeVersion}). A Swanky node update can fix this warning.`;
               }
 
-              if (version.startsWith(">") || version.startsWith("<") || version.startsWith("^") || version.startsWith("~")) {
+              if (
+                version.startsWith(">") ||
+                version.startsWith("<") ||
+                version.startsWith("^") ||
+                version.startsWith("~")
+              ) {
                 ctx.looseDefinitionDetected = true;
               }
             });
@@ -188,7 +199,9 @@ export class Check extends SwankyCommand<typeof Check> {
 
           ctx.mismatchedVersions = mismatched;
           if (Object.entries(mismatched).length > 0) {
-            throw new Warn("Ink versions in contracts don't match the Swanky node's supported version.");
+            throw new Warn(
+              "Ink versions in contracts don't match the Swanky node's supported version."
+            );
           }
         },
         exitOnError: false,
@@ -200,25 +213,28 @@ export class Check extends SwankyCommand<typeof Check> {
         task: async (ctx) => {
           const cargoContractVersion = ctx.versions.tools.cargoContract!;
           const dependencyIdx = CARGO_CONTRACT_INK_DEPS.findIndex((dep) =>
-            semver.satisfies(cargoContractVersion.replace(/-.*$/, ""), `>=${dep.minCargoContractVersion}`)
+            semver.satisfies(
+              cargoContractVersion.replace(/-.*$/, ""),
+              `>=${dep.minCargoContractVersion}`
+            )
           );
 
           if (dependencyIdx === -1) {
             throw new Warn(`cargo-contract version ${cargoContractVersion} is not supported`);
           }
-      
+
           const validInkVersionRange = CARGO_CONTRACT_INK_DEPS[dependencyIdx].validInkVersionRange;
-          const minCargoContractVersion = dependencyIdx === 0
-            ? CARGO_CONTRACT_INK_DEPS[dependencyIdx].minCargoContractVersion
-            : CARGO_CONTRACT_INK_DEPS[dependencyIdx - 1].minCargoContractVersion
+          const minCargoContractVersion =
+            dependencyIdx === 0
+              ? CARGO_CONTRACT_INK_DEPS[dependencyIdx].minCargoContractVersion
+              : CARGO_CONTRACT_INK_DEPS[dependencyIdx - 1].minCargoContractVersion;
 
           const mismatched: Record<string, string> = {};
           Object.entries(ctx.versions.contracts).forEach(([contract, inkPackages]) => {
             Object.entries(inkPackages).forEach(([inkPackage, version]) => {
               if (!semver.satisfies(version, validInkVersionRange)) {
-                mismatched[
-                  `${contract}-${inkPackage}`
-                ] = `Version of ${inkPackage} (${version}) in ${chalk.yellowBright(contract)} requires cargo-contract version >=${minCargoContractVersion}, but version ${cargoContractVersion} is installed`;
+                mismatched[`${contract}-${inkPackage}`] =
+                  `Version of ${inkPackage} (${version}) in ${chalk.yellowBright(contract)} requires cargo-contract version >=${minCargoContractVersion}, but version ${cargoContractVersion} is installed`;
               }
             });
           });
@@ -260,7 +276,7 @@ export class Check extends SwankyCommand<typeof Check> {
       },
       swankyConfig: this.swankyConfig,
       looseDefinitionDetected: false,
-      mismatchedVersions: {}
+      mismatchedVersions: {},
     });
 
     Object.values(context.mismatchedVersions).forEach((mismatch) => this.warn(mismatch));
@@ -274,14 +290,17 @@ export class Check extends SwankyCommand<typeof Check> {
 
     const output = {
       ...context.os,
-      ...context.versions
-    }
+      ...context.versions,
+    };
 
     const filePath = flags.print;
     if (filePath !== undefined) {
-      await this.spinner.runCommand(async () => {
-        writeJson(filePath, output, { spaces: 2 });
-      }, `Writing output to file ${chalk.yellowBright(filePath)}`);
+      await this.spinner.runCommand(
+        async () => {
+          writeJson(filePath, output, { spaces: 2 });
+        },
+        `Writing output to file ${chalk.yellowBright(filePath)}`
+      );
     }
   }
 }

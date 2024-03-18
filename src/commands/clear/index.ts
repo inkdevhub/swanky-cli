@@ -6,13 +6,12 @@ import { Args, Flags } from "@oclif/core";
 import { ensureContractNameOrAllFlagIsSet } from "../../lib/checks.js";
 
 interface Folder {
-  name: string,
-  contractName?: string,
-  path: string
+  name: string;
+  contractName?: string;
+  path: string;
 }
 
 export default class Clear extends SwankyCommand<typeof Clear> {
-
   static flags = {
     all: Flags.boolean({
       char: "a",
@@ -42,26 +41,34 @@ export default class Clear extends SwankyCommand<typeof Clear> {
   }
 
   public async run(): Promise<any> {
-
     const { flags, args } = await this.parse(Clear);
 
     ensureContractNameOrAllFlagIsSet(args, flags);
 
     const workDirectory = process.cwd();
-    const foldersToDelete: Folder[] = flags.all ?
-      [
-        { name: "Artifacts", path: path.join(workDirectory, "./artifacts") },
-        { name: "Target", path: path.join(workDirectory, "./target") }
-      ]
-      : args.contractName ?
-        [
-          { name: "Artifacts", contractName: args.contractName, path: path.join(workDirectory, "./artifacts/", args.contractName) },
+    const foldersToDelete: Folder[] = flags.all
+      ? [
+          { name: "Artifacts", path: path.join(workDirectory, "./artifacts") },
           { name: "Target", path: path.join(workDirectory, "./target") },
-          { name: "TestArtifacts", contractName: args.contractName, path: path.join(workDirectory, "./tests/", args.contractName, "/artifacts") }
         ]
-      : [];
+      : args.contractName
+        ? [
+            {
+              name: "Artifacts",
+              contractName: args.contractName,
+              path: path.join(workDirectory, "./artifacts/", args.contractName),
+            },
+            { name: "Target", path: path.join(workDirectory, "./target") },
+            {
+              name: "TestArtifacts",
+              contractName: args.contractName,
+              path: path.join(workDirectory, "./tests/", args.contractName, "/artifacts"),
+            },
+          ]
+        : [];
     for (const folder of foldersToDelete) {
-      await this.spinner.runCommand(async () => this.deleteFolder(folder.path),
+      await this.spinner.runCommand(
+        async () => this.deleteFolder(folder.path),
         `Deleting the ${folder.name} folder ${folder.contractName ? `for ${folder.contractName} contract` : ""}`,
         `Successfully deleted the ${folder.name} folder ${folder.contractName ? `for ${folder.contractName} contract` : ""}\n at ${folder.path}`
       );

@@ -23,7 +23,7 @@ export class Install extends SwankyCommand<typeof Install> {
     const { flags } = await this.parse(Install);
     const depsArray = flags.deps ?? [];
 
-    const localConfig = getSwankyConfig('local') as SwankyConfig;
+    const localConfig = getSwankyConfig("local") as SwankyConfig;
     const depsToInstall = depsArray.length > 0 ? this.parseDeps(depsArray) : localConfig.env;
 
     if (Object.keys(depsToInstall).length === 0) {
@@ -41,14 +41,19 @@ export class Install extends SwankyCommand<typeof Install> {
   }
 
   parseDeps(deps: string[]): Record<string, string> {
-    return deps.reduce((acc, dep) => {
-      const [key, value] = dep.split('@');
-      if (!Object.keys(SUPPORTED_DEPS).includes(key)) {
-        throw new InputError(`Unsupported dependency '${key}'. Supported: ${Object.keys(SUPPORTED_DEPS).join(", ")}`);
-      }
-      acc[key] = value || 'latest';
-      return acc;
-    }, {} as Record<string, string>);
+    return deps.reduce(
+      (acc, dep) => {
+        const [key, value] = dep.split("@");
+        if (!Object.keys(SUPPORTED_DEPS).includes(key)) {
+          throw new InputError(
+            `Unsupported dependency '${key}'. Supported: ${Object.keys(SUPPORTED_DEPS).join(", ")}`
+          );
+        }
+        acc[key] = value || "latest";
+        return acc;
+      },
+      {} as Record<string, string>
+    );
   }
 
   async installDeps(dependencies: Record<string, string>) {
@@ -62,10 +67,8 @@ export class Install extends SwankyCommand<typeof Install> {
 
   async updateLocalConfig(newDeps: Record<string, string>): Promise<void> {
     await this.spinner.runCommand(async () => {
-      const newLocalConfig = new ConfigBuilder(getSwankyConfig('local'))
-        .updateEnv(newDeps)
-        .build();
-      await this.storeConfig(newLocalConfig, 'local');
+      const newLocalConfig = new ConfigBuilder(getSwankyConfig("local")).updateEnv(newDeps).build();
+      await this.storeConfig(newLocalConfig, "local");
     }, "Updating Swanky config with new Dev Dependencies...");
   }
 }
