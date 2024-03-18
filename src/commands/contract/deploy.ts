@@ -1,13 +1,22 @@
 import { Args, Flags } from "@oclif/core";
 import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
-import { AbiType, ChainAccount, ChainApi, decrypt, resolveNetworkUrl, ensureAccountIsSet, configName, getSwankyConfig } from "../../lib/index.js";
+import {
+  AbiType,
+  ChainAccount,
+  ChainApi,
+  decrypt,
+  resolveNetworkUrl,
+  ensureAccountIsSet,
+  getSwankyConfig,
+  findContractRecord,
+} from "../../lib/index.js";
 import { BuildMode, Encrypted, SwankyConfig } from "../../types/index.js";
 import inquirer from "inquirer";
 import chalk from "chalk";
-import { Contract } from "../../lib/contract.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-import { ApiError, ConfigError, FileError, InputError, ProcessError } from "../../lib/errors.js";
+import { ApiError, ProcessError } from "../../lib/errors.js";
 import { ConfigBuilder } from "../../lib/config-builder.js";
+import { contractFromRecord, ensureArtifactsExist, ensureDevAccountNotInProduction } from "../../lib/checks.js";
 
 export class DeployContract extends SwankyCommand<typeof DeployContract> {
   static description = "Deploy contract to a running node";
@@ -47,28 +56,12 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
     const { args, flags } = await this.parse(DeployContract);
 
     const localConfig = getSwankyConfig("local") as SwankyConfig;
-    const contractRecord = localConfig.contracts[args.contractName];
-    if (!contractRecord) {
-      throw new ConfigError(
-        `Cannot find a contract named ${args.contractName} in "${configName()}"`
-      );
-    }
 
-    const contract = new Contract(contractRecord);
+    const contractRecord = findContractRecord(localConfig, args.contractName);
 
-    if (!(await contract.pathExists())) {
-      throw new FileError(
-        `Path to contract ${args.contractName} does not exist: ${contract.contractPath}`
-      );
-    }
+    const contract = (await contractFromRecord(contractRecord));
 
-    const artifactsCheck = await contract.artifactsExist();
-
-    if (!artifactsCheck.result) {
-      throw new FileError(
-        `No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`
-      );
-    }
+    await ensureArtifactsExist(contract);
 
     if (contract.buildMode === undefined) {
       throw new ProcessError(
@@ -99,19 +92,11 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
 
     ensureAccountIsSet(flags.account, this.swankyConfig);
 
-    const accountAlias = flags.account ?? this.swankyConfig.defaultAccount;
-
-    if (accountAlias === null) {
-      throw new InputError(`An account is required to deploy ${args.contractName}`);
-    }
+    const accountAlias = (flags.account ?? this.swankyConfig.defaultAccount)!;
 
     const accountData = this.findAccountByAlias(accountAlias);
 
-    if (accountData.isDev && flags.network !== "local") {
-      throw new ConfigError(
-        `Account ${accountAlias} is a DEV account and can only be used with local network`
-      );
-    }
+    ensureDevAccountNotInProduction(accountData, flags.network);
     
     const mnemonic = accountData.isDev
       ? (accountData.mnemonic as string)

@@ -42,12 +42,12 @@ export class Contract {
     return { result, missingPaths };
   }
 
-  async typedContractExists(contractName: string) {
+  async typedContractExists() {
     const result: { result: boolean; missingPaths: string[] } = {
       result: true,
       missingPaths: [],
     };
-    const artifactPath = path.resolve("typedContracts", `${contractName}`);
+    const artifactPath = path.resolve("typedContracts", `${this.name}`);
     if(!(await pathExists(artifactPath))) {
       result.result = false;
       result.missingPaths.push(artifactPath);

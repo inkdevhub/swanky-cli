@@ -1,12 +1,21 @@
-import { AbiType, ChainAccount, ChainApi, configName, ensureAccountIsSet, decrypt, resolveNetworkUrl } from "./index.js";
+import {
+  AbiType,
+  ChainAccount,
+  ChainApi,
+  configName,
+  ensureAccountIsSet,
+  decrypt,
+  resolveNetworkUrl,
+  findContractRecord,
+} from "./index.js";
 import { ContractData, DeploymentData, Encrypted } from "../types/index.js";
 import { Args, Command, Flags, Interfaces } from "@oclif/core";
 import inquirer from "inquirer";
 import chalk from "chalk";
 import { SwankyCommand } from "./swankyCommand.js";
 import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
-import { Contract } from "./contract.js";
-import { ConfigError, FileError, NetworkError } from "./errors.js";
+import { NetworkError } from "./errors.js";
+import { contractFromRecord, ensureArtifactsExist, ensureDevAccountNotInProduction } from "./checks.js";
 
 export type JoinedFlagsType<T extends typeof Command> = Interfaces.InferredFlags<
   (typeof ContractCall)["baseFlags"] & T["flags"]
@@ -50,28 +59,11 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
     this.args = args;
     this.flags = flags as JoinedFlagsType<T>;
 
-    const contractRecord = this.swankyConfig.contracts[args.contractName];
-    if (!contractRecord) {
-      throw new ConfigError(
-        `Cannot find a contract named ${args.contractName} in "${configName()}"`,
-      );
-    }
+    const contractRecord = findContractRecord(this.swankyConfig, args.contractName);
 
-    const contract = new Contract(contractRecord);
+    const contract = (await contractFromRecord(contractRecord));
 
-    if (!(await contract.pathExists())) {
-      throw new FileError(
-        `Path to contract ${args.contractName} does not exist: ${contract.contractPath}`,
-      );
-    }
-
-    const artifactsCheck = await contract.artifactsExist();
-
-    if (!artifactsCheck.result) {
-      throw new FileError(
-        `No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`,
-      );
-    }
+    await ensureArtifactsExist(contract);
 
     const deploymentData = flags.address
       ? contract.deployments.find(
@@ -89,11 +81,9 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
     ensureAccountIsSet(flags.account, this.swankyConfig);
 
     const accountAlias = flags.account ?? this.swankyConfig.defaultAccount;
-    const accountData = this.findAccountByAlias(flags.account || "alice");
+    const accountData = this.findAccountByAlias(accountAlias);
 
-    if (accountData.isDev && (flags.network !== "local" || !flags.network)) {
-      throw new ConfigError(`Account ${chalk.redBright(accountAlias)} is a dev account and can only be used on the local network`);
-    }
+    ensureDevAccountNotInProduction(accountData, flags.network);
 
     const networkUrl = resolveNetworkUrl(this.swankyConfig, flags.network ?? "");
     const api = await ChainApi.create(networkUrl);

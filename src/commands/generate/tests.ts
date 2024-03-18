@@ -1,13 +1,13 @@
 import { Args, Flags } from "@oclif/core";
-import { getTemplates, prepareTestFiles, processTemplates } from "../../lib/index.js";
-import { Contract } from "../../lib/contract.js";
+import { findContractRecord, getTemplates, prepareTestFiles, processTemplates } from "../../lib/index.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-import { ConfigError, FileError, InputError } from "../../lib/errors.js";
+import { ConfigError, InputError } from "../../lib/errors.js";
 import path from "node:path";
 import { existsSync } from "node:fs";
 import inquirer from "inquirer";
 import { kebabCase, pascalCase } from "change-case";
 import { TestType } from "../../index.js";
+import { contractFromRecord, ensureArtifactsExist } from "../../lib/checks.js";
 
 export class GenerateTests extends SwankyCommand<typeof GenerateTests> {
   static description = "Generate test files for the specified contract";
@@ -37,7 +37,7 @@ export class GenerateTests extends SwankyCommand<typeof GenerateTests> {
         throw new InputError("The 'contractName' argument is required to generate mocha tests.");
       }
 
-      await this.checkContract(args.contractName)
+      await this.checkContract(args.contractName);
     }
 
     const testType: TestType = flags.mocha ? "mocha" : "e2e";
@@ -55,37 +55,23 @@ export class GenerateTests extends SwankyCommand<typeof GenerateTests> {
       templates.templatesPath,
       process.cwd(),
       args.contractName,
-      templateName
+      templateName,
     );
   }
 
   async checkContract(name: string) {
-    const contractRecord = this.swankyConfig.contracts[name];
-      if (!contractRecord) {
-        throw new ConfigError(
-          `Cannot find a contract named ${name} in swanky.config.json`
-        );
-      }
 
-      const contract = new Contract(contractRecord);
-      if (!(await contract.pathExists())) {
-        throw new FileError(
-          `Path to contract ${name} does not exist: ${contract.contractPath}`
-        );
-      }
+    const contractRecord = findContractRecord(this.swankyConfig, name);
 
-      const artifactsCheck = await contract.artifactsExist();
-      if (!artifactsCheck.result) {
-        throw new FileError(
-          `No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`
-        );
-      }
+    const contract = (await contractFromRecord(contractRecord));
+
+    await ensureArtifactsExist(contract);
   }
 
   async checkOverwrite(
     testPath: string,
     testType: TestType,
-    contractName?: string
+    contractName?: string,
   ): Promise<boolean> {
     if (!existsSync(testPath)) return true; // No need to overwrite
     const message =
@@ -134,17 +120,17 @@ export class GenerateTests extends SwankyCommand<typeof GenerateTests> {
     templatesPath: string,
     projectPath: string,
     contractName?: string,
-    templateName?: string
+    templateName?: string,
   ): Promise<void> {
     if (testType === "e2e") {
       await this.spinner.runCommand(
         () => prepareTestFiles("e2e", templatesPath, projectPath),
-        "Generating e2e test helpers"
+        "Generating e2e test helpers",
       );
     } else {
       await this.spinner.runCommand(
         () => prepareTestFiles("mocha", templatesPath, projectPath, templateName, contractName),
-        `Generating tests for ${contractName} with mocha`
+        `Generating tests for ${contractName} with mocha`,
       );
     }
     await this.spinner.runCommand(
@@ -155,7 +141,7 @@ export class GenerateTests extends SwankyCommand<typeof GenerateTests> {
           contract_name: contractName ?? "",
           contract_name_pascal: contractName ? pascalCase(contractName) : "",
         }),
-      "Processing templates"
+      "Processing templates",
     );
   }
 }

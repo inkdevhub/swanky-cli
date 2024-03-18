@@ -1,8 +1,7 @@
 import { Args } from "@oclif/core";
-import { configName, generateTypes } from "../../lib/index.js";
-import { Contract } from "../../lib/contract.js";
+import { findContractRecord, generateTypes } from "../../lib/index.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-import { ConfigError, FileError } from "../../lib/errors.js";
+import { contractFromRecord, ensureArtifactsExist } from "../../lib/checks.js";
 
 export class GenerateTypes extends SwankyCommand<typeof GenerateTypes> {
   static description = "Generate types from compiled contract metadata";
@@ -18,28 +17,11 @@ export class GenerateTypes extends SwankyCommand<typeof GenerateTypes> {
   async run(): Promise<void> {
     const { args } = await this.parse(GenerateTypes);
 
-    const contractRecord = this.swankyConfig.contracts[args.contractName];
-    if (!contractRecord) {
-      throw new ConfigError(
-        `Cannot find a contract named ${args.contractName} in "${configName()}"`,
-      );
-    }
+    const contractRecord = findContractRecord(this.swankyConfig, args.contractName);
 
-    const contract = new Contract(contractRecord);
+    const contract = (await contractFromRecord(contractRecord));
 
-    if (!(await contract.pathExists())) {
-      throw new FileError(
-        `Path to contract ${args.contractName} does not exist: ${contract.contractPath}`,
-      );
-    }
-
-    const artifactsCheck = await contract.artifactsExist();
-
-    if (!artifactsCheck.result) {
-      throw new FileError(
-        `No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`,
-      );
-    }
+    await ensureArtifactsExist(contract);
 
     await this.spinner.runCommand(async () => {
       await generateTypes(contract.name);

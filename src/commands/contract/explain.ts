@@ -1,8 +1,7 @@
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { Args } from "@oclif/core";
-import { Contract } from "../../lib/contract.js";
-import { ConfigError, FileError } from "../../lib/errors.js";
-import { configName } from "../../lib/index.js";
+import { findContractRecord } from "../../lib/index.js";
+import { contractFromRecord, ensureArtifactsExist } from "../../lib/checks.js";
 
 export class ExplainContract extends SwankyCommand<typeof ExplainContract> {
   static description = "Explain contract messages based on the contracts' metadata";
@@ -18,28 +17,11 @@ export class ExplainContract extends SwankyCommand<typeof ExplainContract> {
   async run(): Promise<void> {
     const { args } = await this.parse(ExplainContract);
 
-    const contractRecord = this.swankyConfig.contracts[args.contractName];
-    if (!contractRecord) {
-      throw new ConfigError(
-        `Cannot find a contract named ${args.contractName} in "${configName()}"`
-      );
-    }
+    const contractRecord = findContractRecord(this.swankyConfig, args.contractName);
 
-    const contract = new Contract(contractRecord);
+    const contract = (await contractFromRecord(contractRecord));
 
-    if (!(await contract.pathExists())) {
-      throw new FileError(
-        `Path to contract ${args.contractName} does not exist: ${contract.contractPath}`
-      );
-    }
-
-    const artifactsCheck = await contract.artifactsExist();
-
-    if (!artifactsCheck.result) {
-      throw new FileError(
-        `No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`
-      );
-    }
+    await ensureArtifactsExist(contract);
 
     await contract.printInfo();
   }
