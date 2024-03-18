@@ -7,7 +7,8 @@ import {
   processTemplates,
   getTemplates,
   prepareTestFiles,
-  getSwankyConfig, configName,
+  getSwankyConfig,
+  configName,
 } from "../../lib/index.js";
 import { email, name, pickTemplate } from "../../lib/prompts.js";
 import { kebabCase, pascalCase, snakeCase } from "change-case";

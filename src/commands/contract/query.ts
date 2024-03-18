@@ -14,7 +14,7 @@ export class Query extends ContractCall<typeof Query> {
     const contract = new ContractPromise(
       this.api.apiInst,
       this.metadata,
-      this.deploymentInfo.address,
+      this.deploymentInfo.address
     );
 
     const storageDepositLimit = null;
@@ -29,7 +29,7 @@ export class Query extends ContractCall<typeof Query> {
         gasLimit,
         storageDepositLimit,
       },
-      ...flags.params,
+      ...flags.params
     );
 
     await this.api.apiInst.disconnect();

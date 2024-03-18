@@ -17,7 +17,7 @@ import {
   installDeps,
   prepareTestFiles,
   processTemplates,
-  swankyNodeVersions
+  swankyNodeVersions,
 } from "../../lib/index.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { InputError, UnknownError } from "../../lib/errors.js";
@@ -146,10 +146,8 @@ export class Init extends SwankyCommand<typeof Init> {
       if (useSwankyNode) {
         const versions = Array.from(swankyNodeVersions.keys());
         let nodeVersion = DEFAULT_NODE_INFO.version;
-        await inquirer.prompt([
-          pickNodeVersion(versions),
-        ]).then((answers) => {
-           nodeVersion = answers.version;
+        await inquirer.prompt([pickNodeVersion(versions)]).then((answers) => {
+          nodeVersion = answers.version;
         });
 
         const nodeInfo = swankyNodeVersions.get(nodeVersion)!;
@@ -158,9 +156,13 @@ export class Init extends SwankyCommand<typeof Init> {
           task: downloadNode,
           args: [this.projectPath, nodeInfo, this.spinner],
           runningMessage: "Downloading Swanky node",
-          callback: (localPath) => this.configBuilder.updateNodeSettings({ supportedInk: nodeInfo.supportedInk,
-            polkadotPalletVersions: nodeInfo.polkadotPalletVersions,
-            version: nodeInfo.version, localPath }),
+          callback: (localPath) =>
+            this.configBuilder.updateNodeSettings({
+              supportedInk: nodeInfo.supportedInk,
+              polkadotPalletVersions: nodeInfo.polkadotPalletVersions,
+              version: nodeInfo.version,
+              localPath,
+            }),
         });
       }
     }
@@ -191,7 +193,7 @@ export class Init extends SwankyCommand<typeof Init> {
         runningMessage,
         successMessage,
         failMessage,
-        shouldExitOnError,
+        shouldExitOnError
       );
       if (result && callback) {
         callback(result as string);
@@ -271,7 +273,7 @@ export class Init extends SwankyCommand<typeof Init> {
       runningMessage: "Processing templates",
     });
 
-    this.configBuilder.updateContracts( {
+    this.configBuilder.updateContracts({
       [contractName as string]: {
         name: contractName,
         moduleName: snakeCase(contractName),
@@ -291,7 +293,7 @@ export class Init extends SwankyCommand<typeof Init> {
     } catch (cause) {
       throw new InputError(
         `Error reading target directory [${chalk.yellowBright(pathToExistingProject)}]`,
-        { cause },
+        { cause }
       );
     }
 
@@ -311,7 +313,7 @@ export class Init extends SwankyCommand<typeof Init> {
 
     const candidatesList: CopyCandidates = await getCopyCandidatesList(
       pathToExistingProject,
-      copyGlobsList,
+      copyGlobsList
     );
 
     const testDir = await detectTests(pathToExistingProject);
@@ -473,10 +475,10 @@ async function confirmCopyList(candidatesList: CopyCandidates) {
     (
       item: PathEntry & {
         group: "contracts" | "crates" | "tests";
-      },
+      }
     ) => {
       resultingList[item.group]?.push(item);
-    },
+    }
   );
   return resultingList;
 }
@@ -503,7 +505,7 @@ async function detectTests(pathToExistingProject: string): Promise<string | unde
       type: "confirm",
       name: "shouldUseDetectedTestDir",
       message: `Detected test directory [${path.basename(
-        testDir!,
+        testDir!
       )}]. Do you want to copy it to your new project?`,
       default: true,
     },
@@ -536,7 +538,7 @@ async function readRootCargoToml(pathToProject: string) {
 async function getManualPaths(
   pathToProject: string,
   directoryType: "contracts" | "crates" | "tests",
-  paths: string[] = [],
+  paths: string[] = []
 ): Promise<string[]> {
   const { selectedDirectory } = await inquirer.prompt([
     {
@@ -574,7 +576,7 @@ async function getCopyCandidatesList(
   pathsToCopy: {
     contractsDirectories: string[];
     cratesDirectories: string[];
-  },
+  }
 ) {
   const detectedPaths = {
     contracts: await getDirsAndFiles(projectPath, pathsToCopy.contractsDirectories),
@@ -595,7 +597,7 @@ async function getGlobPaths(projectPath: string, globList: string[], isDirOnly: 
       onlyDirectories: isDirOnly,
       deep: 1,
       objectMode: true,
-    },
+    }
   );
 }
 

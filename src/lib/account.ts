@@ -66,13 +66,17 @@ export abstract class SwankyAccountCommand<T extends typeof Command> extends Swa
         );
     } catch (cause) {
       if (cause instanceof Error) {
-        if (cause.message.includes('ECONNREFUSED') && canBeSkipped) {
-          this.warn(`Unable to connect to the node. Skipping faucet transfer for ${chalk.yellowBright(accountData.alias)}.`);
+        if (cause.message.includes("ECONNREFUSED") && canBeSkipped) {
+          this.warn(
+            `Unable to connect to the node. Skipping faucet transfer for ${chalk.yellowBright(accountData.alias)}.`
+          );
         } else {
           throw new ApiError("Error transferring tokens from faucet account", { cause });
         }
       } else {
-        throw new ApiError("An unknown error occurred during faucet transfer", { cause: new Error(String(cause)) });
+        throw new ApiError("An unknown error occurred during faucet transfer", {
+          cause: new Error(String(cause)),
+        });
       }
     } finally {
       if (api) {
@@ -81,4 +85,3 @@ export abstract class SwankyAccountCommand<T extends typeof Command> extends Swa
     }
   }
 }
-

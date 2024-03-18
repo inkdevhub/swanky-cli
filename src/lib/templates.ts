@@ -35,11 +35,11 @@ export function getTemplates() {
 export async function copyContractTemplateFiles(
   contractTemplatePath: string,
   contractName: string,
-  projectPath: string,
+  projectPath: string
 ) {
   await copy(
     path.resolve(contractTemplatePath, "contract"),
-    path.resolve(projectPath, "contracts", contractName),
+    path.resolve(projectPath, "contracts", contractName)
   );
 }
 
@@ -47,7 +47,7 @@ export async function copyZombienetTemplateFile(templatePath: string, configPath
   await ensureDir(configPath);
   await copy(
     path.resolve(templatePath, zombienetConfig),
-    path.resolve(configPath, zombienetConfig),
+    path.resolve(configPath, zombienetConfig)
   );
 }
 
@@ -55,7 +55,7 @@ export async function copyChopsticksTemplateFile(templatePath: string, configPat
   await ensureDir(configPath);
   await copy(
     path.resolve(templatePath, chopsticksConfig),
-    path.resolve(configPath, chopsticksConfig),
+    path.resolve(configPath, chopsticksConfig)
   );
 }
 
@@ -65,12 +65,12 @@ export async function copyCommonTemplateFiles(templatesPath: string, projectPath
   await Promise.all(
     commonFiles.map(async (file) => {
       await copy(path.resolve(templatesPath, file), path.resolve(projectPath, file));
-    }),
+    })
   );
   await rename(path.resolve(projectPath, "gitignore"), path.resolve(projectPath, ".gitignore"));
   await rename(
     path.resolve(projectPath, "mocharc.json"),
-    path.resolve(projectPath, ".mocharc.json"),
+    path.resolve(projectPath, ".mocharc.json")
   );
   await copy(path.resolve(templatesPath, "github"), path.resolve(projectPath, ".github"));
 }

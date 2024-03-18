@@ -15,7 +15,11 @@ import chalk from "chalk";
 import { SwankyCommand } from "./swankyCommand.js";
 import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
 import { NetworkError } from "./errors.js";
-import { contractFromRecord, ensureArtifactsExist, ensureDevAccountNotInProduction } from "./checks.js";
+import {
+  contractFromRecord,
+  ensureArtifactsExist,
+  ensureDevAccountNotInProduction,
+} from "./checks.js";
 
 export type JoinedFlagsType<T extends typeof Command> = Interfaces.InferredFlags<
   (typeof ContractCall)["baseFlags"] & T["flags"]
@@ -43,7 +47,7 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
       default: "local",
       description: "Name of network to connect to",
     }),
-  }
+  };
 
   protected flags!: JoinedFlagsType<T>;
   protected args!: Record<string, any>;
@@ -61,19 +65,19 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
 
     const contractRecord = findContractRecord(this.swankyConfig, args.contractName);
 
-    const contract = (await contractFromRecord(contractRecord));
+    const contract = await contractFromRecord(contractRecord);
 
     await ensureArtifactsExist(contract);
 
     const deploymentData = flags.address
       ? contract.deployments.find(
-        (deployment: DeploymentData) => deployment.address === flags.address,
-      )
+          (deployment: DeploymentData) => deployment.address === flags.address
+        )
       : contract.deployments[0];
 
     if (!deploymentData?.address)
       throw new NetworkError(
-        `Cannot find a deployment with address: ${flags.address} in "${configName()}"`,
+        `Cannot find a deployment with address: ${flags.address} in "${configName()}"`
       );
 
     this.deploymentInfo = deploymentData;
@@ -93,17 +97,17 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
     const mnemonic = accountData.isDev
       ? (accountData.mnemonic as string)
       : decrypt(
-        accountData.mnemonic as Encrypted,
-        (
-          await inquirer.prompt([
-            {
-              type: "password",
-              message: `Enter password for ${chalk.yellowBright(accountData.alias)}: `,
-              name: "password",
-            },
-          ])
-        ).password,
-      );
+          accountData.mnemonic as Encrypted,
+          (
+            await inquirer.prompt([
+              {
+                type: "password",
+                message: `Enter password for ${chalk.yellowBright(accountData.alias)}: `,
+                name: "password",
+              },
+            ])
+          ).password
+        );
 
     const account = (await this.spinner.runCommand(async () => {
       await cryptoWaitReady();

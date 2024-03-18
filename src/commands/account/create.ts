@@ -1,6 +1,12 @@
 import { Flags } from "@oclif/core";
 import chalk from "chalk";
-import { ChainAccount, encrypt, getSwankyConfig, isLocalConfigCheck, SwankyAccountCommand } from "../../lib/index.js";
+import {
+  ChainAccount,
+  encrypt,
+  getSwankyConfig,
+  isLocalConfigCheck,
+  SwankyAccountCommand,
+} from "../../lib/index.js";
 import { AccountData } from "../../types/index.js";
 import inquirer from "inquirer";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
@@ -14,7 +20,6 @@ export class CreateAccount extends SwankyAccountCommand<typeof CreateAccount> {
     global: Flags.boolean({
       char: "g",
       description: "Create account globally stored in Swanky system config.",
-      
     }),
     new: Flags.boolean({
       char: "n",

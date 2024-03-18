@@ -13,27 +13,29 @@ export class InstallNode extends SwankyCommand<typeof InstallNode> {
 
   static flags = {
     "set-version": Flags.string({
-      description: "Specify version of swanky node to install. \n List of supported versions: " + Array.from(swankyNodeVersions.keys()).join(", "),
+      description:
+        "Specify version of swanky node to install. \n List of supported versions: " +
+        Array.from(swankyNodeVersions.keys()).join(", "),
       required: false,
     }),
-  }
+  };
   async run(): Promise<void> {
     const { flags } = await this.parse(InstallNode);
     if (flags.verbose) {
       this.spinner.verbose = true;
     }
-    let nodeVersion= DEFAULT_NODE_INFO.version;
+    let nodeVersion = DEFAULT_NODE_INFO.version;
 
     if (flags["set-version"]) {
       nodeVersion = flags["set-version"];
-      if(!swankyNodeVersions.has(nodeVersion)) {
-        throw new InputError(`Version ${nodeVersion} is not supported.\n List of supported versions: ${Array.from(swankyNodeVersions.keys()).join(", ")}`);
+      if (!swankyNodeVersions.has(nodeVersion)) {
+        throw new InputError(
+          `Version ${nodeVersion} is not supported.\n List of supported versions: ${Array.from(swankyNodeVersions.keys()).join(", ")}`
+        );
       }
     } else {
       const versions = Array.from(swankyNodeVersions.keys());
-      await inquirer.prompt([
-        pickNodeVersion(versions),
-      ]).then((answers) => {
+      await inquirer.prompt([pickNodeVersion(versions)]).then((answers) => {
         nodeVersion = answers.version;
       });
     }
@@ -41,7 +43,7 @@ export class InstallNode extends SwankyCommand<typeof InstallNode> {
     const projectPath = path.resolve();
 
     if (this.swankyConfig.node.localPath !== "") {
-      const { overwrite } =await inquirer.prompt([
+      const { overwrite } = await inquirer.prompt([
         choice("overwrite", "Swanky node already installed. Do you want to overwrite it?"),
       ]);
       if (!overwrite) {

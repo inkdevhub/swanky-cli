@@ -16,7 +16,11 @@ import chalk from "chalk";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { ApiError, ProcessError } from "../../lib/errors.js";
 import { ConfigBuilder } from "../../lib/config-builder.js";
-import { contractFromRecord, ensureArtifactsExist, ensureDevAccountNotInProduction } from "../../lib/checks.js";
+import {
+  contractFromRecord,
+  ensureArtifactsExist,
+  ensureDevAccountNotInProduction,
+} from "../../lib/checks.js";
 
 export class DeployContract extends SwankyCommand<typeof DeployContract> {
   static description = "Deploy contract to a running node";
@@ -59,7 +63,7 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
 
     const contractRecord = findContractRecord(localConfig, args.contractName);
 
-    const contract = (await contractFromRecord(contractRecord));
+    const contract = await contractFromRecord(contractRecord);
 
     await ensureArtifactsExist(contract);
 
@@ -97,7 +101,7 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
     const accountData = this.findAccountByAlias(accountAlias);
 
     ensureDevAccountNotInProduction(accountData, flags.network);
-    
+
     const mnemonic = accountData.isDev
       ? (accountData.mnemonic as string)
       : decrypt(
