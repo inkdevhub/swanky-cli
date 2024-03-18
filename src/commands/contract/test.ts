@@ -6,9 +6,15 @@ import Mocha from "mocha";
 import { emptyDir, pathExistsSync } from "fs-extra/esm";
 import { Contract } from "../../lib/contract.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-import { ConfigError, FileError, InputError, ProcessError, TestError } from "../../lib/errors.js";
+import { FileError, ProcessError, TestError } from "../../lib/errors.js";
 import { spawn } from "node:child_process";
-import { configName, Spinner } from "../../lib/index.js";
+import { findContractRecord, Spinner } from "../../lib/index.js";
+import {
+  contractFromRecord,
+  ensureArtifactsExist,
+  ensureContractNameOrAllFlagIsSet,
+  ensureTypedContractExists,
+} from "../../lib/checks.js";
 
 declare global {
   var contractTypesPath: string; // eslint-disable-line no-var
@@ -40,9 +46,7 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(TestContract);
 
-    if (args.contractName === undefined && !flags.all) {
-      throw new InputError("No contracts were selected to compile");
-    }
+    ensureContractNameOrAllFlagIsSet(args, flags);
 
     const contractNames = flags.all
       ? Object.keys(this.swankyConfig.contracts)
@@ -51,20 +55,9 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
     const spinner = new Spinner();
 
     for (const contractName of contractNames) {
-      const contractRecord = this.swankyConfig.contracts[contractName];
-      if (!contractRecord) {
-        throw new ConfigError(
-          `Cannot find a contract named ${args.contractName} in "${configName()}"`
-        );
-      }
+      const contractRecord = findContractRecord(this.swankyConfig, contractName);
 
-      const contract = new Contract(contractRecord);
-
-      if (!(await contract.pathExists())) {
-        throw new FileError(
-          `Path to contract ${args.contractName} does not exist: ${contract.contractPath}`
-        );
-      }
+      const contract = (await contractFromRecord(contractRecord));
 
       console.log(`Testing contract: ${contractName}`);
 
@@ -125,24 +118,9 @@ export class TestContract extends SwankyCommand<typeof TestContract> {
       throw new FileError(`Test directory does not exist: ${testDir}`);
     }
 
-    const artifactsCheck = await contract.artifactsExist();
+    await ensureArtifactsExist(contract);
 
-        if (!artifactsCheck.result) {
-          throw new FileError(
-            `No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`
-          );
-        }
-
-        const artifactPath = path.resolve("typedContracts", `${contract.name}`);
-        const typedContractCheck = await contract.typedContractExists(contract.name);
-
-        this.log(`artifactPath: ${artifactPath}`);
-
-        if (!typedContractCheck.result) {
-          throw new FileError(
-            `No typed contract found at path: ${typedContractCheck.missingPaths.toString()}`
-          );
-        }
+    await ensureTypedContractExists(contract);
 
     const reportDir = path.resolve(testDir, "testReports");
     await emptyDir(reportDir);

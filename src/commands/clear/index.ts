@@ -1,8 +1,9 @@
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-import { ConfigError, FileError } from "../../lib/errors.js";
+import { FileError } from "../../lib/errors.js";
 import fs from "fs-extra";
 import path from "node:path";
 import { Args, Flags } from "@oclif/core";
+import { ensureContractNameOrAllFlagIsSet } from "../../lib/checks.js";
 
 interface Folder {
   name: string,
@@ -44,9 +45,7 @@ export default class Clear extends SwankyCommand<typeof Clear> {
 
     const { flags, args } = await this.parse(Clear);
 
-    if (args.contractName === undefined && !flags.all) {
-      throw new ConfigError("Specify a contract name or use the --all flag to delete all artifacts.");
-    }
+    ensureContractNameOrAllFlagIsSet(args, flags);
 
     const workDirectory = process.cwd();
     const foldersToDelete: Folder[] = flags.all ?
