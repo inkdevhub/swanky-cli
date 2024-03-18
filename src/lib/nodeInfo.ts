@@ -20,7 +20,7 @@ export const swankyNodeVersions = new Map<string, nodeInfo>([
     {
       version: "1.6.0",
       polkadotPalletVersions: "polkadot-v0.9.39",
-      supportedInk: "v4.3.0",
+      supportedInk: "v5.0.0",
       downloadUrl: {
         darwin: {
           arm64:
