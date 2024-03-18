@@ -4,7 +4,6 @@ import { pathExistsSync } from "fs-extra/esm";
 import { execaCommand } from "execa";
 import { Flags } from "@oclif/core";
 
-
 export class StartZombienet extends SwankyCommand<typeof StartZombienet> {
   static description = "Start Zombienet";
 
@@ -20,19 +19,19 @@ export class StartZombienet extends SwankyCommand<typeof StartZombienet> {
   async run(): Promise<void> {
     const { flags } = await this.parse(StartZombienet);
     const projectPath = path.resolve();
-    const binPath = path.resolve(projectPath, "zombienet", "bin")
+    const binPath = path.resolve(projectPath, "zombienet", "bin");
     if (!pathExistsSync(path.resolve(binPath, "zombienet"))) {
       this.error("Zombienet has not initialized. Run `swanky zombienet:init` first");
     }
 
     await execaCommand(
-        `./zombienet/bin/zombienet \
+      `./zombienet/bin/zombienet \
             spawn --provider native \
             ${flags["config-path"]}
         `,
-        {
-          stdio: "inherit",
-        }
+      {
+        stdio: "inherit",
+      }
     );
 
     this.log("ZombieNet started successfully");

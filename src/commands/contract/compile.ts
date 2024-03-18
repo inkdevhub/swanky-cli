@@ -11,7 +11,11 @@ import {
 import { InputError, ProcessError } from "../../lib/errors.js";
 import { BuildMode, SwankyConfig } from "../../index.js";
 import { ConfigBuilder } from "../../lib/config-builder.js";
-import { ensureContractNameOrAllFlagIsSet, ensureContractPathExists, ensureCargoContractVersionCompatibility, } from "../../lib/checks.js";
+import {
+  ensureContractNameOrAllFlagIsSet,
+  ensureContractPathExists,
+  ensureCargoContractVersionCompatibility,
+} from "../../lib/checks.js";
 
 export class CompileContract extends SwankyCommand<typeof CompileContract> {
   static description = "Compile the smart contract(s) in your contracts directory";
@@ -120,7 +124,7 @@ export class CompileContract extends SwankyCommand<typeof CompileContract> {
           });
         },
         `Compiling ${contractName} contract`,
-        `${contractName} Contract compiled successfully`,
+        `${contractName} Contract compiled successfully`
       );
 
       const artifactsPath = compilationResult as string;

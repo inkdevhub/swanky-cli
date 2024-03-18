@@ -1,4 +1,11 @@
-import { AccountData, BuildData, DeploymentData, SwankyConfig, SwankySystemConfig, ZombienetData } from "../index.js";
+import {
+  AccountData,
+  BuildData,
+  DeploymentData,
+  SwankyConfig,
+  SwankySystemConfig,
+  ZombienetData,
+} from "../index.js";
 import { snakeCase } from "change-case";
 
 export class ConfigBuilder<T extends SwankySystemConfig | SwankyConfig> {
@@ -34,7 +41,7 @@ export class ConfigBuilder<T extends SwankySystemConfig | SwankyConfig> {
 
   updateEnv(env: Record<string, string>): ConfigBuilder<T> {
     if ("env" in this.config) {
-      this.config.env = {...this.config.env, ...env};
+      this.config.env = { ...this.config.env, ...env };
     }
     return this;
   }
@@ -79,10 +86,10 @@ export class ConfigBuilder<T extends SwankySystemConfig | SwankyConfig> {
   }
 
   addChopsticks(path: string): ConfigBuilder<T> {
-    if("node" in this.config) {
-      this.config.node.chopsticks ={
+    if ("node" in this.config) {
+      this.config.node.chopsticks = {
         configPath: path,
-      }
+      };
     }
     return this;
   }

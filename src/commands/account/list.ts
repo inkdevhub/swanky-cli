@@ -13,11 +13,11 @@ export class ListAccounts extends SwankyCommand<typeof ListAccounts> {
   async run(): Promise<void> {
     const countOfDevAccounts = this.swankyConfig.accounts.filter((account) => account.isDev).length;
 
-    if(countOfDevAccounts !== 0) {
+    if (countOfDevAccounts !== 0) {
       this.log(`${chalk.greenBright("✔")} Stored dev accounts:`);
 
       for (const account of this.swankyConfig.accounts) {
-        if(account.isDev){
+        if (account.isDev) {
           this.log(`\t${chalk.yellowBright("Alias: ")} ${account.alias}  \
 ${chalk.yellowBright("Address: ")} ${account.address} ${this.swankyConfig.defaultAccount === account.alias ? chalk.greenBright("<- Default") : ""}`);
         }
@@ -26,11 +26,11 @@ ${chalk.yellowBright("Address: ")} ${account.address} ${this.swankyConfig.defaul
 
     const countOfProdAccounts = this.swankyConfig.accounts.length - countOfDevAccounts;
 
-    if(countOfProdAccounts !== 0) {
+    if (countOfProdAccounts !== 0) {
       this.log(`${chalk.greenBright("✔")} Stored prod accounts:`);
 
       for (const account of this.swankyConfig.accounts) {
-        if(!account.isDev){
+        if (!account.isDev) {
           this.log(`\t${chalk.yellowBright("Alias: ")} ${account.alias}  \
 ${chalk.yellowBright("Address: ")} ${account.address} ${this.swankyConfig.defaultAccount === account.alias ? chalk.greenBright("<- Default") : ""}`);
         }

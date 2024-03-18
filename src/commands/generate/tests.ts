@@ -1,5 +1,10 @@
 import { Args, Flags } from "@oclif/core";
-import { findContractRecord, getTemplates, prepareTestFiles, processTemplates } from "../../lib/index.js";
+import {
+  findContractRecord,
+  getTemplates,
+  prepareTestFiles,
+  processTemplates,
+} from "../../lib/index.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
 import { ConfigError, InputError } from "../../lib/errors.js";
 import path from "node:path";
@@ -55,15 +60,14 @@ export class GenerateTests extends SwankyCommand<typeof GenerateTests> {
       templates.templatesPath,
       process.cwd(),
       args.contractName,
-      templateName,
+      templateName
     );
   }
 
   async checkContract(name: string) {
-
     const contractRecord = findContractRecord(this.swankyConfig, name);
 
-    const contract = (await contractFromRecord(contractRecord));
+    const contract = await contractFromRecord(contractRecord);
 
     await ensureArtifactsExist(contract);
   }
@@ -71,7 +75,7 @@ export class GenerateTests extends SwankyCommand<typeof GenerateTests> {
   async checkOverwrite(
     testPath: string,
     testType: TestType,
-    contractName?: string,
+    contractName?: string
   ): Promise<boolean> {
     if (!existsSync(testPath)) return true; // No need to overwrite
     const message =
@@ -120,17 +124,17 @@ export class GenerateTests extends SwankyCommand<typeof GenerateTests> {
     templatesPath: string,
     projectPath: string,
     contractName?: string,
-    templateName?: string,
+    templateName?: string
   ): Promise<void> {
     if (testType === "e2e") {
       await this.spinner.runCommand(
         () => prepareTestFiles("e2e", templatesPath, projectPath),
-        "Generating e2e test helpers",
+        "Generating e2e test helpers"
       );
     } else {
       await this.spinner.runCommand(
         () => prepareTestFiles("mocha", templatesPath, projectPath, templateName, contractName),
-        `Generating tests for ${contractName} with mocha`,
+        `Generating tests for ${contractName} with mocha`
       );
     }
     await this.spinner.runCommand(
@@ -141,7 +145,7 @@ export class GenerateTests extends SwankyCommand<typeof GenerateTests> {
           contract_name: contractName ?? "",
           contract_name_pascal: contractName ? pascalCase(contractName) : "",
         }),
-      "Processing templates",
+      "Processing templates"
     );
   }
 }

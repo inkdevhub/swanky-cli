@@ -6,21 +6,23 @@ export const zombienet = {
   version: "1.3.89",
   downloadUrl: {
     darwin: {
-      "arm64": "https://github.com/paritytech/zombienet/releases/download/v${version}/zombienet-macos",
-      "x64": "https://github.com/paritytech/zombienet/releases/download/v${version}/zombienet-macos",
+      arm64:
+        "https://github.com/paritytech/zombienet/releases/download/v${version}/zombienet-macos",
+      x64: "https://github.com/paritytech/zombienet/releases/download/v${version}/zombienet-macos",
     },
     linux: {
-      "arm64": "https://github.com/paritytech/zombienet/releases/download/v${version}/zombienet-linux-arm64",
-      "x64": "https://github.com/paritytech/zombienet/releases/download/v${version}/zombienet-linux-x64",
+      arm64:
+        "https://github.com/paritytech/zombienet/releases/download/v${version}/zombienet-linux-arm64",
+      x64: "https://github.com/paritytech/zombienet/releases/download/v${version}/zombienet-linux-x64",
     },
   },
   binaries: {
-    "polkadot": {
+    polkadot: {
       version: "0.9.43",
       downloadUrl: {
         linux: {
-          "arm64": "https://github.com/paritytech/polkadot/releases/download/v${version}/polkadot",
-          "x64": "https://github.com/paritytech/polkadot/releases/download/v${version}/polkadot",
+          arm64: "https://github.com/paritytech/polkadot/releases/download/v${version}/polkadot",
+          x64: "https://github.com/paritytech/polkadot/releases/download/v${version}/polkadot",
         },
       },
     },
@@ -28,8 +30,9 @@ export const zombienet = {
       version: "0.9.430",
       downloadUrl: {
         linux: {
-          "arm64": "https://github.com/paritytech/cumulus/releases/download/v${version}/polkadot-parachain",
-          "x64": "https://github.com/paritytech/cumulus/releases/download/v${version}/polkadot-parachain",
+          arm64:
+            "https://github.com/paritytech/cumulus/releases/download/v${version}/polkadot-parachain",
+          x64: "https://github.com/paritytech/cumulus/releases/download/v${version}/polkadot-parachain",
         },
       },
     },
@@ -37,12 +40,14 @@ export const zombienet = {
       version: "5.28.0",
       downloadUrl: {
         darwin: {
-          "arm64": "https://github.com/AstarNetwork/Astar/releases/download/v${version}/astar-collator-v${version}-macOS-x86_64.tar.gz",
-          "x64": "https://github.com/AstarNetwork/Astar/releases/download/v${version}/astar-collator-v${version}-macOS-x86_64.tar.gz",
+          arm64:
+            "https://github.com/AstarNetwork/Astar/releases/download/v${version}/astar-collator-v${version}-macOS-x86_64.tar.gz",
+          x64: "https://github.com/AstarNetwork/Astar/releases/download/v${version}/astar-collator-v${version}-macOS-x86_64.tar.gz",
         },
         linux: {
-          "arm64": "https://github.com/AstarNetwork/Astar/releases/download/v${version}/astar-collator-v${version}-ubuntu-aarch64.tar.gz",
-          "x64": "https://github.com/AstarNetwork/Astar/releases/download/v${version}/astar-collator-v${version}-ubuntu-x86_64.tar.gz",
+          arm64:
+            "https://github.com/AstarNetwork/Astar/releases/download/v${version}/astar-collator-v${version}-ubuntu-aarch64.tar.gz",
+          x64: "https://github.com/AstarNetwork/Astar/releases/download/v${version}/astar-collator-v${version}-ubuntu-x86_64.tar.gz",
         },
       },
     },

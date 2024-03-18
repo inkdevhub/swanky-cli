@@ -12,7 +12,10 @@ export interface ChainProperty {
 
 export type ExtrinsicPayload = SubmittableExtrinsic<"promise">;
 
-export interface Encrypted { iv: string; data: string }
+export interface Encrypted {
+  iv: string;
+  data: string;
+}
 
 export interface AccountData {
   isDev: boolean;
@@ -44,15 +47,15 @@ export interface DeploymentData {
 
 export interface DownloadUrl {
   darwin: {
-    "arm64": string,
-    "x64": string
-  },
+    arm64: string;
+    x64: string;
+  };
   linux: {
-    "arm64": string,
-    "x64": string
-  }
+    arm64: string;
+    x64: string;
+  };
 }
-export interface SwankyConfig extends SwankySystemConfig{
+export interface SwankyConfig extends SwankySystemConfig {
   node: {
     polkadotPalletVersions: string;
     localPath: string;
@@ -70,7 +73,7 @@ export interface SwankyConfig extends SwankySystemConfig{
 export interface SwankySystemConfig {
   defaultAccount: string | null;
   accounts: AccountData[];
-  networks: Record<string, {url: string}>;
+  networks: Record<string, { url: string }>;
 }
 
 export interface ZombienetData {
@@ -80,37 +83,37 @@ export interface ZombienetData {
 }
 
 export interface ZombienetConfig {
-  settings: { timeout: number },
-  relaychain: Relaychain,
-  parachains: Parachain[],
-  hrmp_channels?: HrmpChannel[],
+  settings: { timeout: number };
+  relaychain: Relaychain;
+  parachains: Parachain[];
+  hrmp_channels?: HrmpChannel[];
 }
 
 export interface Relaychain {
-  default_command: string,
-  chain: string,
-  nodes: Node[]
+  default_command: string;
+  chain: string;
+  nodes: Node[];
 }
 export interface Node {
-  name: string,
+  name: string;
 }
 export interface HrmpChannel {
-  sender: number,
-  recipient: number,
-  max_capacity: number,
-  max_message_size: number
+  sender: number;
+  recipient: number;
+  max_capacity: number;
+  max_message_size: number;
 }
 export interface Parachain {
-  id: number,
-  chain: string,
-  cumulus_based: boolean,
-  collator: Collator
+  id: number;
+  chain: string;
+  cumulus_based: boolean;
+  collator: Collator;
 }
 export interface Collator {
-  name: string,
-  command: string,
-  rpc_port: number,
-  args: string[],
+  name: string;
+  command: string;
+  rpc_port: number;
+  args: string[];
 }
 
 export enum BuildMode {

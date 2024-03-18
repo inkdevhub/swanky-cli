@@ -3,14 +3,15 @@
 </p>
 
 <!-- toc -->
-* [Docs and guide](#docs-and-guide)
-* [Quick start](#quick-start)
-* [Base image and dev container](#base-image-and-dev-container)
-* [Config](#config)
-* [Network Management](#network-management)
-* [Development and contributing](#development-and-contributing)
-* [Reporting issues](#reporting-issues)
-* [Command help](#command-help)
+
+- [Docs and guide](#docs-and-guide)
+- [Quick start](#quick-start)
+- [Base image and dev container](#base-image-and-dev-container)
+- [Config](#config)
+- [Network Management](#network-management)
+- [Development and contributing](#development-and-contributing)
+- [Reporting issues](#reporting-issues)
+- [Command help](#command-help)
 <!-- tocstop -->
 
 # Docs and guide
@@ -127,6 +128,7 @@ A newly generated project will have a `swanky.config.json` file that will get po
 ```
 
 Also, global config will be created in your home directory, in `~/swanky` folder.
+
 ## Example:
 
 ```json
@@ -167,6 +169,7 @@ Also, global config will be created in your home directory, in `~/swanky` folder
   }
 }
 ```
+
 You can use accounts and networks from the global config in any swanky project.
 
 # Network Management
@@ -225,6 +228,7 @@ Please report any issue or bug you encounter, as well as any feature and improve
 # Command help
 
 <!-- usage -->
+
 ```sh-session
 $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
@@ -236,48 +240,50 @@ USAGE
   $ swanky COMMAND
 ...
 ```
+
 <!-- usagestop -->
 
 <!-- commands -->
-* [`swanky account create`](#swanky-account-create)
-* [`swanky account list`](#swanky-account-list)
-* [`swanky account ls`](#swanky-account-ls)
-* [`swanky account balance`](#swanky-account-balance)
-* [`swanky account faucet`](#swanky-account-faucet)
-* [`swanky account default`](#swanky-account-default)
-* [`swanky clear CONTRACTNAME`](#swanky-clear-contractname)
-* [`swanky contract compile [CONTRACTNAME]`](#swanky-contract-compile-contractname)
-* [`swanky contract deploy CONTRACTNAME`](#swanky-contract-deploy-contractname)
-* [`swanky contract explain CONTRACTNAME`](#swanky-contract-explain-contractname)
-* [`swanky contract new CONTRACTNAME`](#swanky-contract-new-contractname)
-* [`swanky contract query CONTRACTNAME MESSAGENAME`](#swanky-contract-query-contractname-messagename)
-* [`swanky contract test [CONTRACTNAME]`](#swanky-contract-test-contractname)
-* [`swanky contract tx CONTRACTNAME MESSAGENAME`](#swanky-contract-tx-contractname-messagename)
-* [`swanky contract verify CONTRACTNAME`](#swanky-contract-verify-contractname)
-* [`swanky env check`](#swanky-env-check)
-* [`swanky env install`](#swanky-env-install)
-* [`swanky generate tests`](#swanky-generate-tests)
-* [`swanky generate types`](#swanky-generate-types)
-* [`swanky help [COMMANDS]`](#swanky-help-commands)
-* [`swanky init PROJECTNAME`](#swanky-init-projectname)
-* [`swanky node install`](#swanky-node-install)
-* [`swanky node purge`](#swanky-node-purge)
-* [`swanky node start`](#swanky-node-start)
-* [`swanky node version`](#swanky-node-version)
-* [`swanky node chopsticks init`](#swanky-node-chopsticks-init)
-* [`swanky node chopsticks start`](#swanky-node-chopsticks-start)
-* [`swanky zombienet init`](#swanky-zombienet-init)
-* [`swanky zombienet start`](#swanky-zombienet-start)
-* [`swanky plugins`](#swanky-plugins)
-* [`swanky plugins:install PLUGIN...`](#swanky-pluginsinstall-plugin)
-* [`swanky plugins:inspect PLUGIN...`](#swanky-pluginsinspect-plugin)
-* [`swanky plugins:install PLUGIN...`](#swanky-pluginsinstall-plugin-1)
-* [`swanky plugins:link PLUGIN`](#swanky-pluginslink-plugin)
-* [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin)
-* [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin-1)
-* [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin-2)
-* [`swanky plugins update`](#swanky-plugins-update)
-* [`swanky version`](#swanky-version)
+
+- [`swanky account create`](#swanky-account-create)
+- [`swanky account list`](#swanky-account-list)
+- [`swanky account ls`](#swanky-account-ls)
+- [`swanky account balance`](#swanky-account-balance)
+- [`swanky account faucet`](#swanky-account-faucet)
+- [`swanky account default`](#swanky-account-default)
+- [`swanky clear CONTRACTNAME`](#swanky-clear-contractname)
+- [`swanky contract compile [CONTRACTNAME]`](#swanky-contract-compile-contractname)
+- [`swanky contract deploy CONTRACTNAME`](#swanky-contract-deploy-contractname)
+- [`swanky contract explain CONTRACTNAME`](#swanky-contract-explain-contractname)
+- [`swanky contract new CONTRACTNAME`](#swanky-contract-new-contractname)
+- [`swanky contract query CONTRACTNAME MESSAGENAME`](#swanky-contract-query-contractname-messagename)
+- [`swanky contract test [CONTRACTNAME]`](#swanky-contract-test-contractname)
+- [`swanky contract tx CONTRACTNAME MESSAGENAME`](#swanky-contract-tx-contractname-messagename)
+- [`swanky contract verify CONTRACTNAME`](#swanky-contract-verify-contractname)
+- [`swanky env check`](#swanky-env-check)
+- [`swanky env install`](#swanky-env-install)
+- [`swanky generate tests`](#swanky-generate-tests)
+- [`swanky generate types`](#swanky-generate-types)
+- [`swanky help [COMMANDS]`](#swanky-help-commands)
+- [`swanky init PROJECTNAME`](#swanky-init-projectname)
+- [`swanky node install`](#swanky-node-install)
+- [`swanky node purge`](#swanky-node-purge)
+- [`swanky node start`](#swanky-node-start)
+- [`swanky node version`](#swanky-node-version)
+- [`swanky node chopsticks init`](#swanky-node-chopsticks-init)
+- [`swanky node chopsticks start`](#swanky-node-chopsticks-start)
+- [`swanky zombienet init`](#swanky-zombienet-init)
+- [`swanky zombienet start`](#swanky-zombienet-start)
+- [`swanky plugins`](#swanky-plugins)
+- [`swanky plugins:install PLUGIN...`](#swanky-pluginsinstall-plugin)
+- [`swanky plugins:inspect PLUGIN...`](#swanky-pluginsinspect-plugin)
+- [`swanky plugins:install PLUGIN...`](#swanky-pluginsinstall-plugin-1)
+- [`swanky plugins:link PLUGIN`](#swanky-pluginslink-plugin)
+- [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin)
+- [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin-1)
+- [`swanky plugins:uninstall PLUGIN...`](#swanky-pluginsuninstall-plugin-2)
+- [`swanky plugins update`](#swanky-plugins-update)
+- [`swanky version`](#swanky-version)
 
 ## `swanky account create`
 
@@ -296,7 +302,9 @@ FLAGS
 DESCRIPTION
   Create a new dev account in config
 ```
+
 _See code: [src/commands/account/create.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/account/create.ts)_
+
 ## `swanky account list`
 
 List dev accounts stored in config
@@ -314,8 +322,8 @@ DESCRIPTION
 ALIASES
   $ swanky account ls
 ```
-_See code: [src/commands/account/list.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/account/list.ts)_
 
+_See code: [src/commands/account/list.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/account/list.ts)_
 
 ## `swanky account ls`
 
@@ -394,7 +402,7 @@ FLAGS
 
 DESCRIPTION
   Set default account to use
-``` 
+```
 
 _See code: [src/commands/account/default.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/account/default.ts)_
 
@@ -463,7 +471,6 @@ DESCRIPTION
   Deploy contract to a running node
 ```
 
-
 _See code: [src/commands/contract/deploy.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/contract/deploy.ts)_
 
 ## `swanky contract explain CONTRACTNAME`
@@ -506,7 +513,6 @@ DESCRIPTION
 ```
 
 _See code: [src/commands/contract/new.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/contract/new.ts)_
-
 
 ## `swanky contract query CONTRACTNAME MESSAGENAME`
 
@@ -659,7 +665,7 @@ FLAGS
 
 DESCRIPTION
   Generate test files for the specified contract
-```         
+```
 
 _See code: [src/commands/generate/tests.ts](https://github.com/inkdevhub/swanky-cli/blob/master/src/commands/generate/tests.ts)_
 
@@ -849,7 +855,7 @@ _See code: [src/commands/node/chopsticks/start.ts](https://github.com/inkdevhub/
 
 Initialize Zombienet
 
-``` 
+```
 USAGE
   $ swanky zombienet init [-v] [-b polkadot|polkadot-parachain|astar-collator]
 
@@ -936,7 +942,7 @@ ALIASES
   $ swanky plugins add
 
 EXAMPLES
-  $ swanky plugins:install myplugin 
+  $ swanky plugins:install myplugin
 
   $ swanky plugins:install https://github.com/someuser/someplugin
 
@@ -999,7 +1005,7 @@ ALIASES
   $ swanky plugins add
 
 EXAMPLES
-  $ swanky plugins:install myplugin 
+  $ swanky plugins:install myplugin
 
   $ swanky plugins:install https://github.com/someuser/someplugin
 
@@ -1137,4 +1143,5 @@ FLAG DESCRIPTIONS
 ```
 
 _See code: [@oclif/plugin-version](https://github.com/oclif/plugin-version/blob/v1.3.7/src/commands/version.ts)_
+
 <!-- commandsstop -->

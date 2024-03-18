@@ -110,6 +110,7 @@
     }
   },
   "scripts": {
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,css,md}\"",
     "lint": "eslint . --ext .ts --quiet --config .eslintrc",
     "postpack": "shx rm -f oclif.manifest.json",
     "prepack": "yarn build && oclif manifest && oclif readme",
