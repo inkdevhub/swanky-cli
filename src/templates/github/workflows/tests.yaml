@@ -55,7 +55,7 @@ jobs:
 
     - name: Download and start swanky-node
       run: |
-        sudo wget https://github.com/AstarNetwork/swanky-node/releases/download/${{ env.SWANKY_NODE_VER }}/swanky-node-${{ env.SWANKY_NODE_VER }}-ubuntu-x86_64.tar.gz
+        sudo wget https://github.com/inkdevhub/swanky-node/releases/download/${{ env.SWANKY_NODE_VER }}/swanky-node-${{ env.SWANKY_NODE_VER }}-ubuntu-x86_64.tar.gz
         sudo tar -zxvf swanky-node-v1.2.0-ubuntu-x86_64.tar.gz
         sudo chmod +x swanky-node
         ./swanky-node -lerror,runtime::contracts=debug &
