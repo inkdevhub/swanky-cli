@@ -79,47 +79,4 @@ describe("{{contract_name}} test", () => {
       })
     ).to.eventually.be.rejected;
   });
-
-  it("Can not transfer to hated account", async () => {
-    const hated_account = wallet2;
-    const transferredAmount = 10;
-    const { gasRequired } = await contract
-      .withSigner(deployer)
-      .query.transfer(wallet1.address, transferredAmount, []);
-    // Check that we can transfer money while account is not hated
-    await expect(
-      contract.tx.transfer(hated_account.address, 10, [], {
-        gasLimit: gasRequired,
-      })
-    ).to.eventually.be.fulfilled;
-
-    const result = await contract.query.balanceOf(hated_account.address);
-    expect(result.value.ok?.toNumber()).to.equal(transferredAmount);
-
-    expect((await contract.query.getHatedAccount()).value.ok).to.equal(
-      EMPTY_ADDRESS
-    );
-
-    // Hate account
-    await expect(
-      contract.tx.setHatedAccount(hated_account.address, {
-        gasLimit: gasRequired,
-      })
-    ).to.eventually.be.ok;
-    expect((await contract.query.getHatedAccount()).value.ok).to.equal(
-      hated_account.address
-    );
-
-    // Transfer must fail
-    expect(
-      contract.tx.transfer(hated_account.address, 10, [], {
-        gasLimit: gasRequired,
-      })
-    ).to.eventually.be.rejected;
-
-    // Amount of tokens must be the same
-    expect(
-      (await contract.query.balanceOf(hated_account.address)).value.ok?.toNumber()
-    ).to.equal(10);
-  });
 });

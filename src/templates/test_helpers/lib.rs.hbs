@@ -1,0 +1,18 @@
+#[macro_export]
+macro_rules! address_of {
+    ($account:ident) => {
+        ::ink_e2e::account_id(::ink_e2e::AccountKeyring::$account)
+    };
+}
+
+#[macro_export]
+macro_rules! balance_of {
+    ($contract_ref:ident, $client:ident, $address:ident, $account:ident) => \{{
+        let _msg =
+            build_message::<$contract_ref>($address.clone()).call(|contract| contract.balance_of(address_of!($account)));
+        $client
+            .call_dry_run(&::ink_e2e::alice(), &_msg, 0, None)
+            .await
+            .return_value()
+    }};
+}

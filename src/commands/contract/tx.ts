@@ -5,18 +5,14 @@ import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
 import { ContractCall } from "../../lib/contractCall.js";
 
 export class Tx extends ContractCall<typeof Tx> {
-  static summary = "Call a Tx message on smart contract";
+  static description = "Call a Tx message on smart contract";
 
   static flags = {
     dry: Flags.boolean({
       char: "d",
       description: "Do a dry run, without signing the transaction",
     }),
-    account: Flags.string({
-      required: true,
-      char: "a",
-      description: "Account to sign the transaction with",
-    }),
+    ...ContractCall.callFlags,
   };
 
   static args = { ...ContractCall.callArgs };

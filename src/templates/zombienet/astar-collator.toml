@@ -1,0 +1,69 @@
+[[parachains]]
+id = 2006
+chain = "astar-dev"
+cumulus_based = true
+
+    [parachains.collator]
+    name = "astar"
+    command = "./zombienet/bin/astar-collator"
+    rpc_port = 8545
+    args = [ "-l=xcm=trace", "--enable-evm-rpc" ]
+
+[[parachains]]
+id = 2007
+chain = "shiden-dev"
+cumulus_based = true
+
+    [parachains.collator]
+    name = "shiden"
+    command = "./zombienet/bin/astar-collator"
+    rpc_port = 8546
+    args = [ "-l=xcm=trace", "--enable-evm-rpc" ]
+
+[[parachains]]
+id = 2008
+chain = "shibuya-dev"
+cumulus_based = true
+
+    [parachains.collator]
+    name = "shibuya"
+    command = "./zombienet/bin/astar-collator"
+    rpc_port = 8546
+    args = [ "-l=xcm=trace", "--enable-evm-rpc" ]
+
+[[hrmp_channels]]
+sender = 2006
+recipient = 2007
+max_capacity = 8
+max_message_size = 512
+
+[[hrmp_channels]]
+sender = 2007
+recipient = 2006
+max_capacity = 8
+max_message_size = 512
+
+[[hrmp_channels]]
+sender = 2006
+recipient = 2008
+max_capacity = 8
+max_message_size = 512
+
+[[hrmp_channels]]
+sender = 2008
+recipient = 2006
+max_capacity = 8
+max_message_size = 512
+
+
+[[hrmp_channels]]
+sender = 2008
+recipient = 2007
+max_capacity = 8
+max_message_size = 512
+
+[[hrmp_channels]]
+sender = 2007
+recipient = 2008
+max_capacity = 8
+max_message_size = 512

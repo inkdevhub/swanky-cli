@@ -45,7 +45,7 @@ jobs:
       with:
         node-version: ${{ env.NODE_VER }}
 
-    - name: yarn test
+    - name: Check test
       run: yarn && yarn test
 
   lint-check:
@@ -60,7 +60,7 @@ jobs:
       with:
         node-version: ${{ env.NODE_VER }}
 
-    - name: yarn lint
+    - name: Check lint
       run: yarn && yarn lint
 
   build-check:
@@ -75,5 +75,20 @@ jobs:
       with:
         node-version: ${{ env.NODE_VER }}
 
-    - name: yarn build
+    - name: Check build
       run: yarn && yarn build
+
+  format-check:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout the source code
+      uses: actions/checkout@v3
+
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ env.NODE_VER }}
+
+    - name: Check formatting
+      run: yarn && yarn format

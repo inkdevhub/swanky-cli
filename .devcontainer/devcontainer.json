@@ -1,7 +1,9 @@
 {
   "name": "swanky-env",
-  "image": "ghcr.io/swankyhub/swanky-cli/swanky-base:swanky3.1.0-beta.0_v2.1.0",
-
+  "image": "ghcr.io/inkdevhub/swanky-cli/swanky-base:swanky3.1.0-beta.0_v2.1.1",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2.8.0": {}
+  },
   // Mount the workspace volume
   "mounts": ["source=${localWorkspaceFolder},target=/workspaces,type=bind,consistency=cached"],
   "workspaceFolder": "/workspaces",

@@ -1,22 +1,33 @@
 import { Args, Flags } from "@oclif/core";
-import path from "node:path";
-import { writeJSON } from "fs-extra/esm";
 import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
-import { resolveNetworkUrl, ChainApi, ChainAccount, decrypt, AbiType } from "../../lib/index.js";
-import { AccountData, Encrypted } from "../../types/index.js";
+import {
+  AbiType,
+  ChainAccount,
+  ChainApi,
+  decrypt,
+  resolveNetworkUrl,
+  ensureAccountIsSet,
+  getSwankyConfig,
+  findContractRecord,
+} from "../../lib/index.js";
+import { BuildMode, Encrypted, SwankyConfig } from "../../types/index.js";
 import inquirer from "inquirer";
 import chalk from "chalk";
-import { Contract } from "../../lib/contract.js";
 import { SwankyCommand } from "../../lib/swankyCommand.js";
-import { ApiError, ConfigError, FileError } from "../../lib/errors.js";
+import { ApiError, ProcessError } from "../../lib/errors.js";
+import { ConfigBuilder } from "../../lib/config-builder.js";
+import {
+  contractFromRecord,
+  ensureArtifactsExist,
+  ensureDevAccountNotInProduction,
+} from "../../lib/checks.js";
 
 export class DeployContract extends SwankyCommand<typeof DeployContract> {
   static description = "Deploy contract to a running node";
 
   static flags = {
     account: Flags.string({
-      required: true,
-      description: "Alias of account to be used",
+      description: "Account alias to deploy contract with",
     }),
     gas: Flags.integer({
       char: "g",
@@ -32,6 +43,7 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
     }),
     network: Flags.string({
       char: "n",
+      default: "local",
       description: "Network name to connect to",
     }),
   };
@@ -47,35 +59,48 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
   async run(): Promise<void> {
     const { args, flags } = await this.parse(DeployContract);
 
-    const contractRecord = this.swankyConfig.contracts[args.contractName];
-    if (!contractRecord) {
-      throw new ConfigError(
-        `Cannot find a contract named ${args.contractName} in swanky.config.json`
+    const localConfig = getSwankyConfig("local") as SwankyConfig;
+
+    const contractRecord = findContractRecord(localConfig, args.contractName);
+
+    const contract = await contractFromRecord(contractRecord);
+
+    await ensureArtifactsExist(contract);
+
+    if (contract.buildMode === undefined) {
+      throw new ProcessError(
+        `Build mode is undefined for contract ${args.contractName}. Please ensure the contract is correctly compiled.`
       );
+    } else if (contract.buildMode !== BuildMode.Verifiable) {
+      await inquirer
+        .prompt([
+          {
+            type: "confirm",
+            message: `You are deploying a not verified contract in ${
+              contract.buildMode === BuildMode.Release ? "release" : "debug"
+            } mode. Are you sure you want to continue?`,
+            name: "confirm",
+          },
+        ])
+        .then((answers) => {
+          if (!answers.confirm) {
+            this.log(
+              `${chalk.redBright("✖")} Aborted deployment of ${chalk.yellowBright(
+                args.contractName
+              )}`
+            );
+            process.exit(0);
+          }
+        });
     }
 
-    const contract = new Contract(contractRecord);
+    ensureAccountIsSet(flags.account, this.swankyConfig);
 
-    if (!(await contract.pathExists())) {
-      throw new FileError(
-        `Path to contract ${args.contractName} does not exist: ${contract.contractPath}`
-      );
-    }
+    const accountAlias = (flags.account ?? this.swankyConfig.defaultAccount)!;
 
-    const artifactsCheck = await contract.artifactsExist();
+    const accountData = this.findAccountByAlias(accountAlias);
 
-    if (!artifactsCheck.result) {
-      throw new FileError(
-        `No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`
-      );
-    }
-
-    const accountData = this.swankyConfig.accounts.find(
-      (account: AccountData) => account.alias === flags.account
-    );
-    if (!accountData) {
-      throw new ConfigError("Provided account alias not found in swanky.config.json");
-    }
+    ensureDevAccountNotInProduction(accountData, flags.network);
 
     const mnemonic = accountData.isDev
       ? (accountData.mnemonic as string)
@@ -128,19 +153,16 @@ export class DeployContract extends SwankyCommand<typeof DeployContract> {
     }, "Deploying")) as string;
 
     await this.spinner.runCommand(async () => {
-      contractRecord.deployments = [
-        ...contractRecord.deployments,
-        {
-          timestamp: Date.now(),
-          address: contractAddress,
-          networkUrl,
-          deployerAlias: flags.account,
-        },
-      ];
-
-      await writeJSON(path.resolve("swanky.config.json"), this.swankyConfig, {
-        spaces: 2,
-      });
+      const deploymentData = {
+        timestamp: Date.now(),
+        address: contractAddress,
+        networkUrl,
+        deployerAlias: accountAlias,
+      };
+      const newLocalConfig = new ConfigBuilder(localConfig)
+        .addContractDeployment(args.contractName, deploymentData)
+        .build();
+      await this.storeConfig(newLocalConfig, "local");
     }, "Writing config");
 
     this.log(`Contract deployed!`);

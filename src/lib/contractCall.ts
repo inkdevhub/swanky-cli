@@ -1,12 +1,25 @@
-import { AbiType, ChainAccount, ChainApi, decrypt, resolveNetworkUrl } from "./index.js";
-import { AccountData, ContractData, DeploymentData, Encrypted } from "../types/index.js";
+import {
+  AbiType,
+  ChainAccount,
+  ChainApi,
+  configName,
+  ensureAccountIsSet,
+  decrypt,
+  resolveNetworkUrl,
+  findContractRecord,
+} from "./index.js";
+import { ContractData, DeploymentData, Encrypted } from "../types/index.js";
 import { Args, Command, Flags, Interfaces } from "@oclif/core";
 import inquirer from "inquirer";
 import chalk from "chalk";
 import { SwankyCommand } from "./swankyCommand.js";
 import { cryptoWaitReady } from "@polkadot/util-crypto/crypto";
-import { Contract } from "./contract.js";
-import { ConfigError, FileError, NetworkError } from "./errors.js";
+import { NetworkError } from "./errors.js";
+import {
+  contractFromRecord,
+  ensureArtifactsExist,
+  ensureDevAccountNotInProduction,
+} from "./checks.js";
 
 export type JoinedFlagsType<T extends typeof Command> = Interfaces.InferredFlags<
   (typeof ContractCall)["baseFlags"] & T["flags"]
@@ -28,6 +41,14 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
     }),
   };
 
+  static callFlags = {
+    network: Flags.string({
+      char: "n",
+      default: "local",
+      description: "Name of network to connect to",
+    }),
+  };
+
   protected flags!: JoinedFlagsType<T>;
   protected args!: Record<string, any>;
   protected contractInfo!: ContractData;
@@ -40,29 +61,13 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
     await super.init();
     const { flags, args } = await this.parse(this.ctor);
     this.args = args;
+    this.flags = flags as JoinedFlagsType<T>;
 
-    const contractRecord = this.swankyConfig.contracts[args.contractName];
-    if (!contractRecord) {
-      throw new ConfigError(
-        `Cannot find a contract named ${args.contractName} in swanky.config.json`
-      );
-    }
+    const contractRecord = findContractRecord(this.swankyConfig, args.contractName);
 
-    const contract = new Contract(contractRecord);
+    const contract = await contractFromRecord(contractRecord);
 
-    if (!(await contract.pathExists())) {
-      throw new FileError(
-        `Path to contract ${args.contractName} does not exist: ${contract.contractPath}`
-      );
-    }
-
-    const artifactsCheck = await contract.artifactsExist();
-
-    if (!artifactsCheck.result) {
-      throw new FileError(
-        `No artifact file found at path: ${artifactsCheck.missingPaths.toString()}`
-      );
-    }
+    await ensureArtifactsExist(contract);
 
     const deploymentData = flags.address
       ? contract.deployments.find(
@@ -72,17 +77,17 @@ export abstract class ContractCall<T extends typeof Command> extends SwankyComma
 
     if (!deploymentData?.address)
       throw new NetworkError(
-        `Cannot find a deployment with address: ${flags.address} in swanky.config.json`
+        `Cannot find a deployment with address: ${flags.address} in "${configName()}"`
       );
 
     this.deploymentInfo = deploymentData;
 
-    const accountData = this.swankyConfig.accounts.find(
-      (account: AccountData) => account.alias === flags.account || "alice"
-    );
-    if (!accountData) {
-      throw new ConfigError("Provided account alias not found in swanky.config.json");
-    }
+    ensureAccountIsSet(flags.account, this.swankyConfig);
+
+    const accountAlias = flags.account ?? this.swankyConfig.defaultAccount;
+    const accountData = this.findAccountByAlias(accountAlias);
+
+    ensureDevAccountNotInProduction(accountData, flags.network);
 
     const networkUrl = resolveNetworkUrl(this.swankyConfig, flags.network ?? "");
     const api = await ChainApi.create(networkUrl);
@@ -149,7 +154,7 @@ ContractCall.baseFlags = {
   }),
   account: Flags.string({
     char: "a",
-    description: "Account to sign the transaction with",
+    description: "Account alias to sign the transaction with",
   }),
   address: Flags.string({
     required: false,

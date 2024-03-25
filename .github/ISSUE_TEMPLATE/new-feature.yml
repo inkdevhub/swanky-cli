@@ -1,0 +1,43 @@
+name: Feature request
+description: New feature/ticket for the project
+labels: ["enhancement"]
+projects: ["swanky-cli"]
+
+body:
+  - type: textarea
+    id: overview
+    attributes:
+      label: Overview (What and Why)
+      description: Write description of what the feature should be, why
+    validations:
+      required: true
+
+  - type: textarea
+    id: how
+    attributes:
+      label: How to do it?
+      description: Describe what needs to be done.
+      placeholder: |
+        - Task 1
+        - Task 2
+    validations:
+      required: true
+
+  - type: textarea
+    id: definition-of-done
+    attributes:
+      label: Definition of Done
+      description: Write definition of done, how to verify
+      placeholder: |
+        - Unit test cases
+        - Docs updated
+        - PR approved and merged to master
+        - etc.
+    validations:
+      required: true
+
+  - type: textarea
+    id: open-issues-and-blockers
+    attributes:
+      label: Open Issues and Blockers
+      description: Dependencies issue or PR or some other blocker.
