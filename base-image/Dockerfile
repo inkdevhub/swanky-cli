@@ -13,7 +13,7 @@ RUN curl -sL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -
 RUN apt-get install -y binaryen pkg-config libssl-dev
 
 # Download and install swanky-cli and verify the installation
-RUN curl -L https://github.com/swankyhub/swanky-cli/releases/download/v3.1.0-beta.0/swanky-v3.1.0-beta.0-9153ae7-linux-x64.tar.gz | tar xz -C /opt && \
+RUN curl -L https://github.com/swankyhub/swanky-cli/releases/download/v4.0.0/swanky-v4.0.0-81446c0-linux-x64.tar.gz | tar xz -C /opt && \
   ln -s /opt/swanky/bin/swanky /usr/local/bin/swanky
 
 # Install Rustup and Rust, additional components, packages, and verify the installations

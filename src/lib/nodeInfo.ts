@@ -16,6 +16,26 @@ export interface nodeInfo {
 
 export const swankyNodeVersions = new Map<string, nodeInfo>([
   [
+    "1.7.0",
+    {
+      version: "1.7.0",
+      polkadotPalletVersions: "polkadot-v0.9.43",
+      supportedInk: "v5.0.0",
+      downloadUrl: {
+        darwin: {
+          arm64:
+            "https://github.com/AstarNetwork/swanky-node/releases/download/v1.7.0/swanky-node-v1.7.0-macOS-universal.tar.gz",
+          x64: "https://github.com/AstarNetwork/swanky-node/releases/download/v1.7.0/swanky-node-v1.7.0-macOS-universal.tar.gz",
+        },
+        linux: {
+          arm64:
+            "https://github.com/AstarNetwork/swanky-node/releases/download/v1.7.0/swanky-node-v1.7.0-ubuntu-aarch64.tar.gz",
+          x64: "https://github.com/AstarNetwork/swanky-node/releases/download/v1.7.0/swanky-node-v1.7.0-ubuntu-x86_64.tar.gz",
+        },
+      },
+    },
+  ],
+  [
     "1.6.0",
     {
       version: "1.6.0",
