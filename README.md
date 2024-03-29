@@ -774,7 +774,7 @@ USAGE
 FLAGS
   -v, --verbose              Display more info in the result logs
       --set-version=<value>  Specify version of swanky node to install.
-                             List of supported versions: 1.6.0, 1.5.0, 1.4.0, 1.3.0, 1.2.0, 1.1.0, 1.0.0
+                             List of supported versions: 1.7.0, 1.6.0, 1.5.0, 1.4.0, 1.3.0, 1.2.0, 1.1.0, 1.0.0
 
 DESCRIPTION
   Install swanky node binary

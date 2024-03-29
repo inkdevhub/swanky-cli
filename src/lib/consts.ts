@@ -1,6 +1,6 @@
 import { swankyNodeVersions } from "./nodeInfo.js";
 
-export const DEFAULT_NODE_INFO = swankyNodeVersions.get("1.6.0")!;
+export const DEFAULT_NODE_INFO = swankyNodeVersions.get("1.7.0")!;
 
 export const DEFAULT_NETWORK_URL = "ws://127.0.0.1:9944";
 export const DEFAULT_ASTAR_NETWORK_URL = "wss://rpc.astar.network";
