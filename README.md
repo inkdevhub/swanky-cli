@@ -232,7 +232,7 @@ $ npm install -g @astar-network/swanky-cli
 $ swanky COMMAND
 running command...
 $ swanky (--version|-V|-v)
-@astar-network/swanky-cli/4.0.0-beta.0 darwin-x64 node-v21.7.1
+@astar-network/swanky-cli/4.0.0 darwin-x64 node-v21.7.1
 $ swanky --help [COMMAND]
 USAGE
   $ swanky COMMAND
@@ -300,7 +300,7 @@ DESCRIPTION
   Balance of an account
 ```
 
-_See code: [src/commands/account/balance.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/account/balance.ts)_
+_See code: [src/commands/account/balance.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/account/balance.ts)_
 
 ## `swanky account create`
 
@@ -320,7 +320,7 @@ DESCRIPTION
   Create a new dev account in config
 ```
 
-_See code: [src/commands/account/create.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/account/create.ts)_
+_See code: [src/commands/account/create.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/account/create.ts)_
 
 ## `swanky account default [ACCOUNTALIAS]`
 
@@ -341,7 +341,7 @@ DESCRIPTION
   Set default account to use
 ```
 
-_See code: [src/commands/account/default.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/account/default.ts)_
+_See code: [src/commands/account/default.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/account/default.ts)_
 
 ## `swanky account faucet ALIAS`
 
@@ -361,7 +361,7 @@ DESCRIPTION
   Transfer some tokens from faucet to an account
 ```
 
-_See code: [src/commands/account/faucet.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/account/faucet.ts)_
+_See code: [src/commands/account/faucet.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/account/faucet.ts)_
 
 ## `swanky account list`
 
@@ -381,7 +381,7 @@ ALIASES
   $ swanky account ls
 ```
 
-_See code: [src/commands/account/list.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/account/list.ts)_
+_See code: [src/commands/account/list.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/account/list.ts)_
 
 ## `swanky account ls`
 
@@ -415,7 +415,7 @@ FLAGS
   -v, --verbose  Display more info in the result logs
 ```
 
-_See code: [src/commands/clear/index.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/clear/index.ts)_
+_See code: [src/commands/clear/index.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/clear/index.ts)_
 
 ## `swanky contract compile [CONTRACTNAME]`
 
@@ -439,7 +439,7 @@ DESCRIPTION
   Compile the smart contract(s) in your contracts directory
 ```
 
-_See code: [src/commands/contract/compile.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/contract/compile.ts)_
+_See code: [src/commands/contract/compile.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/contract/compile.ts)_
 
 ## `swanky contract deploy CONTRACTNAME`
 
@@ -464,7 +464,7 @@ DESCRIPTION
   Deploy contract to a running node
 ```
 
-_See code: [src/commands/contract/deploy.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/contract/deploy.ts)_
+_See code: [src/commands/contract/deploy.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/contract/deploy.ts)_
 
 ## `swanky contract explain CONTRACTNAME`
 
@@ -484,7 +484,7 @@ DESCRIPTION
   Explain contract messages based on the contracts' metadata
 ```
 
-_See code: [src/commands/contract/explain.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/contract/explain.ts)_
+_See code: [src/commands/contract/explain.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/contract/explain.ts)_
 
 ## `swanky contract new CONTRACTNAME`
 
@@ -505,7 +505,7 @@ DESCRIPTION
   Generate a new smart contract template inside a project
 ```
 
-_See code: [src/commands/contract/new.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/contract/new.ts)_
+_See code: [src/commands/contract/new.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/contract/new.ts)_
 
 ## `swanky contract query CONTRACTNAME MESSAGENAME`
 
@@ -532,7 +532,7 @@ DESCRIPTION
   Call a query message on smart contract
 ```
 
-_See code: [src/commands/contract/query.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/contract/query.ts)_
+_See code: [src/commands/contract/query.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/contract/query.ts)_
 
 ## `swanky contract test [CONTRACTNAME]`
 
@@ -554,7 +554,7 @@ DESCRIPTION
   Run tests for a given contact
 ```
 
-_See code: [src/commands/contract/test.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/contract/test.ts)_
+_See code: [src/commands/contract/test.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/contract/test.ts)_
 
 ## `swanky contract tx CONTRACTNAME MESSAGENAME`
 
@@ -582,7 +582,7 @@ DESCRIPTION
   Call a Tx message on smart contract
 ```
 
-_See code: [src/commands/contract/tx.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/contract/tx.ts)_
+_See code: [src/commands/contract/tx.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/contract/tx.ts)_
 
 ## `swanky contract verify [CONTRACTNAME]`
 
@@ -603,7 +603,7 @@ DESCRIPTION
   Verify the smart contract(s) in your contracts directory
 ```
 
-_See code: [src/commands/contract/verify.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/contract/verify.ts)_
+_See code: [src/commands/contract/verify.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/contract/verify.ts)_
 
 ## `swanky env check`
 
@@ -621,7 +621,7 @@ DESCRIPTION
   Check installed package versions and compatibility
 ```
 
-_See code: [src/commands/env/check.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/env/check.ts)_
+_See code: [src/commands/env/check.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/env/check.ts)_
 
 ## `swanky env install`
 
@@ -641,7 +641,7 @@ DESCRIPTION
   Install dev dependencies
 ```
 
-_See code: [src/commands/env/install.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/env/install.ts)_
+_See code: [src/commands/env/install.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/env/install.ts)_
 
 ## `swanky generate tests [CONTRACTNAME]`
 
@@ -663,7 +663,7 @@ DESCRIPTION
   Generate test files for the specified contract
 ```
 
-_See code: [src/commands/generate/tests.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/generate/tests.ts)_
+_See code: [src/commands/generate/tests.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/generate/tests.ts)_
 
 ## `swanky generate types CONTRACTNAME`
 
@@ -683,7 +683,7 @@ DESCRIPTION
   Generate types from compiled contract metadata
 ```
 
-_See code: [src/commands/generate/types.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/generate/types.ts)_
+_See code: [src/commands/generate/types.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/generate/types.ts)_
 
 ## `swanky help [COMMAND]`
 
@@ -726,7 +726,7 @@ DESCRIPTION
   Generate a new smart contract environment
 ```
 
-_See code: [src/commands/init/index.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/init/index.ts)_
+_See code: [src/commands/init/index.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/init/index.ts)_
 
 ## `swanky node chopsticks init`
 
@@ -743,7 +743,7 @@ DESCRIPTION
   Initialize chopsticks config
 ```
 
-_See code: [src/commands/node/chopsticks/init.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/node/chopsticks/init.ts)_
+_See code: [src/commands/node/chopsticks/init.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/node/chopsticks/init.ts)_
 
 ## `swanky node chopsticks start`
 
@@ -761,7 +761,7 @@ DESCRIPTION
   Start chopsticks
 ```
 
-_See code: [src/commands/node/chopsticks/start.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/node/chopsticks/start.ts)_
+_See code: [src/commands/node/chopsticks/start.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/node/chopsticks/start.ts)_
 
 ## `swanky node install`
 
@@ -774,13 +774,13 @@ USAGE
 FLAGS
   -v, --verbose              Display more info in the result logs
       --set-version=<value>  Specify version of swanky node to install.
-                             List of supported versions: 1.6.0, 1.5.0, 1.4.0, 1.3.0, 1.2.0, 1.1.0, 1.0.0
+                             List of supported versions: 1.7.0, 1.6.0, 1.5.0, 1.4.0, 1.3.0, 1.2.0, 1.1.0, 1.0.0
 
 DESCRIPTION
   Install swanky node binary
 ```
 
-_See code: [src/commands/node/install.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/node/install.ts)_
+_See code: [src/commands/node/install.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/node/install.ts)_
 
 ## `swanky node purge`
 
@@ -797,7 +797,7 @@ DESCRIPTION
   Purge local chain state
 ```
 
-_See code: [src/commands/node/purge.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/node/purge.ts)_
+_See code: [src/commands/node/purge.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/node/purge.ts)_
 
 ## `swanky node start`
 
@@ -828,7 +828,7 @@ DESCRIPTION
   Start a local node
 ```
 
-_See code: [src/commands/node/start.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/node/start.ts)_
+_See code: [src/commands/node/start.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/node/start.ts)_
 
 ## `swanky node version`
 
@@ -845,7 +845,7 @@ DESCRIPTION
   Show swanky node version
 ```
 
-_See code: [src/commands/node/version.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/node/version.ts)_
+_See code: [src/commands/node/version.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/node/version.ts)_
 
 ## `swanky plugins`
 
@@ -1163,7 +1163,7 @@ DESCRIPTION
   Initialize Zombienet
 ```
 
-_See code: [src/commands/zombienet/init.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/zombienet/init.ts)_
+_See code: [src/commands/zombienet/init.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/zombienet/init.ts)_
 
 ## `swanky zombienet start`
 
@@ -1181,5 +1181,5 @@ DESCRIPTION
   Start Zombienet
 ```
 
-_See code: [src/commands/zombienet/start.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0-beta.0/src/commands/zombienet/start.ts)_
+_See code: [src/commands/zombienet/start.ts](https://github.com/inkdevhub/swanky-cli/blob/v4.0.0/src/commands/zombienet/start.ts)_
 <!-- commandsstop -->
